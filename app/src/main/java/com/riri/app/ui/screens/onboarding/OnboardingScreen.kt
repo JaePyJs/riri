@@ -97,11 +97,12 @@ fun OnboardingScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Your new bestie for staying on top of your tasks. Remind it, Remembers it. ✨",
+                text = "Alam mo na dapat. Gawin mo na.",
                 style = MaterialTheme.typography.bodyLarge,
-                color = com.riri.app.ui.theme.MutedText,
+                color = Color.White,
                 textAlign = TextAlign.Center,
-                lineHeight = 26.sp
+                lineHeight = 26.sp,
+                fontWeight = FontWeight.Medium
             )
 
             var name by remember { mutableStateOf("") }
@@ -180,24 +181,17 @@ fun OnboardingScreen(
                         .shadow(8.dp, RoundedCornerShape(28.dp)),
                     shape = RoundedCornerShape(28.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        disabledContainerColor = com.riri.app.ui.theme.SurfaceBg.copy(alpha = 0.5f)
-                    ),
-                    contentPadding = PaddingValues()
+                        containerColor = com.riri.app.ui.theme.PrimaryViolet,
+                        contentColor = Color.White,
+                        disabledContainerColor = com.riri.app.ui.theme.SurfaceBg.copy(alpha = 0.5f),
+                        disabledContentColor = com.riri.app.ui.theme.MutedText
+                    )
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(if (name.isNotBlank()) com.riri.app.ui.theme.RiriGradient else Brush.linearGradient(listOf(Color.Gray, Color.Gray))),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (isDownloaded) "Let's Go! 🚀" else "Start with Lite AI ✨",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = if (name.isNotBlank()) Color.White else com.riri.app.ui.theme.MutedText,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Text(
+                        text = if (isDownloaded) "Let's Go! 🚀" else "Start with Lite AI ✨",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
                 
                 if (!isDownloaded) {

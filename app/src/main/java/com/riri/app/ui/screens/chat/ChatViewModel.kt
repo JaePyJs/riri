@@ -77,10 +77,7 @@ class ChatViewModel(
                         val finalResponse = if (responseBuffer.isBlank()) {
                             generateLiteResponse(text)
                         } else {
-                            // Final cleanup of any trailing junk
-                            responseBuffer.trim()
-                                .removeSuffix("<|im_end|>")
-                                .removeSuffix("<|im_start|>")
+                            responseBuffer.stripModelTokens()
                         }
                         chatRepository.sendMessage(finalResponse, isUser = false)
                         _uiState.update { it.copy(isTyping = false) }
@@ -145,3 +142,12 @@ class ChatViewModel(
         }
     }
 }
+
+fun String.stripModelTokens(): String = this
+    .replace("<|im_end|>", "")
+    .replace("<|im_start|>", "")
+    .replace("<|end|>", "")
+    .replace("</s>", "")
+    .replace("[/INST]", "")
+    .replace("<|eot_id|>", "")
+    .trim()

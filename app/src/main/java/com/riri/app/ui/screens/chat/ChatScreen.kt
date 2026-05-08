@@ -70,7 +70,6 @@ fun ChatScreen(
         },
         containerColor = com.riri.app.ui.theme.DeepCharcoalBg,
         bottomBar = {
-            // Input Area in bottomBar to stay above keyboard properly
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -119,26 +118,33 @@ fun ChatScreen(
             }
         }
     ) { padding ->
-        // Message List
-        LazyColumn(
-            state = listState,
+        Column(
             modifier = Modifier
-                .fillMaxSize(),
-            contentPadding = PaddingValues(
-                top = padding.calculateTopPadding() + 16.dp,
-                bottom = padding.calculateBottomPadding() + 16.dp,
-                start = 16.dp,
-                end = 16.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding())
+                .imePadding()
         ) {
-            items(uiState.messages) { message ->
-                ChatBubble(message = message)
-            }
-            
-            if (uiState.isTyping) {
-                item {
-                    TypingIndicator()
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(
+                    bottom = 16.dp,
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(uiState.messages) { message ->
+                    ChatBubble(message = message)
+                }
+                
+                if (uiState.isTyping) {
+                    item {
+                        TypingIndicator()
+                    }
                 }
             }
         }
@@ -164,9 +170,9 @@ fun ChatBubble(message: ChatMessage) {
                 Image(
                     painter = painterResource(id = com.riri.app.R.drawable.thinking),
                     contentDescription = null,
-                    modifier = Modifier.size(32.dp).clip(CircleShape)
+                    modifier = Modifier.size(36.dp).clip(CircleShape)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(10.dp)) // 8dp + 2dp extra padding
             }
             
             Surface(
@@ -178,7 +184,7 @@ fun ChatBubble(message: ChatMessage) {
                 Text(
                     text = message.text,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                    color = Color.White,
+                    color = Color.White.copy(alpha = 1f),
                     fontSize = 15.sp,
                     lineHeight = 22.sp
                 )
@@ -196,9 +202,9 @@ fun TypingIndicator() {
         Image(
             painter = painterResource(id = com.riri.app.R.drawable.thinking),
             contentDescription = null,
-            modifier = Modifier.size(32.dp).clip(CircleShape)
+            modifier = Modifier.size(36.dp).clip(CircleShape)
         )
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(10.dp))
         Box(
             modifier = Modifier
                 .background(com.riri.app.ui.theme.SurfaceBg, RoundedCornerShape(20.dp))
@@ -206,7 +212,7 @@ fun TypingIndicator() {
         ) {
             Text(
                 "Riri is typing...", 
-                color = com.riri.app.ui.theme.MutedText, 
+                color = Color.White.copy(alpha = 1f), 
                 fontSize = 13.sp, 
                 fontWeight = FontWeight.Medium
             )
