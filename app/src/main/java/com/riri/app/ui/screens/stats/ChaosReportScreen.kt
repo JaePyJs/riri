@@ -60,10 +60,7 @@ fun ChaosReportScreen(
                 },
                 actions = {
                     IconButton(onClick = { launcher.launch("image/*") }) {
-                        Icon(painterResource(id = com.riri.app.R.drawable.inactive), contentDescription = "Select Background", tint = AmberSecondary, modifier = Modifier.size(24.dp))
-                    }
-                    IconButton(onClick = onShareClick) {
-                        Icon(Icons.Default.Share, contentDescription = "Share", tint = Color.White)
+                        Icon(imageVector = androidx.compose.material.icons.Icons.Default.Image, contentDescription = "Change background", tint = AmberSecondary, modifier = Modifier.size(24.dp))
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(

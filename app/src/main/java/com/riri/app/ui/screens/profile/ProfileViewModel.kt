@@ -71,6 +71,7 @@ class ProfileViewModel(
                     )
                     
                     ProfileUiState(
+                        userName = "",
                         completionRate = if (reminders.isNotEmpty()) (totalDone * 100 / reminders.size) else 0,
                         totalDone = totalDone,
                         streakCount = currentStats.currentStreak,
@@ -80,7 +81,9 @@ class ProfileViewModel(
                         isLoading = false
                     )
                 }.collect { newState ->
-                    _uiState.value = newState
+                    _uiState.update { current ->
+                        newState.copy(userName = current.userName)
+                    }
                 }
         }
     }

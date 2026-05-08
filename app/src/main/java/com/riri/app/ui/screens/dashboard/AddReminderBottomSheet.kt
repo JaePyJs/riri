@@ -131,8 +131,8 @@ fun AddReminderBottomSheet(
                             }
                         ) {
                             Icon(
-                                painter = painterResource(id = if (isRecording) R.drawable.thinking else R.drawable.welcoming),
-                                contentDescription = "Voice",
+                                imageVector = if (isRecording) androidx.compose.material.icons.Icons.Default.Stop else androidx.compose.material.icons.Icons.Default.Mic,
+                                contentDescription = "Voice input",
                                 modifier = Modifier.size(24.dp),
                                 tint = if (isRecording) com.riri.app.ui.theme.PrimaryViolet else com.riri.app.ui.theme.MutedText
                             )
@@ -141,8 +141,8 @@ fun AddReminderBottomSheet(
                             onClick = { launcher.launch("image/*") }
                         ) {
                             Icon(
-                                painter = painterResource(id = com.riri.app.R.drawable.achievement), 
-                                contentDescription = "Add Image",
+                                imageVector = androidx.compose.material.icons.Icons.Default.AttachFile, 
+                                contentDescription = "Attach image",
                                 modifier = Modifier.size(24.dp),
                                 tint = if (selectedImageUri != null) com.riri.app.ui.theme.AmberSecondary else com.riri.app.ui.theme.MutedText
                             )
@@ -207,8 +207,8 @@ fun AddReminderBottomSheet(
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.inactive), 
-                        contentDescription = null, 
+                        imageVector = androidx.compose.material.icons.Icons.Default.Schedule, 
+                        contentDescription = "Select time", 
                         tint = com.riri.app.ui.theme.MutedText, 
                         modifier = Modifier.size(20.dp)
                     )

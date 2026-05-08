@@ -30,6 +30,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import android.Manifest
 import android.os.Build
 import com.riri.app.ui.screens.stats.ChaosReportScreen
+import com.riri.app.ui.screens.stats.StatsViewModel
 import com.riri.app.ui.theme.RiriTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModel()
     private val profileViewModel: ProfileViewModel by viewModel()
     private val chatViewModel: ChatViewModel by viewModel()
+    private val statsViewModel: StatsViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,8 +140,9 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        composable("chaos_report") {
+                        compval stats by statsViewModel.stats.collectAsState()
                             ChaosReportScreen(
+                                stats = statsn(
                                 stats = null,
                                 onBackClick = { navController.popBackStack() },
                                 onShareClick = { /* Share logic */ }
