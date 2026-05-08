@@ -48,32 +48,46 @@ class ChatViewModel(
 
     fun sendMessage(text: String) {
         if (text.isBlank()) return
-        
+
         viewModelScope.launch {
-            // 0. Ensure model is loaded if ready
             if (!localLLM.isLoaded() && localLLM.isModelReady()) {
                 localLLM.load()
             }
 
             // 1. Save user message
             chatRepository.sendMessage(text, isUser = true)
-            
-            // 2. Set typing state
             _uiState.update { it.copy(isTyping = true) }
-            
-            // 3. Generate AI response
+
+            // 2. Check reminder intent BEFORE going to LLM
+            if (isReminderIntent(text)) {
+                // Try to parse and save the reminder
+                val saved = tryCreateReminderFromChat(text)
+                val confirmationMsg = if (saved != null) {
+                    val personality = _uiState.value.currentPersonality
+                    when (personality) {
+                        PersonalityMode.BESTIE -> "Sige bestie! Naka-set na ang reminder: \"${saved.title}\" ✅ I'll bug you on time!"
+                        PersonalityMode.MALUPIT -> "Done. \"${saved.title}\" — set na. Wag mong kalimutan."
+                        PersonalityMode.CHILL -> "Okay lang~ naka-save na: \"${saved.title}\" 🌙 I gotchu."
+                        PersonalityMode.TITA -> "Hala anak, naka-save na! \"${saved.title}\" — hindi ka namin pababayaan ✨"
+                    }
+                } else {
+                    "Hmm, di ko ma-parse ng maayos yung reminder mo. Try mo: \"Remind me to [task] at [time]\" para mas klaro! 📝"
+                }
+                chatRepository.sendMessage(confirmationMsg, isUser = false)
+                _uiState.update { it.copy(isTyping = false) }
+                return@launch  // Don't fall through to LLM
+            }
+
+            // 3. Non-reminder message — send to LLM or Lite fallback
             val personality = _uiState.value.currentPersonality
             val prompt = buildPrompt(text, personality)
-            
             var responseBuffer = ""
+
             localLLM.generateResponse(
                 prompt = prompt,
-                onToken = { token ->
-                    responseBuffer += token
-                },
+                onToken = { token -> responseBuffer += token },
                 onComplete = {
                     viewModelScope.launch {
-                        // 4. Save AI response
                         val finalResponse = if (responseBuffer.isBlank()) {
                             generateLiteResponse(text)
                         } else {
@@ -81,11 +95,6 @@ class ChatViewModel(
                         }
                         chatRepository.sendMessage(finalResponse, isUser = false)
                         _uiState.update { it.copy(isTyping = false) }
-
-                        // 5. AUTO-REMINDER: If user said "remind", try to set it
-                        if (text.lowercase().contains("remind") || text.lowercase().contains("pa-remind")) {
-                            autoSetReminder(text)
-                        }
                     }
                 }
             )
@@ -110,13 +119,27 @@ class ChatViewModel(
         return "<|im_start|>system\n$system<|im_end|>\n<|im_start|>user\n$userMessage<|im_end|>\n<|im_start|>assistant\n"
     }
 
-    private fun autoSetReminder(input: String) {
-        viewModelScope.launch {
-            // Use the dashboard VM's logic pattern
+    private fun isReminderIntent(input: String): Boolean {
+        val lower = input.lowercase()
+        val reminderKeywords = listOf(
+            // English
+            "remind", "reminder", "wake me", "wake me up", "alarm", "schedule",
+            "set a", "don't forget", "dont forget", "remember to", "notify me",
+            "alert me", "at ", "by ", "tomorrow", "tonight", "later",
+            // Taglish / Tagalog
+            "paalala", "pa-remind", "ipaalala", "tandaan", "i-schedule",
+            "bukas", "mamaya", "mamayang", "ngayong gabi", "sa umaga",
+            "ng umaga", "ng hapon", "ng gabi", "am", "pm"
+        )
+        return reminderKeywords.any { lower.contains(it) }
+    }
+
+    private suspend fun tryCreateReminderFromChat(input: String): com.riri.app.data.db.entities.Reminder? {
+        return try {
             val taglishParser = com.riri.app.core.ai.TaglishParser()
             val parsed = taglishParser.parse(input)
             val category = aiRouter.categorizeReminder(input)
-            
+
             val reminder = com.riri.app.data.db.entities.Reminder(
                 title = parsed.title,
                 description = "Added via chat: \"$input\"",
@@ -127,12 +150,11 @@ class ChatViewModel(
                 recurringRuleJson = null,
                 rawInput = input
             )
-            
             reminderRepository.upsert(reminder)
-            
-            // Optionally, we could send a confirmation message, but the AI usually says something anyway.
-            // Let's add a small confirmation log to ensure we know it worked.
-            println("ChatAutoReminder: Saved reminder: ${parsed.title} at ${parsed.dueDateTime}")
+            reminder
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 
