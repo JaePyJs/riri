@@ -5,7 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -55,7 +55,7 @@ fun ChaosReportScreen(
                 title = { Text("Weekly Chaos Report", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
                 actions = {
@@ -80,11 +80,9 @@ fun ChaosReportScreen(
         ) {
             // Background Image or Glow
             if (selectedImageUri != null) {
-                val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, selectedImageUri!!))
-                } else {
-                    MediaStore.Images.Media.getBitmap(context.contentResolver, selectedImageUri)
-                }
+                val bitmap = ImageDecoder.decodeBitmap(
+                    ImageDecoder.createSource(context.contentResolver, selectedImageUri!!)
+                )
                 Image(
                     bitmap = bitmap.asImageBitmap(),
                     contentDescription = null,
@@ -154,7 +152,7 @@ fun ChaosReportScreen(
                                 textAlign = TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-                            Divider(color = com.riri.app.ui.theme.MutedText.copy(alpha = 0.2f), thickness = 1.dp)
+                            HorizontalDivider(color = com.riri.app.ui.theme.MutedText.copy(alpha = 0.2f), thickness = 1.dp)
                         }
 
                         // Stats Grid

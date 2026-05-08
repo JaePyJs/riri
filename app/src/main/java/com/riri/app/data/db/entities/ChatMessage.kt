@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "chat_messages")
 data class ChatMessage(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val text: String,
     val isUser: Boolean,
     val timestamp: Long = System.currentTimeMillis(),

@@ -23,12 +23,28 @@ class ReminderRepository(
     suspend fun completeReminder(reminder: Reminder) {
         val updated = reminder.copy(isCompleted = true, completedAt = System.currentTimeMillis())
         reminderDao.update(updated)
-        
-        // Update Stats
-        val stats = statsRepository.getLatest() ?: return
+
+        // Bootstrap stats for first-time users instead of silently returning
+        val stats = statsRepository.getLatest() ?: statsRepository.createDefaultStats()
+
+        // Streak increments only once per calendar day, not per task completion
+        val todayStart = java.util.Calendar.getInstance().apply {
+            set(java.util.Calendar.HOUR_OF_DAY, 0)
+            set(java.util.Calendar.MINUTE, 0)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        val newStreak = if (stats.lastCompletedDate < todayStart) {
+            stats.currentStreak + 1
+        } else {
+            stats.currentStreak
+        }
+
         statsRepository.upsert(stats.copy(
             totalCompleted = stats.totalCompleted + 1,
-            currentStreak = stats.currentStreak + 1
+            currentStreak = newStreak,
+            longestStreak = maxOf(stats.longestStreak, newStreak),
+            lastCompletedDate = System.currentTimeMillis()
         ))
     }
 

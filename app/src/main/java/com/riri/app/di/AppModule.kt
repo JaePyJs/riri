@@ -23,6 +23,7 @@ val appModule = module {
             RiriDatabase::class.java,
             RiriDatabase.DB_NAME
         )
+        .addMigrations(RiriDatabase.MIGRATION_1_2, RiriDatabase.MIGRATION_2_3)
         .fallbackToDestructiveMigration()
         .build()
     }

@@ -63,8 +63,10 @@ class BuildShareCardUseCase(
         canvas.drawText("Done: $totalDone", 80f, 560f, paint)
         canvas.drawText("Completion: $rate%", 80f, 640f, paint)
 
-        val badge = BitmapFactory.decodeResource(context.resources, R.drawable.streak_celebration)
-        canvas.drawBitmap(badge, 640f, 420f, null)
+        val badge = runCatching {
+            BitmapFactory.decodeResource(context.resources, R.drawable.streak_celebration)
+        }.getOrNull()
+        badge?.let { canvas.drawBitmap(it, 640f, 420f, null) }
 
         bitmap
     }

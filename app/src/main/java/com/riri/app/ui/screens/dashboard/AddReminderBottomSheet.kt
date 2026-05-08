@@ -74,7 +74,6 @@ fun AddReminderBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = com.riri.app.ui.theme.HeaderBg,
-        windowInsets = WindowInsets.ime, // Critical for keyboard handling
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -150,8 +149,9 @@ fun AddReminderBottomSheet(
                         }
                     }
                 },
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color.Transparent,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     cursorColor = Color.White,

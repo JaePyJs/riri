@@ -88,8 +88,9 @@ fun ChatScreen(
                         onValueChange = { inputText = it },
                         modifier = Modifier.weight(1f),
                         placeholder = { Text("Ask Riri anything...", color = com.riri.app.ui.theme.MutedText) },
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = com.riri.app.ui.theme.SurfaceBg,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = com.riri.app.ui.theme.SurfaceBg,
+                            unfocusedContainerColor = com.riri.app.ui.theme.SurfaceBg,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
                             focusedTextColor = Color.White,

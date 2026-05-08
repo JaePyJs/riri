@@ -14,6 +14,15 @@ interface ReminderDao {
     @Query("SELECT * FROM reminders ORDER BY dueDateTime ASC")
     fun observeReminders(): Flow<List<Reminder>>
 
+    @Query("SELECT * FROM reminders WHERE isCompleted = 0 AND dueDateTime >= :now ORDER BY dueDateTime ASC")
+    fun observePending(now: Long): Flow<List<Reminder>>
+
+    @Query("SELECT * FROM reminders WHERE isCompleted = 0 AND dueDateTime < :now ORDER BY dueDateTime ASC")
+    fun observeOverdue(now: Long): Flow<List<Reminder>>
+
+    @Query("SELECT * FROM reminders WHERE isCompleted = 1 ORDER BY completedAt DESC")
+    fun observeCompleted(): Flow<List<Reminder>>
+
     @Query("SELECT * FROM reminders WHERE dueDateTime BETWEEN :start AND :end ORDER BY dueDateTime ASC")
     suspend fun getRemindersBetween(start: Long, end: Long): List<Reminder>
 

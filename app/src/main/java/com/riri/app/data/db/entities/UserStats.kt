@@ -15,5 +15,6 @@ data class UserStats(
     val longestStreak: Int,
     val personalityTitle: String,
     val procrastinationScore: Float,
+    val lastCompletedDate: Long = 0L,
     val generatedAt: Long = System.currentTimeMillis()
 )
