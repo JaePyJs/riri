@@ -7,6 +7,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -131,7 +135,7 @@ fun AddReminderBottomSheet(
                             }
                         ) {
                             Icon(
-                                imageVector = if (isRecording) androidx.compose.material.icons.Icons.Default.Stop else androidx.compose.material.icons.Icons.Default.Mic,
+                                imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
                                 contentDescription = "Voice input",
                                 modifier = Modifier.size(24.dp),
                                 tint = if (isRecording) com.riri.app.ui.theme.PrimaryViolet else com.riri.app.ui.theme.MutedText
@@ -141,7 +145,7 @@ fun AddReminderBottomSheet(
                             onClick = { launcher.launch("image/*") }
                         ) {
                             Icon(
-                                imageVector = androidx.compose.material.icons.Icons.Default.AttachFile, 
+                                imageVector = Icons.Default.AttachFile, 
                                 contentDescription = "Attach image",
                                 modifier = Modifier.size(24.dp),
                                 tint = if (selectedImageUri != null) com.riri.app.ui.theme.AmberSecondary else com.riri.app.ui.theme.MutedText
@@ -207,7 +211,7 @@ fun AddReminderBottomSheet(
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.Schedule, 
+                        imageVector = Icons.Default.Schedule, 
                         contentDescription = "Select time", 
                         tint = com.riri.app.ui.theme.MutedText, 
                         modifier = Modifier.size(20.dp)

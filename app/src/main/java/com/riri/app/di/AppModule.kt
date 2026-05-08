@@ -12,6 +12,7 @@ import com.riri.app.ui.screens.chat.ChatViewModel
 import com.riri.app.ui.screens.dashboard.DashboardViewModel
 import com.riri.app.ui.screens.profile.ProfileViewModel
 import com.riri.app.ui.screens.settings.SettingsViewModel
+import com.riri.app.ui.screens.stats.StatsViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -51,9 +52,10 @@ val appModule = module {
     single { ShareService(androidContext()) }
     
     viewModel { DashboardViewModel(get(), get(), get(), get()) }
-    viewModel { SettingsViewModel(get()) }
+    viewModel { SettingsViewModel(get(), get()) }
     viewModel { ProfileViewModel(get(), get(), get(), get(), get()) }
     viewModel { ChatViewModel(get(), get(), get(), get(), get()) }
+    viewModel { StatsViewModel(get()) }
     viewModel { com.riri.app.ui.screens.dashboard.AddReminderViewModel(get()) }
     viewModel { com.riri.app.ui.screens.onboarding.OnboardingViewModel(get(), get()) }
 }

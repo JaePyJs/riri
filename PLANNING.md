@@ -57,39 +57,78 @@ Now here's the complete technical requirements document you can actually code fr
 
 **Bug fixes applied (May 9, 2026)**
 
-- **BUG 1 - Onboarding Persistence**: 
-  - Added `hasCompletedOnboarding` boolean key to `UserPreferencesDataStore`
-  - Updated `OnboardingViewModel.saveName()` to call `setOnboardingCompleted()` after saving name
-  - Made `MainActivity` start destination dynamic: reads `hasCompletedOnboarding` flag and routes to "home" for returning users or "onboarding" for first-time users
-  - Result: App no longer forgets the saved username and re-shows onboarding on every launch
+- **BUG 1 - Profile Username Persistence**:
+  - Fixed `ProfileViewModel.loadStats()` to preserve userName when updating stats
+  - Changed from directly replacing entire state to using `_uiState.update { current -> newState.copy(userName = current.userName) }`
+  - Result: Profile no longer shows default "Alex" and displays the saved username correctly
 
-- **BUG 2 - AI Brain Download**:
-  - Injected `ModelDownloadManager` into `SettingsViewModel`
-  - Added `downloadProgress`, `isDownloading`, `isModelDownloaded` states to `SettingsViewModel`
-  - Created "AI Brain" settings section in `SettingsScreen` (between "Preferences" and "Account & Safety")
-  - UI shows current status, download button with state-aware text, and real-time progress bar
-  - Result: Users can now download the AI model directly from Settings instead of seeing an orphaned prompt
+- **BUG 2 - ChaosReportScreen displays zeros**:
+  - Created `StatsViewModel` that observes `StatsRepository.observeStats()` and exposes latest `UserStats` as StateFlow
+  - Injected `StatsViewModel` into `MainActivity`
+  - Updated chaos_report composable to collect from `statsViewModel.stats` and pass real stats to `ChaosReportScreen`
+  - Result: Weekly Chaos Report now displays actual user stats instead of null values showing zeros
 
-- **BUG 3 - Splash Screen**:
-  - Created `SplashScreen.kt` with 2-second animated entrance (fade-in + scale with EaseOutBack)
-  - Set `MainActivity` NavHost `startDestination = "splash"` (always starts here first)
-  - Splash routes to "home" for returning users or "onboarding" for first-time users based on `hasCompletedOnboarding` flag
-  - Result: App now displays a beautiful branded splash screen before routing to the appropriate screen
+- **BUG 3 - Duplicate share buttons**:
+  - Removed the Share icon button (`Icons.Default.Share`) from TopAppBar actions
+  - Kept only the "Share to IG/FB Story 🤳" button in the card body
+  - Result: Single, contextually-placed share button that's not redundant
 
-- **Previous fixes**:
-  - **Lite AI Mode**: Disabled mandatory LLM download in Onboarding. Users can now skip the download and use fallback AI logic (Lite Mode) for immediate testing.
-  - **UI Interactivity**: Fixed and verified click handlers across all screens. Reminder cards are now fully clickable to toggle completion.
-  - **App Icon**: Updated the app launcher icon to use `riri_logo.png` from the reaction stickers.
-  - **UI Refactor**: Realigned all major screens (Onboarding, Dashboard, Chat, Profile, Settings) with the brand design reference. Updated theme colors, gradients, and typography.
-  - **Chat Logic Fix**: Fixed `LocalLLMEngine` to ensure `onComplete` is always called. Updated `ChatViewModel` to auto-load the model before sending messages if it is ready but not loaded.
-  - **MediaPipe API Update**: Updated `LocalLLMEngine.kt` to comply with version 0.10.35. Result listeners are now passed directly to `generateResponseAsync` instead of the options builder.
-  - Guarded `localLLM.load()` in `ChatViewModel.kt` with `isModelReady()` to prevent first-launch crashes.
-  - Fixed `LocalLLMEngine.kt` compilation errors by explicitly specifying lambda types for `setResultListener`.
-  - notification receiver now respects saved notification toggle + personality mode.
-  - Taglish parser now computes time relative to the current parse call.
-  - Removed duplicate `ProcrastinationLevel` enum to avoid ambiguity.
+- **BUG 4 - Mystery icon buttons in AddReminder**:
+  - Voice button: Replaced `R.drawable.welcoming`/`R.drawable.thinking` with `Icons.Default.Mic` (recording off) and `Icons.Default.Stop` (when recording)
+  - Image button: Replaced `R.drawable.achievement` with `Icons.Default.AttachFile`
+  - Result: Clear, recognizable Material Design icons for voice input and image attachment
 
-**Frontend design bundle (riri_frontend)**
+- **BUG 5 - Time picker sticker icon**:
+  - Replaced `painterResource(R.drawable.inactive)` with `Icons.Default.Schedule`
+  - Added proper `contentDescription = "Select time"`
+  - Result: Clear clock icon that indicates time selection functionality
+
+- **BUG 6 - Gallery picker confusion**:
+  - Replaced confusing bell-looking sticker `painterResource(R.drawable.inactive)` with `Icons.Default.Image`
+  - Changed `contentDescription` to "Change background"
+  - Result: Clear image icon that correctly communicates "change background" functionality
+
+- **Build Fix - Compile errors resolved**:
+  - Added missing Material icons imports for `Stop`, `Mic`, `AttachFile`, `Schedule`, and `Image`
+  - Simplified icon references to `Icons.Default.*` in AddReminder and ChaosReport
+  - Fixed Koin DI: `SettingsViewModel` now receives `ModelDownloadManager`
+  - Build verification: `assembleDebug` succeeds (warnings only)
+
+- **Chat System Prompt Enhancement**:
+  - Replaced generic personality-only prompts with core instructions + personality layers
+  - Core instructions now explicitly state PRIMARY job is to help SET, TRACK, MANAGE reminders
+  - Added BEHAVIOR RULES covering reminder detection, confirmation patterns, and productivity focus
+  - Each personality mode now has dedicated examples of reminder confirmations
+  - LLM now explicitly instructed to CONFIRM briefly when it detects reminder intent
+  - Result: LLM stops chatting back and starts confirming tasks instead
+  - Reduces confusion between casual chat and reminder-setting interactions
+
+- **Chat-to-Reminder Pipeline Optimization**:
+  - Expanded reminder intent detection from just "remind"/"pa-remind" to 20+ keywords (English, Taglish, Tagalog)
+  - Keywords now include: "wake me up", "alarm", "paalala", "tandaan", "bukas", "mamaya", "schedule", "notify me", etc.
+  - Moved reminder creation BEFORE LLM generation - users get instant confirmation instead of chatty response
+  - Created `isReminderIntent()` function for robust keyword matching
+  - Created `tryCreateReminderFromChat()` suspend function that returns saved Reminder for confirmation message
+  - Sends personality-aware confirmation messages (BESTIE, MALUPIT, CHILL, TITA modes)
+  - Falls back to parsing help message if reminder parsing fails
+  - Non-reminder messages still go through LLM normally
+  - Lite Mode now properly auto-creates reminders when no LLM is available
+  - Result: Chat naturally converts reminder intents to saved tasks with immediate feedback, improving UX
+
+- **Previous fixes (BUG 1-3 from first batch)**:
+  - **Onboarding Persistence**: Added `hasCompletedOnboarding` flag to DataStore
+  - **AI Brain Download**: Added "AI Brain" section in Settings with download progress UI
+  - **Splash Screen**: Created animated splash screen with 2-second display
+
+- **Earlier fixes**:
+  - **Lite AI Mode**: Disabled mandatory LLM download in Onboarding
+  - **UI Interactivity**: Fixed click handlers across all screens
+  - **App Icon**: Updated to use `riri_logo.png`
+  - **Chat Logic Fix**: Fixed `LocalLLMEngine` to ensure `onComplete` is always called
+  - **MediaPipe API Update**: Updated to version 0.10.35 compliance
+  - Notification receiver respects saved preferences + personality mode
+  - Taglish parser computes time relative to parse call
+  - Removed duplicate `ProcrastinationLevel` enum
 
 - React Router routes for onboarding, home, report, barkada, profile, settings; used for UI reference only.
 - Vite-based dev setup; no backend integration seen in this bundle.
@@ -349,7 +388,7 @@ data class BarkadaEntity(
 class LocalLLMEngine(context: Context) {
   // Uses MediaPipe Tasks GenAI for on-device inference
   // Supports .task model files (Gemma, Phi, etc.)
-  
+
   suspend fun categorizeReminder(input: String): ReminderCategory {
     // LLM-based categorization logic
   }

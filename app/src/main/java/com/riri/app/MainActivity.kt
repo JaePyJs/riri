@@ -25,6 +25,9 @@ import com.riri.app.ui.screens.onboarding.OnboardingScreen
 import com.riri.app.ui.screens.profile.*
 import com.riri.app.ui.screens.settings.*
 import com.riri.app.ui.screens.chat.*
+import com.riri.app.ui.screens.dashboard.DashboardViewModel
+import com.riri.app.ui.screens.dashboard.DashboardScreen
+import com.riri.app.ui.screens.dashboard.AddReminderBottomSheet
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.Manifest
@@ -140,10 +143,10 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        compval stats by statsViewModel.stats.collectAsState()
+                        composable("chaos_report") {
+                            val stats by statsViewModel.stats.collectAsState()
                             ChaosReportScreen(
-                                stats = statsn(
-                                stats = null,
+                                stats = stats,
                                 onBackClick = { navController.popBackStack() },
                                 onShareClick = { /* Share logic */ }
                             )

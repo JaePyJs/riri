@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,20 +20,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.riri.app.data.db.entities.UserStats
-import androidx.compose.foundation.Image
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import android.os.Build
-import androidx.compose.ui.graphics.asImageBitmap
-import android.graphics.ImageDecoder
-import android.provider.MediaStore
 import android.net.Uri
 import androidx.compose.ui.platform.LocalContext
 import com.riri.app.ui.theme.PrimaryViolet
 import com.riri.app.ui.theme.AmberSecondary
 import com.riri.app.ui.theme.RiriGradient
+import coil.compose.rememberAsyncImagePainter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +58,7 @@ fun ChaosReportScreen(
                 },
                 actions = {
                     IconButton(onClick = { launcher.launch("image/*") }) {
-                        Icon(imageVector = androidx.compose.material.icons.Icons.Default.Image, contentDescription = "Change background", tint = AmberSecondary, modifier = Modifier.size(24.dp))
+                        Icon(imageVector = Icons.Default.Image, contentDescription = "Change background", tint = AmberSecondary, modifier = Modifier.size(24.dp))
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -77,11 +75,8 @@ fun ChaosReportScreen(
         ) {
             // Background Image or Glow
             if (selectedImageUri != null) {
-                val bitmap = ImageDecoder.decodeBitmap(
-                    ImageDecoder.createSource(context.contentResolver, selectedImageUri!!)
-                )
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
+                androidx.compose.foundation.Image(
+                    painter = rememberAsyncImagePainter(selectedImageUri),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
