@@ -20,7 +20,7 @@ import androidx.compose.material3.*
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
-import com.riri.app.ui.screens.dashboard.*
+import com.riri.app.ui.screens.splash.SplashScreen
 import com.riri.app.ui.screens.onboarding.OnboardingScreen
 import com.riri.app.ui.screens.profile.*
 import com.riri.app.ui.screens.settings.*
@@ -46,6 +46,13 @@ class MainActivity : ComponentActivity() {
             RiriTheme {
                 val navController = rememberNavController()
                 var showAddSheet by remember { mutableStateOf(false) }
+
+                // Check if onboarding has been completed
+                val userPrefsDataStore = org.koin.java.KoinJavaComponent.get<com.riri.app.data.preferences.UserPreferencesDataStore>(
+                    com.riri.app.data.preferences.UserPreferencesDataStore::class.java
+                )
+                val hasCompletedOnboarding by userPrefsDataStore.hasCompletedOnboarding
+                    .collectAsState(initial = false)
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
@@ -97,9 +104,19 @@ class MainActivity : ComponentActivity() {
                 ) { padding ->
                     NavHost(
                         navController = navController, 
-                        startDestination = "onboarding",
+                        startDestination = "splash",
                         modifier = Modifier.padding(padding)
                     ) {
+                        composable("splash") {
+                            SplashScreen(
+                                onSplashComplete = {
+                                    val destination = if (hasCompletedOnboarding) "home" else "onboarding"
+                                    navController.navigate(destination) {
+                                        popUpTo("splash") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
                         composable("onboarding") {
                             val launcher = rememberLauncherForActivityResult(
                                 contract = ActivityResultContracts.RequestPermission()

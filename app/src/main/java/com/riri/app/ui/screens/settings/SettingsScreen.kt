@@ -31,6 +31,9 @@ fun SettingsScreen(
     onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val downloadProgress by viewModel.downloadProgress.collectAsState()
+    val isDownloading by viewModel.isDownloading.collectAsState()
+    val isModelDownloaded = viewModel.isModelDownloaded
     var showPrivacyDialog by remember { mutableStateOf(false) }
     var showSupportDialog by remember { mutableStateOf(false) }
     var showNameDialog by remember { mutableStateOf(false) }
@@ -115,6 +118,61 @@ fun SettingsScreen(
                         )
                     }
                 )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                SettingsSectionTitle(title = "AI Brain")
+                
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(com.riri.app.ui.theme.SurfaceBg, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "Riri's Brain",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = if (isModelDownloaded) "Brain downloaded! Riri is smart now ✨" 
+                               else "Download para ma-use ang local AI chat ng Riri",
+                        color = com.riri.app.ui.theme.MutedText,
+                        fontSize = 12.sp
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    if (isDownloading) {
+                        LinearProgressIndicator(
+                            progress = downloadProgress,
+                            modifier = Modifier.fillMaxWidth(),
+                            color = com.riri.app.ui.theme.PrimaryViolet,
+                            trackColor = com.riri.app.ui.theme.DeepCharcoalBg
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "${(downloadProgress * 100).toInt()}% downloaded...",
+                            color = com.riri.app.ui.theme.AmberSecondary,
+                            fontSize = 12.sp
+                        )
+                    } else {
+                        Button(
+                            onClick = { if (!isModelDownloaded) viewModel.startModelDownload() },
+                            enabled = !isModelDownloaded,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = com.riri.app.ui.theme.PrimaryViolet,
+                                disabledContainerColor = com.riri.app.ui.theme.SurfaceBg
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = if (isModelDownloaded) "Downloaded na! ✅" else "Download AI Brain",
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
             }
 
             item {

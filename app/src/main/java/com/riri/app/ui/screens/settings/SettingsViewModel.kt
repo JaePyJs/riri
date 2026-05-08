@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riri.app.data.preferences.UserPreferencesDataStore
 import com.riri.app.domain.model.PersonalityMode
+import com.riri.app.core.ai.ModelDownloadManager
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -14,11 +15,19 @@ data class SettingsUiState(
 )
 
 class SettingsViewModel(
-    private val preferences: UserPreferencesDataStore
+    private val preferences: UserPreferencesDataStore,
+    private val modelDownloadManager: ModelDownloadManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
+
+    val downloadProgress: StateFlow<Float> = modelDownloadManager.downloadProgress
+    val isModelDownloaded: Boolean
+        get() = modelDownloadManager.isDownloaded
+
+    private val _isDownloading = MutableStateFlow(false)
+    val isDownloading: StateFlow<Boolean> = _isDownloading.asStateFlow()
 
     init {
         preferences.personalityMode
@@ -55,6 +64,19 @@ class SettingsViewModel(
     fun updateName(newName: String) {
         viewModelScope.launch {
             preferences.setUserName(newName)
+        }
+    }
+
+    fun startModelDownload() {
+        if (_isDownloading.value) return
+        _isDownloading.value = true
+        viewModelScope.launch {
+            try {
+                modelDownloadManager.downloadModel()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _isDownloading.value = false
+            }
         }
     }
 }

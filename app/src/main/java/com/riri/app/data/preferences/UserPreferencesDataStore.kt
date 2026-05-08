@@ -29,6 +29,10 @@ class UserPreferencesDataStore(private val context: Context) {
         prefs[Keys.LAST_CHAOS_REPORT] ?: 0L
     }
 
+    val hasCompletedOnboarding: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[Keys.HAS_COMPLETED_ONBOARDING] ?: false
+    }
+
     suspend fun setPersonalityMode(mode: String) {
         context.dataStore.edit { prefs ->
             prefs[Keys.PERSONALITY_MODE] = mode
@@ -53,10 +57,17 @@ class UserPreferencesDataStore(private val context: Context) {
         }
     }
 
+    suspend fun setOnboardingCompleted() {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.HAS_COMPLETED_ONBOARDING] = true
+        }
+    }
+
     private object Keys {
         val PERSONALITY_MODE = stringPreferencesKey("personality_mode")
         val USER_NAME = stringPreferencesKey("user_name")
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
         val LAST_CHAOS_REPORT = longPreferencesKey("last_chaos_report")
+        val HAS_COMPLETED_ONBOARDING = booleanPreferencesKey("has_completed_onboarding")
     }
 }

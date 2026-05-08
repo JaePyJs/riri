@@ -35,6 +35,7 @@ class OnboardingViewModel(
     fun saveName(name: String) {
         viewModelScope.launch {
             userPreferencesDataStore.setUserName(name)
+            userPreferencesDataStore.setOnboardingCompleted()
         }
     }
 }
