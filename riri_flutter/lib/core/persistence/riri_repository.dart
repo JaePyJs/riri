@@ -149,7 +149,7 @@ class RiriRepository {
   RiriChatMessage _mapChatMessage(ChatMessage m) {
     return RiriChatMessage(
       id: m.id,
-      text: m.text,
+      text: m.messageText,
       isUser: m.isUser,
       timestamp: m.timestamp,
       stickerName: m.stickerName,
@@ -211,7 +211,7 @@ class RiriRepository {
 
     _cachedChatHistory.add(message);
     await _db.insertChatMessage(ChatMessagesCompanion.insert(
-      text: text,
+      messageText: text,
       isUser: isUser,
       timestamp: now,
       stickerName: Value(stickerName),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/ai/ai_models.dart';
 import '../../core/persistence/riri_repository.dart';
@@ -7,8 +8,38 @@ import '../../theme/riri_theme.dart';
 import '../reminders/add_reminder_sheet.dart';
 import 'riri_asset_mapper.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTickerProviderStateMixin {
+  late final AnimationController _mascotController;
+  late final Animation<Offset> _mascotAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _mascotController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    _mascotAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0.0, 0.05),
+    ).animate(CurvedAnimation(
+      parent: _mascotController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _mascotController.dispose();
+    super.dispose();
+  }
 
   /// Pure computation helper to determine Riri's interactive character state.
   static DashboardState determineCharacterState(List<RiriReminder> tasks) {
@@ -53,8 +84,109 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
+  void _triggerTaskCompletionPayoff(RiriReminder reminder, RiriRepository repository) async {
+    // Trigger medium haptic feedback!
+    HapticFeedback.mediumImpact();
+
+    final wasCompleted = reminder.isCompleted;
+    await repository.toggleReminderCompletion(reminder.id);
+
+    if (!wasCompleted) {
+      if (mounted) {
+        _showConfettiCelebration(context);
+      }
+    }
+  }
+
+  void _showConfettiCelebration(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Confetti',
+      barrierColor: Colors.black.withOpacity(0.7),
+      transitionDuration: const Duration(milliseconds: 350),
+      pageBuilder: (context, anim1, anim2) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: ScaleTransition(
+              scale: CurvedAnimation(
+                parent: anim1,
+                curve: Curves.elasticOut,
+              ),
+              child: Container(
+                width: 300,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF252538),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: RiriTheme.hotPink.withOpacity(0.5), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: RiriTheme.hotPink.withOpacity(0.25),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/stickers/Confetti_Explosion.png',
+                      width: 140,
+                      height: 140,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.celebration, size: 80, color: RiriTheme.hotPink);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'OMG Bestie! 🎉',
+                      style: TextStyle(
+                        color: RiriTheme.hotPink,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Natapos mo rin! Ang galing mo naman, proud na proud si Riri sa\'yo! 💅✨ No more procrastinating!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: RiriTheme.primaryPurple,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                        ),
+                        child: const Text('Salamat, Bestie! 💖', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
     // Watch providers directly to decouple callback prop-drilling
@@ -64,7 +196,6 @@ class DashboardScreen extends ConsumerWidget {
     final username = ref.watch(usernameProvider);
 
     final charState = determineCharacterState(reminders);
-    final activeReminders = reminders.where((t) => !t.isCompleted).toList();
 
     return Scaffold(
       backgroundColor: RiriTheme.darkBg,
@@ -140,21 +271,24 @@ class DashboardScreen extends ConsumerWidget {
                         padding: const EdgeInsets.all(16),
                         child: Row(
                           children: [
-                            Image.asset(
-                              RiriAssetMapper.getAssetPath(charState),
-                              width: 68,
-                              height: 68,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: RiriTheme.brandGradient,
-                                  ),
-                                  child: const Icon(Icons.psychology, size: 32, color: Colors.white),
-                                );
-                              },
+                            SlideTransition(
+                              position: _mascotAnimation,
+                              child: Image.asset(
+                                RiriAssetMapper.getAssetPath(charState),
+                                width: 68,
+                                height: 68,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 60,
+                                    height: 60,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: RiriTheme.brandGradient,
+                                    ),
+                                    child: const Icon(Icons.psychology, size: 32, color: Colors.white),
+                                  );
+                                },
+                              ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
@@ -171,7 +305,7 @@ class DashboardScreen extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'You have ${activeReminders.length} tasks left.',
+                                    'You have ${reminders.where((t) => !t.isCompleted).length} tasks left.',
                                     style: theme.textTheme.bodyMedium,
                                   ),
                                 ],
@@ -194,11 +328,13 @@ class DashboardScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 12),
+                        _buildProductivityCard(theme, reminders),
+                        const SizedBox(height: 16),
                         Text(
                           'Your Tasks',
                           style: theme.textTheme.titleLarge,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         Expanded(
                           child: reminders.isEmpty
                               ? const Center(
@@ -229,10 +365,13 @@ class DashboardScreen extends ConsumerWidget {
                                         ),
                                         child: const Icon(Icons.delete, color: Colors.white),
                                       ),
-                                      onDismissed: (direction) => repository.deleteReminder(reminder.id),
+                                      onDismissed: (direction) {
+                                        HapticFeedback.mediumImpact();
+                                        repository.deleteReminder(reminder.id);
+                                      },
                                       child: _ReminderCard(
                                         reminder: reminder,
-                                        onToggle: () => repository.toggleReminderCompletion(reminder.id),
+                                        onToggle: () => _triggerTaskCompletionPayoff(reminder, repository),
                                       ),
                                     );
                                   },

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/ai/ai_models.dart';
 import '../../core/ai/chat_response_engine.dart';
 import '../../core/persistence/riri_repository.dart';
 import '../../core/persistence/riri_providers.dart';
@@ -248,14 +247,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 Padding(
                   padding: const EdgeInsets.only(left: 16.0, bottom: 8.0),
                   child: Row(
-                    children: [
-                      Text(
-                        'Riri is typing...',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: RiriTheme.textSecondary,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
+                    children: const [
+                      _TypingIndicator(),
                     ],
                   ),
                 ),
@@ -377,6 +370,84 @@ class _ChatBubble extends StatelessWidget {
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _TypingIndicator extends StatefulWidget {
+  const _TypingIndicator({Key? key}) : super(key: key);
+
+  @override
+  State<_TypingIndicator> createState() => _TypingIndicatorState();
+}
+
+class _TypingIndicatorState extends State<_TypingIndicator> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _buildDot(int index) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final double delay = index * 0.2;
+        // Make the bouncing cycle clean and staggered
+        double progress = _controller.value - delay;
+        if (progress < 0.0) progress += 1.0;
+        if (progress > 1.0) progress -= 1.0;
+        
+        final double bounce = (progress < 0.5)
+            ? (progress * 2.0)
+            : (1.0 - (progress - 0.5) * 2.0);
+        final double offset = -bounce * 6.0;
+
+        return Transform.translate(
+          offset: Offset(0, offset),
+          child: Container(
+            width: 6,
+            height: 6,
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: RiriTheme.textSecondary,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          'Riri is typing',
+          style: TextStyle(
+            color: RiriTheme.textSecondary,
+            fontSize: 12,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        const SizedBox(width: 6),
+        _buildDot(0),
+        _buildDot(1),
+        _buildDot(2),
       ],
     );
   }

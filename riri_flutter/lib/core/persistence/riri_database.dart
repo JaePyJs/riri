@@ -53,7 +53,7 @@ class Reminders extends Table {
 // Chat Messages Table
 class ChatMessages extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get text => this.text()();
+  TextColumn get messageText => text()();
   BoolColumn get isUser => boolean()();
   IntColumn get timestamp => integer().map(const DateTimeConverter())();
   TextColumn get stickerName => text().nullable()();
@@ -106,13 +106,13 @@ class RiriDatabase extends _$RiriDatabase {
   Future<List<Reminder>> getAllReminders() => select(reminders).get();
   Future<Reminder?> getReminderById(int id) => (select(reminders)..where((t) => t.id.equals(id))).getSingleOrNull();
   Stream<List<Reminder>> watchAllReminders() => select(reminders).watch();
-  Future<int> insertReminder(RemindersCompanion companion) => insert(reminders).insert(companion);
+  Future<int> insertReminder(RemindersCompanion companion) => into(reminders).insert(companion);
   Future<bool> updateReminder(Reminder reminder) => update(reminders).replace(reminder);
   Future<int> deleteReminder(int id) => (delete(reminders)..where((t) => t.id.equals(id))).go();
 
   // ChatMessages DAOs/Queries
   Future<List<ChatMessage>> getChatHistory() => select(chatMessages).get();
-  Future<int> insertChatMessage(ChatMessagesCompanion companion) => insert(chatMessages).insert(companion);
+  Future<int> insertChatMessage(ChatMessagesCompanion companion) => into(chatMessages).insert(companion);
   Future<void> clearChatHistory() => delete(chatMessages).go();
 
   // UserStats DAOs/Queries

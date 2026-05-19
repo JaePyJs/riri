@@ -12,47 +12,32 @@ class OnboardingScreen extends ConsumerStatefulWidget {
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _nameController = TextEditingController();
-  bool _isDownloading = false;
-  double _downloadProgress = 0.0;
-  bool _isDownloaded = false;
-  Timer? _downloadTimer;
+  late final AnimationController _mascotController;
+  late final Animation<Offset> _mascotAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _mascotController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    _mascotAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0.0, 0.05),
+    ).animate(CurvedAnimation(
+      parent: _mascotController,
+      curve: Curves.easeInOut,
+    ));
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _downloadTimer?.cancel();
+    _mascotController.dispose();
     super.dispose();
-  }
-
-  void _startLlmDownload() {
-    setState(() {
-      _isDownloading = true;
-      _downloadProgress = 0.0;
-    });
-
-    _downloadTimer = Timer.periodic(const Duration(milliseconds: 150), (timer) {
-      setState(() {
-        _downloadProgress += 0.05;
-        if (_downloadProgress >= 1.0) {
-          _downloadProgress = 1.0;
-          _isDownloading = false;
-          _isDownloaded = true;
-          _downloadTimer?.cancel();
-          _saveNameAndProceed();
-        }
-      });
-    });
-  }
-
-  void _skipLlmDownload() {
-    _downloadTimer?.cancel();
-    setState(() {
-      _isDownloading = false;
-      _isDownloaded = false;
-    });
-    _saveNameAndProceed();
   }
 
   Future<void> _saveNameAndProceed() async {
@@ -64,9 +49,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       // 2. Persist onboarding configs
       final prefs = SharedPreferencesAsync();
       await prefs.setBool('riri_onboarding_completed', true);
-      await prefs.setBool('riri_use_full_llm', _isDownloaded);
 
-      // 3. Mark completed to trigger reactive MaterialApp router update instantly
+      // 3. Mark completed to trigger reactive router update instantly
       ref.read(onboardingCompletedProvider.notifier).complete();
     }
   }
@@ -121,21 +105,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             color: RiriTheme.primaryPurple.withOpacity(0.15),
                           ),
                         ),
-                        Image.asset(
-                          'assets/stickers/Welcoming.png',
-                          width: 180,
-                          height: 180,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 120,
-                              height: 120,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: RiriTheme.brandGradient,
-                              ),
-                              child: const Icon(Icons.star, size: 60, color: Colors.white),
-                            );
-                          },
+                        SlideTransition(
+                          position: _mascotAnimation,
+                          child: Image.asset(
+                            'assets/stickers/Welcoming.png',
+                            width: 180,
+                            height: 180,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 120,
+                                height: 120,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: RiriTheme.brandGradient,
+                                ),
+                                child: const Icon(Icons.star, size: 60, color: Colors.white),
+                              );
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -197,78 +184,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    if (_isDownloading) ...[
-                      Column(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: LinearProgressIndicator(
-                              value: _downloadProgress,
-                              minHeight: 10,
-                              backgroundColor: RiriTheme.cardBg,
-                              valueColor: const AlwaysStoppedAnimation<Color>(RiriTheme.primaryPurple),
-                            ),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: isNameEmpty ? null : _saveNameAndProceed,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: RiriTheme.primaryPurple,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: RiriTheme.cardBg.withOpacity(0.5),
+                          disabledForegroundColor: RiriTheme.textMuted,
+                          elevation: 8,
+                          shadowColor: RiriTheme.primaryPurple.withOpacity(0.3),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(28),
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Downloading Riri\'s brain... ${(_downloadProgress * 100).toInt()}%',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: RiriTheme.textSecondary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          TextButton(
-                            onPressed: _skipLlmDownload,
-                            child: const Text(
-                              'Skip download, use fallback AI ✌️',
-                              style: TextStyle(color: RiriTheme.textMuted, fontSize: 14),
-                            ),
-                          ),
-                        ],
-                      )
-                    ] else ...[
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: isNameEmpty ? null : _saveNameAndProceed,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: RiriTheme.primaryPurple,
-                            foregroundColor: Colors.white,
-                            disabledBackgroundColor: RiriTheme.cardBg.withOpacity(0.5),
-                            disabledForegroundColor: RiriTheme.textMuted,
-                            elevation: 8,
-                            shadowColor: RiriTheme.primaryPurple.withOpacity(0.3),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(28),
-                            ),
-                          ),
-                          child: Text(
-                            _isDownloaded ? 'Let\'s Go! 🚀' : 'Start with Lite AI ✨',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        ),
+                        child: const Text(
+                          'Mag-start na tayo! 🚀',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      if (!_isDownloaded) ...[
-                        const SizedBox(height: 16),
-                        TextButton(
-                          onPressed: isNameEmpty ? null : _startLlmDownload,
-                          child: const Text(
-                            'Or download Full LLM (Recommended) 🧠',
-                            style: TextStyle(
-                              color: RiriTheme.textSecondary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ]
-                    ],
+                    ),
                   ],
                 ),
               ),

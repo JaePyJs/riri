@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class RiriTheme {
   // Brand Color Palettes (Rich HSL tailored dark theme)
@@ -46,58 +45,58 @@ class RiriTheme {
         surface: cardBg,
         error: dangerRed,
       ),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: cardBg,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        iconTheme: const IconThemeData(color: offWhite),
-        titleTextStyle: GoogleFonts.outfit(
+        iconTheme: IconThemeData(color: offWhite),
+        titleTextStyle: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: offWhite,
         ),
       ),
-      textTheme: TextTheme(
-        displayLarge: GoogleFonts.outfit(
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.w800,
           color: offWhite,
           letterSpacing: -0.5,
         ),
-        displayMedium: GoogleFonts.outfit(
+        displayMedium: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.w700,
           color: offWhite,
           letterSpacing: -0.2,
         ),
-        titleLarge: GoogleFonts.outfit(
+        titleLarge: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: offWhite,
         ),
-        titleMedium: GoogleFonts.inter(
+        titleMedium: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: offWhite,
         ),
-        bodyLarge: GoogleFonts.inter(
+        bodyLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w400,
           color: offWhite,
         ),
-        bodyMedium: GoogleFonts.inter(
+        bodyMedium: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: textSecondary,
         ),
-        labelSmall: GoogleFonts.inter(
+        labelSmall: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w500,
           color: textMuted,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardBg,
         elevation: 0,
         shape: RoundedRectangleBorder(

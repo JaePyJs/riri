@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/ai/ai_models.dart';
-import '../../core/persistence/riri_repository.dart';
 import '../../core/persistence/riri_providers.dart';
 import '../../core/notifications/personality_copy.dart';
 import '../../theme/riri_theme.dart';

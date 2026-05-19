@@ -1,5 +1,3 @@
-import '../persistence/riri_repository.dart';
-import '../persistence/riri_database.dart';
 import '../notifications/personality_copy.dart';
 import '../notifications/personas.dart';
 import 'ai_models.dart';
@@ -30,7 +28,6 @@ class ChatResponseEngine {
     required PersonalityMode personalityMode,
   }) {
     final lower = userInput.toLowerCase();
-    final persona = PersonaConfig.get(personalityMode);
 
     // 1. Check for task creation intents dynamically via keyword parsing or classifier
     if (lower.contains('remind') || 

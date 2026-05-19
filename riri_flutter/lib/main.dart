@@ -3,14 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'theme/riri_theme.dart';
 import 'core/persistence/riri_database.dart';
-import 'core/persistence/riri_repository.dart';
 import 'core/persistence/riri_providers.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/chat/chat_screen.dart';
 import 'features/settings/settings_screen.dart';
-import 'features/reminders/add_reminder_sheet.dart';
-import 'core/ai/ai_models.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,7 +60,7 @@ class RiriAppShell extends ConsumerWidget {
     final currentTabIndex = ref.watch(tabIndexProvider);
 
     return Scaffold(
-      body: IndexedStack(
+      body: AnimatedIndexedStack(
         index: currentTabIndex,
         children: const [
           DashboardScreen(),
@@ -120,5 +117,64 @@ class SettingsTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return const SettingsScreen();
+  }
+}
+
+class AnimatedIndexedStack extends StatefulWidget {
+  final int index;
+  final List<Widget> children;
+
+  const AnimatedIndexedStack({
+    Key? key,
+    required this.index,
+    required this.children,
+  }) : super(key: key);
+
+  @override
+  State<AnimatedIndexedStack> createState() => _AnimatedIndexedStackState();
+}
+
+class _AnimatedIndexedStackState extends State<AnimatedIndexedStack> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant AnimatedIndexedStack oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.index != widget.index) {
+      _controller.reset();
+      _controller.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _controller,
+      child: ScaleTransition(
+        scale: Tween<double>(begin: 0.98, end: 1.0).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+        ),
+        child: IndexedStack(
+          index: widget.index,
+          children: widget.children,
+        ),
+      ),
+    );
   }
 }
