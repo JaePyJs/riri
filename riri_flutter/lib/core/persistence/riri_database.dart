@@ -3,25 +3,47 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import '../ai/ai_models.dart';
+import '../notifications/personality_copy.dart';
 
 part 'riri_database.g.dart';
+
+/// Bidirectional type converter auto-mapping Dart DateTime instances ↔ SQLite Int epoch milliseconds.
+class DateTimeConverter extends TypeConverter<DateTime, int> {
+  const DateTimeConverter();
+
+  @override
+  DateTime fromSql(int fromDb) {
+    return DateTime.fromMillisecondsSinceEpoch(fromDb);
+  }
+
+  @override
+  int toSql(DateTime value) {
+    return value.millisecondsSinceEpoch;
+  }
+}
 
 // Reminders Table
 class Reminders extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text()();
   TextColumn get description => text().nullable()();
-  TextColumn get category => text()(); // ReminderCategory string
-  IntColumn get dueDateTime => integer()();
+  
+  // Safe enum mappings at database layer
+  TextColumn get category => textEnum<ReminderCategory>()();
+  TextColumn get personalityMode => textEnum<PersonalityMode>().withDefault(const Constant('bestie'))();
+  
+  // Custom DateTime converters mapping SQL integers natively
+  IntColumn get dueDateTime => integer().map(const DateTimeConverter())();
+  IntColumn get createdAt => integer().map(const DateTimeConverter())();
+  IntColumn get completedAt => integer().nullable().map(const DateTimeConverter())();
+  
   BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
   BoolColumn get isRecurring => boolean().withDefault(const Constant(false))();
   TextColumn get recurringInterval => text().nullable()();
   TextColumn get recurringRuleJson => text().nullable()();
   IntColumn get snoozeCount => integer().withDefault(const Constant(0))();
   IntColumn get rescheduleCount => integer().withDefault(const Constant(0))();
-  IntColumn get createdAt => integer()();
-  IntColumn get completedAt => integer().nullable()();
-  TextColumn get personalityMode => text().withDefault(const Constant('bestie'))();
   TextColumn get rawInput => text().nullable()();
   TextColumn get taglishNormalized => text().nullable()();
   TextColumn get taglishTokensJson => text().nullable()();
@@ -33,14 +55,14 @@ class ChatMessages extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get text => this.text()();
   BoolColumn get isUser => boolean()();
-  IntColumn get timestamp => integer()();
+  IntColumn get timestamp => integer().map(const DateTimeConverter())();
   TextColumn get stickerName => text().nullable()();
 }
 
 // User Stats Table
 class UserStats extends Table {
-  IntColumn get weekStartDate => integer()();
-  IntColumn get weekEndDate => integer()();
+  IntColumn get weekStartDate => integer().map(const DateTimeConverter())();
+  IntColumn get weekEndDate => integer().map(const DateTimeConverter())();
   IntColumn get totalSet => integer()();
   IntColumn get totalCompleted => integer()();
   IntColumn get totalIgnored => integer()();
@@ -49,8 +71,8 @@ class UserStats extends Table {
   IntColumn get longestStreak => integer()();
   TextColumn get personalityTitle => text()();
   RealColumn get procrastinationScore => real()();
-  IntColumn get lastCompletedDate => integer().withDefault(const Constant(0))();
-  IntColumn get generatedAt => integer()();
+  IntColumn get lastCompletedDate => integer().withDefault(const Constant(0)).map(const DateTimeConverter())();
+  IntColumn get generatedAt => integer().map(const DateTimeConverter())();
 
   @override
   Set<Column> get primaryKey => {weekStartDate};

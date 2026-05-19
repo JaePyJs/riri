@@ -146,23 +146,23 @@ class RiriRepository {
       await _db!.insertReminder(RemindersCompanion.insert(
         title: 'Submit thesis draft kay Prof 📝',
         description: const Value('Kailangan na talaga to kundi lagot na.'),
-        category: ReminderCategory.school.toDbValue(),
-        dueDateTime: now.add(const Duration(hours: 3)).millisecondsSinceEpoch,
-        createdAt: now.millisecondsSinceEpoch,
+        category: ReminderCategory.school,
+        dueDateTime: now.add(const Duration(hours: 3)),
+        createdAt: now,
       ));
       await _db!.insertReminder(RemindersCompanion.insert(
         title: 'Bili ng kape at grocery sa palengke 🛒',
         description: const Value('Kape is life bestie, baka antukin sa review.'),
-        category: ReminderCategory.errands.toDbValue(),
-        dueDateTime: now.add(const Duration(days: 1)).millisecondsSinceEpoch,
-        createdAt: now.millisecondsSinceEpoch,
+        category: ReminderCategory.errands,
+        dueDateTime: now.add(const Duration(days: 1)),
+        createdAt: now,
       ));
       await _db!.insertReminder(RemindersCompanion.insert(
         title: 'Uminom ng vitamins / mag gym 💪',
         description: const Value('Huwag puro puyat bes, alagaan din ang katawan.'),
-        category: ReminderCategory.health.toDbValue(),
-        dueDateTime: now.add(const Duration(days: 2)).millisecondsSinceEpoch,
-        createdAt: now.millisecondsSinceEpoch,
+        category: ReminderCategory.health,
+        dueDateTime: now.add(const Duration(days: 2)),
+        createdAt: now,
       ));
     }
   }
@@ -172,15 +172,13 @@ class RiriRepository {
       id: r.id,
       title: r.title,
       description: r.description,
-      category: ReminderCategory.fromDbValue(r.category),
-      dueDateTime: DateTime.fromMillisecondsSinceEpoch(r.dueDateTime),
+      category: r.category,
+      dueDateTime: r.dueDateTime,
       isCompleted: r.isCompleted,
       snoozeCount: r.snoozeCount,
       rescheduleCount: r.rescheduleCount,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(r.createdAt),
-      completedAt: r.completedAt != null
-          ? DateTime.fromMillisecondsSinceEpoch(r.completedAt!)
-          : null,
+      createdAt: r.createdAt,
+      completedAt: r.completedAt,
     );
   }
 
@@ -189,7 +187,7 @@ class RiriRepository {
       id: m.id,
       text: m.text,
       isUser: m.isUser,
-      timestamp: DateTime.fromMillisecondsSinceEpoch(m.timestamp),
+      timestamp: m.timestamp,
       stickerName: m.stickerName,
     );
   }
@@ -208,9 +206,9 @@ class RiriRepository {
       await _db!.insertReminder(RemindersCompanion.insert(
         title: title,
         description: Value(description),
-        category: category.toDbValue(),
-        dueDateTime: dueDateTime.millisecondsSinceEpoch,
-        createdAt: DateTime.now().millisecondsSinceEpoch,
+        category: category,
+        dueDateTime: dueDateTime,
+        createdAt: DateTime.now(),
       ));
     } else {
       final nextId = _inMemoryReminders.isEmpty
@@ -238,7 +236,7 @@ class RiriRepository {
       final item = existing.firstWhere((r) => r.id == id);
       final updated = item.copyWith(
         isCompleted: !item.isCompleted,
-        completedAt: Value(!item.isCompleted ? DateTime.now().millisecondsSinceEpoch : null),
+        completedAt: Value(!item.isCompleted ? DateTime.now() : null),
       );
       await _db!.updateReminder(updated);
     } else {
@@ -294,7 +292,7 @@ class RiriRepository {
       await _db!.insertChatMessage(ChatMessagesCompanion.insert(
         text: text,
         isUser: isUser,
-        timestamp: DateTime.now().millisecondsSinceEpoch,
+        timestamp: DateTime.now(),
         stickerName: Value(stickerName),
       ));
     } else {

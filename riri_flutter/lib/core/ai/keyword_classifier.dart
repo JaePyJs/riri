@@ -29,61 +29,55 @@ class TaglishKeywordClassifier {
   ParsedReminder parse(String input) {
     final lowerInput = input.toLowerCase();
     
-    ReminderCategory category = ReminderCategory.personal;
-    double confidence = 0.5;
+    // Score all categories dynamically using key keyword lists
+    final Map<ReminderCategory, double> scores = {
+      ReminderCategory.school: _scoreCategory(lowerInput, [
+        'submit', 'exam', 'quiz', 'homework', 'project', 'thesis',
+        'recitation', 'clearance', 'enrollment', 'aral', 'assignment',
+        'school', 'klase', 'class', 'lecturer', 'professor'
+      ]),
+      ReminderCategory.work: _scoreCategory(lowerInput, [
+        'meeting', 'deadline', 'report', 'client', 'email', 'presentation',
+        'overtime', 'trabaho', 'office', 'work', 'sweldo', 'task', 'slack'
+      ]),
+      ReminderCategory.health: _scoreCategory(lowerInput, [
+        'check-up', 'gamot', 'inom ng gamot', 'doctor', 'hospital',
+        'vitamins', 'exercise', 'diet', 'gym', 'health', 'fitness', 'tulog'
+      ]),
+      ReminderCategory.social: _scoreCategory(lowerInput, [
+        'kaarawan', 'birthday', 'inuman', 'tambay', 'date', 'anniversary',
+        'reunion', 'party', 'hangout', 'kita', 'gala', 'shot', 'coffee'
+      ]),
+      ReminderCategory.errands: _scoreCategory(lowerInput, [
+        'bayad', 'bills', 'grocery', 'palengke', 'padala', 'load',
+        'pickup', 'delivery', 'bili', 'utang', 'shopee', 'lazada', 'milo'
+      ]),
+      ReminderCategory.bahalaNa: _scoreCategory(lowerInput, [
+        'bahala na', 'ewan', 'di ko alam', 'whatever', 'depende'
+      ]),
+    };
 
-    // SCHOOL
-    if (_containsAny(lowerInput, [
-      'submit', 'exam', 'quiz', 'homework', 'project', 'thesis',
-      'recitation', 'clearance', 'enrollment', 'aral', 'assignment',
-      'school', 'klase', 'class', 'lecturer', 'professor'
-    ])) {
-      category = ReminderCategory.school;
-      confidence = 0.9;
-    }
-    // WORK
-    else if (_containsAny(lowerInput, [
-      'meeting', 'deadline', 'report', 'client', 'email', 'presentation',
-      'overtime', 'trabaho', 'office', 'work', 'sweldo', 'task', 'slack'
-    ])) {
-      category = ReminderCategory.work;
-      confidence = 0.9;
-    }
-    // HEALTH
-    else if (_containsAny(lowerInput, [
-      'check-up', 'gamot', 'inom ng gamot', 'doctor', 'hospital',
-      'vitamins', 'exercise', 'diet', 'gym', 'health', 'fitness', 'tulog'
-    ])) {
-      category = ReminderCategory.health;
-      confidence = 0.85;
-    }
-    // SOCIAL
-    else if (_containsAny(lowerInput, [
-      'kaarawan', 'birthday', 'inuman', 'tambay', 'date', 'anniversary',
-      'reunion', 'party', 'hangout', 'kita', 'gala', 'shot', 'coffee'
-    ])) {
-      category = ReminderCategory.social;
-      confidence = 0.85;
-    }
-    // ERRANDS
-    else if (_containsAny(lowerInput, [
-      'bayad', 'bills', 'grocery', 'palengke', 'padala', 'load',
-      'pickup', 'delivery', 'bili', 'utang', 'shopee', 'lazada', 'milo'
-    ])) {
-      category = ReminderCategory.errands;
-      confidence = 0.8;
-    }
-    // BAHALA NA (Special Riri Category)
-    else if (_containsAny(lowerInput, [
-      'bahala na', 'ewan', 'di ko alam', 'whatever', 'depende'
-    ])) {
-      category = ReminderCategory.bahalaNa;
-      confidence = 0.95;
+    // Detect highest matching score
+    ReminderCategory bestCategory = ReminderCategory.personal;
+    double highestScore = 0.0;
+
+    scores.forEach((category, score) {
+      if (score > highestScore) {
+        highestScore = score;
+        bestCategory = category;
+      }
+    });
+
+    // Compute dynamic, proportional confidence score based on match specificity density
+    double confidence = 0.5;
+    if (highestScore > 0.0) {
+      // Scale dynamic confidence score between 0.6 and 0.99
+      confidence = (0.6 + (highestScore * 0.39)).clamp(0.6, 0.99);
     }
 
     return ParsedReminder(
       title: input.trim(),
-      category: category,
+      category: bestCategory,
       confidence: confidence,
       extractedAt: DateTime.now(),
     );
@@ -94,7 +88,15 @@ class TaglishKeywordClassifier {
     return parse(input).category;
   }
 
-  bool _containsAny(String input, List<String> keywords) {
-    return keywords.any((k) => input.contains(k));
+  /// Calculates the weight density of matching terms relative to keyword library size.
+  double _scoreCategory(String input, List<String> keywords) {
+    final matchedKeywords = keywords.where((k) => input.contains(k)).toList();
+    if (matchedKeywords.isEmpty) return 0.0;
+    
+    // Density calculation: matches relative to vocabulary length
+    final double density = matchedKeywords.length / keywords.length;
+    
+    // Weight matches: single matching word gives baseline 0.6, additional matches push it up
+    return (0.4 + (density * 0.6)).clamp(0.0, 1.0);
   }
 }

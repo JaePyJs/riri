@@ -121,6 +121,7 @@ class PersonaConfig {
 
   /// Fetches a registered persona layout dynamically.
   static PersonaConfig get(PersonalityMode mode) {
+    assert(registry.containsKey(mode), 'PersonaConfig missing for mode: $mode');
     return registry[mode] ?? registry[PersonalityMode.bestie]!;
   }
 }

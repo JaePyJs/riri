@@ -1,144 +1,78 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'theme/riri_theme.dart';
 import 'core/persistence/riri_database.dart';
 import 'core/persistence/riri_repository.dart';
+import 'core/persistence/riri_providers.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/chat/chat_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/reminders/add_reminder_sheet.dart';
+import 'core/ai/ai_models.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Pre-load preferences using non-blocking SharedPreferencesAsync to determine starting route
+  // Pre-load preference state dynamically to override Provider state on boot
+  final database = RiriDatabase();
   final prefs = SharedPreferencesAsync();
   final onboardingCompleted = await prefs.getBool('riri_onboarding_completed') ?? false;
-  final username = await prefs.getString('riri_username') ?? 'Bestie';
 
-  final database = RiriDatabase();
-
-  runApp(RiriApp(
-    database: database,
-    onboardingCompleted: onboardingCompleted,
-    username: username,
-  ));
+  runApp(
+    ProviderScope(
+      overrides: [
+        databaseProvider.overrideWithValue(database),
+        onboardingCompletedProvider.overrideWith((ref) => onboardingCompleted),
+      ],
+      child: const RiriApp(),
+    ),
+  );
 }
 
-class RiriApp extends StatelessWidget {
-  final RiriDatabase database;
-  final bool onboardingCompleted;
-  final String username;
-
-  const RiriApp({
-    Key? key,
-    required this.database,
-    required this.onboardingCompleted,
-    required this.username,
-  }) : super(key: key);
+class RiriApp extends ConsumerWidget {
+  const RiriApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final onboardingCompleted = ref.watch(onboardingCompletedProvider);
+
     return MaterialApp(
       title: 'Riri',
       debugShowCheckedModeBanner: false,
       theme: RiriTheme.darkThemeData,
       home: onboardingCompleted
-          ? RiriAppShell(database: database, initialUsername: username)
-          : NavigationController(database: database, initialUsername: username),
+          ? const RiriAppShell()
+          : const NavigationController(),
     );
   }
 }
 
-class NavigationController extends StatefulWidget {
-  final RiriDatabase database;
-  final String initialUsername;
-  const NavigationController({Key? key, required this.database, required this.initialUsername}) : super(key: key);
+class NavigationController extends ConsumerWidget {
+  const NavigationController({Key? key}) : super(key: key);
 
   @override
-  _NavigationControllerState createState() => _NavigationControllerState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final repository = ref.watch(repositoryProvider);
 
-class _NavigationControllerState extends State<NavigationController> {
-  bool _completed = false;
-  String _username = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _username = widget.initialUsername;
-  }
-
-  void _onLetsGo() async {
-    final prefs = SharedPreferencesAsync();
-    final username = await prefs.getString('riri_username') ?? 'Bestie';
-    setState(() {
-      _username = username;
-      _completed = true;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_completed) {
-      return RiriAppShell(database: widget.database, initialUsername: _username);
+    void onLetsGo() async {
+      final prefs = SharedPreferencesAsync();
+      final username = await prefs.getString('riri_username') ?? 'Bestie';
+      
+      // Update Providers cleanly
+      ref.read(usernameProvider.notifier).setUsername(username);
+      ref.read(onboardingCompletedProvider.notifier).state = true;
     }
-    return OnboardingScreen(onLetsGoClick: _onLetsGo);
+
+    return OnboardingScreen(onLetsGoClick: onLetsGo);
   }
 }
 
-class RiriAppShell extends StatefulWidget {
-  final RiriDatabase database;
-  final String initialUsername;
+class RiriAppShell extends ConsumerWidget {
+  const RiriAppShell({Key? key}) : super(key: key);
 
-  const RiriAppShell({Key? key, required this.database, required this.initialUsername}) : super(key: key);
-
-  @override
-  _RiriAppShellState createState() => _RiriAppShellState();
-}
-
-class _RiriAppShellState extends State<RiriAppShell> {
-  late final RiriRepository _repository;
-  int _currentTabIndex = 0;
-  String _username = '';
-  List<RiriReminder> _remindersList = [];
-  StreamSubscription<List<RiriReminder>>? _remindersSubscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _repository = RiriRepository(database: widget.database);
-    _username = widget.initialUsername;
-    _remindersList = _repository.currentReminders;
-
-    // React to changes in database reminders
-    _remindersSubscription = _repository.remindersStream.listen((list) {
-      if (mounted) {
-        setState(() {
-          _remindersList = list;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _remindersSubscription?.cancel();
-    _repository.dispose();
-    super.dispose();
-  }
-
-  void _toggleReminderCompletion(int id) {
-    _repository.toggleReminderCompletion(id);
-  }
-
-  void _deleteReminder(int id) {
-    _repository.deleteReminder(id);
-  }
-
-  void _showAddReminderBottomSheet() {
+  void _showAddReminderBottomSheet(BuildContext context, RiriRepository repository) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -151,7 +85,7 @@ class _RiriAppShellState extends State<RiriAppShell> {
             required ReminderCategory category,
             required DateTime dueDateTime,
           }) {
-            _repository.addReminder(
+            repository.addReminder(
               title: title,
               description: description,
               category: category,
@@ -163,44 +97,42 @@ class _RiriAppShellState extends State<RiriAppShell> {
     );
   }
 
-  void _refreshSettings() async {
-    final prefs = SharedPreferencesAsync();
-    final username = await prefs.getString('riri_username') ?? 'Bestie';
-    if (mounted) {
-      setState(() {
-        _username = username;
-      });
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final repository = ref.watch(repositoryProvider);
+    final remindersAsync = ref.watch(remindersStreamProvider);
+    
+    // Provide dynamic async values with standard repositories fallbacks to prevent initial page flashing
+    final remindersList = remindersAsync.value ?? repository.currentReminders;
+    final username = ref.watch(usernameProvider);
+    final currentTabIndex = ref.watch(tabIndexProvider);
+
     final List<Widget> tabs = [
       DashboardScreen(
-        username: _username,
-        reminders: _remindersList,
-        onToggleCompletion: _toggleReminderCompletion,
-        onDeleteReminder: _deleteReminder,
-        onAddReminderTap: _showAddReminderBottomSheet,
+        username: username,
+        reminders: remindersList,
+        onToggleCompletion: (id) => repository.toggleReminderCompletion(id),
+        onDeleteReminder: (id) => repository.deleteReminder(id),
+        onAddReminderTap: () => _showAddReminderBottomSheet(context, repository),
       ),
-      ChatScreen(repository: _repository),
+      ChatScreen(repository: repository),
       SettingsScreen(
-        repository: _repository,
-        onSettingsUpdated: _refreshSettings,
+        repository: repository,
+        onSettingsUpdated: () {
+          ref.read(usernameProvider.notifier).loadUsername();
+        },
       ),
     ];
 
     return Scaffold(
       body: IndexedStack(
-        index: _currentTabIndex,
+        index: currentTabIndex,
         children: tabs,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentTabIndex,
+        currentIndex: currentTabIndex,
         onTap: (index) {
-          setState(() {
-            _currentTabIndex = index;
-          });
+          ref.read(tabIndexProvider.notifier).state = index;
         },
         backgroundColor: RiriTheme.cardBg,
         selectedItemColor: RiriTheme.secondaryAmber,
