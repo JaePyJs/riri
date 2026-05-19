@@ -233,7 +233,6 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       backgroundColor: RiriTheme.darkBg,
       appBar: AppBar(
-        backgroundColor: RiriTheme.cardBg,
         title: Row(
           children: [
             CircleAvatar(
@@ -243,13 +242,12 @@ class _ChatScreenState extends State<ChatScreen> {
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   'Riri',
-                  style: TextStyle(
-                    color: Colors.white,
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
                   ),
                 ),
                 Text(
@@ -293,81 +291,104 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: ListView.separated(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              itemCount: _messages.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final msg = _messages[index];
-                return _ChatBubble(message: msg);
-              },
+          // Background elegant top glow gradient
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.3,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [RiriTheme.primaryPurple.withOpacity(0.12), Colors.transparent],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
             ),
           ),
-
-          if (_isTyping)
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0, bottom: 8.0),
-              child: Row(
-                children: [
-                  Text(
-                    'Riri is typing...',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: RiriTheme.textSecondary,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
+          Column(
+            children: [
+              Expanded(
+                child: ListView.separated(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  itemCount: _messages.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final msg = _messages[index];
+                    return _ChatBubble(message: msg);
+                  },
+                ),
               ),
-            ),
 
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              color: RiriTheme.cardBg,
-              border: Border(
-                top: BorderSide(color: Color(0xFF2F2F4A), width: 1.0),
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: RiriTheme.darkBg,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFF2F2F4A), width: 1.0),
-                    ),
-                    child: TextField(
-                      controller: _messageController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(
-                        hintText: 'Chika ka lang dito bestie...',
-                        hintStyle: TextStyle(color: RiriTheme.textMuted, fontSize: 14),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              if (_isTyping)
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0, bottom: 8.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Riri is typing...',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: RiriTheme.textSecondary,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
-                      onSubmitted: (_) => _sendMessage(),
-                    ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: _sendMessage,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RiriTheme.brandGradient,
-                    ),
-                    child: const Icon(Icons.send, color: Colors.white, size: 20),
+
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: const BoxDecoration(
+                  color: RiriTheme.cardBg,
+                  border: Border(
+                    top: BorderSide(color: Color(0xFF2F2F4A), width: 1.0),
                   ),
                 ),
-              ],
-            ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: RiriTheme.darkBg,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFF2F2F4A), width: 1.0),
+                        ),
+                        child: TextField(
+                          controller: _messageController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(
+                            hintText: 'Chika ka lang dito bestie...',
+                            hintStyle: TextStyle(color: RiriTheme.textMuted, fontSize: 14),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            filled: false,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                          ),
+                          onSubmitted: (_) => _sendMessage(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: _sendMessage,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RiriTheme.brandGradient,
+                        ),
+                        child: const Icon(Icons.send, color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

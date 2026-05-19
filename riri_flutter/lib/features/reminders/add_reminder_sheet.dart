@@ -93,61 +93,41 @@ class _AddReminderSheetState extends State<AddReminderSheet> {
             ),
             const SizedBox(height: 24),
 
-            const Text(
+            Text(
               'Add New Reminder 🗓️',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: theme.textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
 
-            // Title input
+            // Title input - utilizes global InputDecorationTheme
             TextField(
               controller: _titleController,
               onChanged: (val) => setState(() {}),
               style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Ano ang gagawin natin bestie? (Title)',
-                hintStyle: const TextStyle(color: RiriTheme.textMuted),
-                filled: true,
-                fillColor: RiriTheme.darkBg,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.all(16),
+                prefixIcon: Icon(Icons.title, color: RiriTheme.textMuted),
               ),
             ),
             const SizedBox(height: 12),
 
-            // Description input
+            // Description input - utilizes global InputDecorationTheme
             TextField(
               controller: _descController,
               style: const TextStyle(color: Colors.white),
               maxLines: 2,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Any extra chika or details? (Description - Optional)',
-                hintStyle: const TextStyle(color: RiriTheme.textMuted),
-                filled: true,
-                fillColor: RiriTheme.darkBg,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.all(16),
+                prefixIcon: Icon(Icons.description, color: RiriTheme.textMuted),
               ),
             ),
             const SizedBox(height: 20),
 
             // Category Picker Title
-            const Text(
+            Text(
               'Select Category',
-              style: TextStyle(
-                fontSize: 14,
+              style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: RiriTheme.textSecondary,
               ),
             ),
             const SizedBox(height: 8),
@@ -203,12 +183,10 @@ class _AddReminderSheetState extends State<AddReminderSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Due Date & Time',
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: RiriTheme.textSecondary,
                   ),
                 ),
                 ElevatedButton.icon(

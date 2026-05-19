@@ -59,136 +59,160 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: RiriTheme.darkBg,
       appBar: AppBar(
-        backgroundColor: RiriTheme.cardBg,
-        title: const Text(
-          'App Settings ⚙️',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
+        title: const Text('App Settings ⚙️'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Section 1: Riri Personality Selector
-            const Text(
-              'RIRI PERSONALITY',
-              style: TextStyle(
-                color: RiriTheme.textSecondary,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
+      body: Stack(
+        children: [
+          // Background top glow gradient for visual consistency
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.35,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [RiriTheme.primaryPurple.withOpacity(0.15), Colors.transparent],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
-            const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: RiriTheme.cardBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
-              ),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: PersonalityMode.values.length,
-                separatorBuilder: (context, index) =>
-                    const Divider(color: Color(0xFF2F2F4A), height: 1),
-                itemBuilder: (context, index) {
-                  final mode = PersonalityMode.values[index];
-                  final isSelected = _currentMode == mode;
-
-                  return InkWell(
-                    onTap: () => _updatePersonality(mode),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              mode.displayLabel,
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : RiriTheme.textSecondary,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                          if (isSelected)
-                            const Icon(Icons.check_circle, color: RiriTheme.secondaryAmber)
-                          else
-                            const Icon(Icons.circle_outlined, color: RiriTheme.textMuted),
-                        ],
+          ),
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Section 1: Riri Personality Selector
+                Text(
+                  'RIRI PERSONALITY',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                    color: RiriTheme.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: RiriTheme.cardBg,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 32),
+                    ],
+                  ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: PersonalityMode.values.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(color: Color(0xFF2F2F4A), height: 1),
+                    itemBuilder: (context, index) {
+                      final mode = PersonalityMode.values[index];
+                      final isSelected = _currentMode == mode;
 
-            // Section 2: Notifications Toggles
-            const Text(
-              'PREFERENCES & SYSTEM',
-              style: TextStyle(
-                color: RiriTheme.textSecondary,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: RiriTheme.cardBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
-              ),
-              child: Column(
-                children: [
-                  SwitchListTile(
-                    title: const Text(
-                      'Personality Notifications 🔔',
-                      style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: const Text(
-                      'Allow Riri to send witty notifications and nagging reminders in Taglish.',
-                      style: TextStyle(color: RiriTheme.textSecondary, fontSize: 12),
-                    ),
-                    value: _notificationsEnabled,
-                    activeColor: RiriTheme.secondaryAmber,
-                    onChanged: _updateNotifications,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      return InkWell(
+                        onTap: () => _updatePersonality(mode),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  mode.displayLabel,
+                                  style: TextStyle(
+                                    color: isSelected ? Colors.white : RiriTheme.textSecondary,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                              if (isSelected)
+                                const Icon(Icons.check_circle, color: RiriTheme.secondaryAmber)
+                              else
+                                const Icon(Icons.circle_outlined, color: RiriTheme.textMuted),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 48),
+                ),
+                const SizedBox(height: 32),
 
-            // Subtle version log at bottom
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    'Riri cross-platform v1.0.0',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: RiriTheme.textMuted,
-                    ),
+                // Section 2: Notifications Toggles
+                Text(
+                  'PREFERENCES & SYSTEM',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                    color: RiriTheme.textSecondary,
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Made with 💜 in the Philippines',
-                    style: TextStyle(color: RiriTheme.textMuted, fontSize: 10),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: RiriTheme.cardBg,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                  child: Column(
+                    children: [
+                      SwitchListTile(
+                        title: const Text(
+                          'Personality Notifications 🔔',
+                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          'Allow Riri to send witty notifications and nagging reminders in Taglish.',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                        value: _notificationsEnabled,
+                        activeColor: RiriTheme.secondaryAmber,
+                        onChanged: _updateNotifications,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 48),
+
+                // Subtle version log at bottom
+                Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Riri cross-platform v1.0.0',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: RiriTheme.textMuted,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Made with 💜 in the Philippines',
+                        style: TextStyle(color: RiriTheme.textMuted, fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

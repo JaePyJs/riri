@@ -46,9 +46,6 @@ class DashboardScreen extends StatelessWidget {
       backgroundColor: RiriTheme.darkBg,
       floatingActionButton: FloatingActionButton(
         onPressed: onAddReminderTap,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        highlightElevation: 0,
         child: Container(
           width: 56,
           height: 56,
@@ -59,92 +56,101 @@ class DashboardScreen extends StatelessWidget {
           child: const Icon(Icons.add, color: Colors.white, size: 28),
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
         children: [
-          // Elegant Header Area
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: RiriTheme.cardBg,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+          // Background elegant top glow gradient
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.35,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [RiriTheme.primaryPurple.withOpacity(0.2), Colors.transparent],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
-              ],
+              ),
             ),
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
+          ),
+          SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 12),
-                Text(
-                  'Hi, $username! 👋',
-                  style: theme.textTheme.displayMedium,
-                ),
-                const SizedBox(height: 2),
-                const Text(
-                  'G na tayo today! ✨',
-                  style: TextStyle(
-                    color: RiriTheme.secondaryAmber,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Riri Dynamic Status Nudge Card
-                Container(
-                  decoration: BoxDecoration(
-                    color: RiriTheme.darkBg,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
+                // Elegant Header Area
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Image.asset(
-                        RiriAssetMapper.getAssetPath(charState),
-                        width: 68,
-                        height: 68,
-                        errorBuilder: (context, error, stackTrace) {
-                          // Icon fallback
-                          return Container(
-                            width: 60,
-                            height: 60,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: RiriTheme.brandGradient,
-                            ),
-                            child: const Icon(Icons.psychology, size: 32, color: Colors.white),
-                          );
-                        },
+                      Text(
+                        'Hi, $username! 👋',
+                        style: theme.textTheme.displayMedium,
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              RiriAssetMapper.getGenZCopy(charState),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'G na tayo today! ✨',
+                        style: TextStyle(
+                          color: RiriTheme.secondaryAmber,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Riri Dynamic Status Nudge Card
+                      Container(
+                        decoration: BoxDecoration(
+                          color: RiriTheme.cardBg,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'You have ${activeReminders.length} tasks left.',
-                              style: const TextStyle(
-                                color: RiriTheme.textSecondary,
-                                fontSize: 12,
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Image.asset(
+                              RiriAssetMapper.getAssetPath(charState),
+                              width: 68,
+                              height: 68,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: RiriTheme.brandGradient,
+                                  ),
+                                  child: const Icon(Icons.psychology, size: 32, color: Colors.white),
+                                );
+                              },
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    RiriAssetMapper.getGenZCopy(charState),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'You have ${activeReminders.length} tasks left.',
+                                    style: theme.textTheme.bodyMedium,
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -153,68 +159,64 @@ class DashboardScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
 
-          // Main Tasks List Area
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Your Tasks',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                // Main Tasks List Area
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 12),
+                        Text(
+                          'Your Tasks',
+                          style: theme.textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 16),
+                        Expanded(
+                          child: reminders.isEmpty
+                              ? const Center(
+                                  child: Text(
+                                    'Clean as a whistle! 💅\nWala kang pending tasks.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: RiriTheme.textMuted,
+                                      fontSize: 16,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                )
+                              : ListView.separated(
+                                  itemCount: reminders.length,
+                                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                                  itemBuilder: (context, index) {
+                                    final reminder = reminders[index];
+                                    return Dismissible(
+                                      key: Key('reminder_${reminder.id}'),
+                                      direction: DismissDirection.endToStart,
+                                      background: Container(
+                                        alignment: Alignment.centerRight,
+                                        padding: const EdgeInsets.only(right: 20),
+                                        decoration: BoxDecoration(
+                                          color: Colors.redAccent.withOpacity(0.8),
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        child: const Icon(Icons.delete, color: Colors.white),
+                                      ),
+                                      onDismissed: (direction) => onDeleteReminder(reminder.id),
+                                      child: _ReminderCard(
+                                        reminder: reminder,
+                                        onToggle: () => onToggleCompletion(reminder.id),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: reminders.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'Clean as a whistle! 💅\nWala kang pending tasks.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: RiriTheme.textMuted,
-                                fontSize: 16,
-                                height: 1.4,
-                              ),
-                            ),
-                          )
-                        : ListView.separated(
-                            itemCount: reminders.length,
-                            separatorBuilder: (context, index) => const SizedBox(height: 12),
-                            itemBuilder: (context, index) {
-                              final reminder = reminders[index];
-                              return Dismissible(
-                                key: Key('reminder_${reminder.id}'),
-                                direction: DismissDirection.endToStart,
-                                background: Container(
-                                  alignment: Alignment.centerRight,
-                                  padding: const EdgeInsets.only(right: 20),
-                                  decoration: BoxDecoration(
-                                    color: Colors.redAccent.withOpacity(0.8),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: const Icon(Icons.delete, color: Colors.white),
-                                ),
-                                onDismissed: (direction) => onDeleteReminder(reminder.id),
-                                child: _ReminderCard(
-                                  reminder: reminder,
-                                  onToggle: () => onToggleCompletion(reminder.id),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
@@ -235,6 +237,7 @@ class _ReminderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final now = DateTime.now();
     final isOverdue = !reminder.isCompleted && reminder.dueDateTime.isBefore(now);
 
@@ -247,7 +250,6 @@ class _ReminderCard extends StatelessWidget {
       statusColor = RiriTheme.primaryPurple;
     }
 
-    // Format relative/friendly due time
     final timeStr = '${reminder.dueDateTime.hour.toString().padLeft(2, '0')}:${reminder.dueDateTime.minute.toString().padLeft(2, '0')}';
     final dateStr = '${reminder.dueDateTime.month}/${reminder.dueDateTime.day}';
 
@@ -263,7 +265,6 @@ class _ReminderCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Left status vertical colored accent bar (matches compose LeftBorder)
               Container(
                 width: 5,
                 color: statusColor,
@@ -273,7 +274,6 @@ class _ReminderCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   child: Row(
                     children: [
-                      // Checkbox completion toggle button
                       GestureDetector(
                         onTap: onToggle,
                         child: Container(
@@ -297,8 +297,6 @@ class _ReminderCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 16),
-
-                      // Text Info
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,10 +316,7 @@ class _ReminderCard extends StatelessWidget {
                               const SizedBox(height: 2),
                               Text(
                                 reminder.description!,
-                                style: const TextStyle(
-                                  color: RiriTheme.textSecondary,
-                                  fontSize: 12,
-                                ),
+                                style: theme.textTheme.bodyMedium,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),

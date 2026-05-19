@@ -46,6 +46,18 @@ class RiriTheme {
         surface: cardBg,
         error: dangerRed,
       ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: cardBg,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        iconTheme: const IconThemeData(color: offWhite),
+        titleTextStyle: GoogleFonts.outfit(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: offWhite,
+        ),
+      ),
       textTheme: TextTheme(
         displayLarge: GoogleFonts.outfit(
           fontSize: 32,
@@ -92,6 +104,29 @@ class RiriTheme {
           borderRadius: BorderRadius.circular(20),
           side: const BorderSide(color: Color(0xFF2F2F4A), width: 1.5),
         ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: darkBg,
+        hintStyle: const TextStyle(color: textMuted, fontSize: 14),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF2F2F4A), width: 1.5),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF2F2F4A), width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: primaryPurple, width: 2.0),
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        highlightElevation: 0,
       ),
       buttonTheme: const ButtonThemeData(
         buttonColor: primaryPurple,
