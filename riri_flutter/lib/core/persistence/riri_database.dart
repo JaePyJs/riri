@@ -80,7 +80,7 @@ class UserStats extends Table {
 
 @DriftDatabase(tables: [Reminders, ChatMessages, UserStats])
 class RiriDatabase extends _$RiriDatabase {
-  RiriDatabase() : super(_openConnection());
+  RiriDatabase([QueryExecutor? connection]) : super(connection ?? _openConnection());
 
   @override
   int get schemaVersion => 2;

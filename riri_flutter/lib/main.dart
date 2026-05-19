@@ -66,7 +66,7 @@ class RiriAppShell extends ConsumerWidget {
       body: IndexedStack(
         index: currentTabIndex,
         children: const [
-          DashboardTab(),
+          DashboardScreen(),
           ChatTab(),
           SettingsTab(),
         ],
@@ -105,58 +105,12 @@ class RiriAppShell extends ConsumerWidget {
   }
 }
 
-class DashboardTab extends ConsumerWidget {
-  const DashboardTab({Key? key}) : super(key: key);
-
-  static void _showAddReminderBottomSheet(BuildContext context, RiriRepository repository) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return AddReminderSheet(
-          onSave: ({
-            required String title,
-            String? description,
-            required ReminderCategory category,
-            required DateTime dueDateTime,
-          }) {
-            repository.addReminder(
-              title: title,
-              description: description,
-              category: category,
-              dueDateTime: dueDateTime,
-            );
-          },
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final repository = ref.watch(repositoryProvider);
-    final remindersAsync = ref.watch(remindersStreamProvider);
-    final remindersList = remindersAsync.value ?? repository.currentReminders;
-    final username = ref.watch(usernameProvider);
-
-    return DashboardScreen(
-      username: username,
-      reminders: remindersList,
-      onToggleCompletion: repository.toggleReminderCompletion,
-      onDeleteReminder: repository.deleteReminder,
-      onAddReminderTap: () => _showAddReminderBottomSheet(context, repository),
-    );
-  }
-}
-
 class ChatTab extends ConsumerWidget {
   const ChatTab({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final repository = ref.watch(repositoryProvider);
-    return ChatScreen(repository: repository);
+    return const ChatScreen();
   }
 }
 

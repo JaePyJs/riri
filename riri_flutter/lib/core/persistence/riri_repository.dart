@@ -74,9 +74,7 @@ class RiriChatMessage {
 }
 
 class RiriRepository {
-  final RiriDatabase? _db;
-  final List<RiriReminder> _inMemoryReminders = [];
-  final List<RiriChatMessage> _inMemoryChatHistory = [];
+  final RiriDatabase _db;
   final List<RiriChatMessage> _cachedChatHistory = [];
   
   final StreamController<List<RiriReminder>> _remindersController =
@@ -84,53 +82,20 @@ class RiriRepository {
   StreamSubscription<List<Reminder>>? _dbSubscription;
   List<RiriReminder> _cachedReminders = [];
 
-  RiriRepository({RiriDatabase? database}) : _db = database {
-    if (_db != null) {
-      // 1. Subscribe to SQLite reactive stream to populate cache and stream updates
-      _dbSubscription = _db!.watchAllReminders().listen((dbList) {
-        _cachedReminders = dbList.map((r) => _mapReminder(r)).toList();
-        _remindersController.add(List.unmodifiable(_cachedReminders));
-      });
+  RiriRepository({required RiriDatabase database}) : _db = database {
+    // 1. Subscribe to SQLite reactive stream to populate cache and stream updates
+    _dbSubscription = _db.watchAllReminders().listen((dbList) {
+      _cachedReminders = dbList.map((r) => _mapReminder(r)).toList();
+      _remindersController.add(List.unmodifiable(_cachedReminders));
+    });
 
-      // 2. Perform DB Seeding if empty
-      _seedDbIfEmpty();
+    // 2. Perform DB Seeding if empty
+    _seedDbIfEmpty();
 
-      // 3. Pre-load chat history asynchronously into our active cache
-      _db!.getChatHistory().then((dbMsgs) {
-        _cachedChatHistory.addAll(dbMsgs.map((m) => _mapChatMessage(m)));
-      });
-    } else {
-      // Fallback to in-memory implementation for backward compatibility and tests
-      final now = DateTime.now();
-      _inMemoryReminders.addAll([
-        RiriReminder(
-          id: 1,
-          title: 'Submit thesis draft kay Prof 📝',
-          description: 'Kailangan na talaga to kundi lagot na.',
-          category: ReminderCategory.school,
-          dueDateTime: now.add(const Duration(hours: 3)),
-          createdAt: now,
-        ),
-        RiriReminder(
-          id: 2,
-          title: 'Bili ng kape at grocery sa palengke 🛒',
-          description: 'Kape is life bestie, baka antukin sa review.',
-          category: ReminderCategory.errands,
-          dueDateTime: now.add(const Duration(days: 1)),
-          createdAt: now,
-        ),
-        RiriReminder(
-          id: 3,
-          title: 'Uminom ng vitamins / mag gym 💪',
-          description: 'Huwag puro puyat bes, alagaan din ang katawan.',
-          category: ReminderCategory.health,
-          dueDateTime: now.add(const Duration(days: 2)),
-          createdAt: now,
-        ),
-      ]);
-      _cachedReminders = List.from(_inMemoryReminders);
-      _remindersController.add(List.unmodifiable(_inMemoryReminders));
-    }
+    // 3. Pre-load chat history asynchronously into our active cache
+    _db.getChatHistory().then((dbMsgs) {
+      _cachedChatHistory.addAll(dbMsgs.map((m) => _mapChatMessage(m)));
+    });
   }
 
   void dispose() {
@@ -139,25 +104,24 @@ class RiriRepository {
   }
 
   Future<void> _seedDbIfEmpty() async {
-    if (_db == null) return;
-    final existing = await _db!.getAllReminders();
+    final existing = await _db.getAllReminders();
     if (existing.isEmpty) {
       final now = DateTime.now();
-      await _db!.insertReminder(RemindersCompanion.insert(
+      await _db.insertReminder(RemindersCompanion.insert(
         title: 'Submit thesis draft kay Prof 📝',
         description: const Value('Kailangan na talaga to kundi lagot na.'),
         category: ReminderCategory.school,
         dueDateTime: now.add(const Duration(hours: 3)),
         createdAt: now,
       ));
-      await _db!.insertReminder(RemindersCompanion.insert(
+      await _db.insertReminder(RemindersCompanion.insert(
         title: 'Bili ng kape at grocery sa palengke 🛒',
         description: const Value('Kape is life bestie, baka antukin sa review.'),
         category: ReminderCategory.errands,
         dueDateTime: now.add(const Duration(days: 1)),
         createdAt: now,
       ));
-      await _db!.insertReminder(RemindersCompanion.insert(
+      await _db.insertReminder(RemindersCompanion.insert(
         title: 'Uminom ng vitamins / mag gym 💪',
         description: const Value('Huwag puro puyat bes, alagaan din ang katawan.'),
         category: ReminderCategory.health,
@@ -202,111 +166,61 @@ class RiriRepository {
     required ReminderCategory category,
     required DateTime dueDateTime,
   }) async {
-    if (_db != null) {
-      await _db!.insertReminder(RemindersCompanion.insert(
-        title: title,
-        description: Value(description),
-        category: category,
-        dueDateTime: dueDateTime,
-        createdAt: DateTime.now(),
-      ));
-    } else {
-      final nextId = _inMemoryReminders.isEmpty
-          ? 1
-          : _inMemoryReminders.map((r) => r.id).reduce((a, b) => a > b ? a : b) + 1;
-
-      final newReminder = RiriReminder(
-        id: nextId,
-        title: title,
-        description: description,
-        category: category,
-        dueDateTime: dueDateTime,
-        createdAt: DateTime.now(),
-      );
-
-      _inMemoryReminders.add(newReminder);
-      _cachedReminders = List.from(_inMemoryReminders);
-      _remindersController.add(List.unmodifiable(_inMemoryReminders));
-    }
+    await _db.insertReminder(RemindersCompanion.insert(
+      title: title,
+      description: Value(description),
+      category: category,
+      dueDateTime: dueDateTime,
+      createdAt: DateTime.now(),
+    ));
   }
 
   Future<void> toggleReminderCompletion(int id) async {
-    if (_db != null) {
-      final existing = await _db!.getAllReminders();
-      final item = existing.firstWhere((r) => r.id == id);
-      final updated = item.copyWith(
-        isCompleted: !item.isCompleted,
-        completedAt: Value(!item.isCompleted ? DateTime.now() : null),
-      );
-      await _db!.updateReminder(updated);
-    } else {
-      final index = _inMemoryReminders.indexWhere((r) => r.id == id);
-      if (index != -1) {
-        final old = _inMemoryReminders[index];
-        _inMemoryReminders[index] = old.copyWith(
-          isCompleted: !old.isCompleted,
-          completedAt: !old.isCompleted ? DateTime.now() : null,
-        );
-        _cachedReminders = List.from(_inMemoryReminders);
-        _remindersController.add(List.unmodifiable(_inMemoryReminders));
-      }
-    }
+    final existing = await _db.getAllReminders();
+    final item = existing.firstWhere((r) => r.id == id);
+    final updated = item.copyWith(
+      isCompleted: !item.isCompleted,
+      completedAt: Value(!item.isCompleted ? DateTime.now() : null),
+    );
+    await _db.updateReminder(updated);
   }
 
   Future<void> deleteReminder(int id) async {
-    if (_db != null) {
-      await _db!.deleteReminder(id);
-    } else {
-      _inMemoryReminders.removeWhere((r) => r.id == id);
-      _cachedReminders = List.from(_inMemoryReminders);
-      _remindersController.add(List.unmodifiable(_inMemoryReminders));
-    }
+    await _db.deleteReminder(id);
   }
 
-  List<RiriChatMessage> get chatHistory {
-    if (_db != null) {
-      return List.unmodifiable(_cachedChatHistory);
-    }
-    return List.unmodifiable(_inMemoryChatHistory);
-  }
+  List<RiriChatMessage> get chatHistory => List.unmodifiable(_cachedChatHistory);
 
   Future<void> addChatMessage({
     required String text,
     required bool isUser,
     String? stickerName,
   }) async {
-    final nextId = chatHistory.isEmpty
+    final now = DateTime.now();
+    final nextId = _cachedChatHistory.isEmpty
         ? 1
-        : chatHistory.map((m) => m.id).reduce((a, b) => a > b ? a : b) + 1;
+        : _cachedChatHistory.map((m) => m.id).reduce((a, b) => a > b ? a : b) + 1;
 
     final message = RiriChatMessage(
       id: nextId,
       text: text,
       isUser: isUser,
-      timestamp: DateTime.now(),
+      timestamp: now,
       stickerName: stickerName,
     );
 
-    if (_db != null) {
-      _cachedChatHistory.add(message);
-      await _db!.insertChatMessage(ChatMessagesCompanion.insert(
-        text: text,
-        isUser: isUser,
-        timestamp: DateTime.now(),
-        stickerName: Value(stickerName),
-      ));
-    } else {
-      _inMemoryChatHistory.add(message);
-    }
+    _cachedChatHistory.add(message);
+    await _db.insertChatMessage(ChatMessagesCompanion.insert(
+      text: text,
+      isUser: isUser,
+      timestamp: now,
+      stickerName: Value(stickerName),
+    ));
   }
 
   Future<void> clearChatHistory() async {
-    if (_db != null) {
-      _cachedChatHistory.clear();
-      await _db!.clearChatHistory();
-    } else {
-      _inMemoryChatHistory.clear();
-    }
+    _cachedChatHistory.clear();
+    await _db.clearChatHistory();
   }
 
   static const String _prefPersonalityKey = 'riri_personality_mode';

@@ -1,22 +1,24 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/ai/ai_models.dart';
+import '../../core/ai/chat_response_engine.dart';
 import '../../core/persistence/riri_repository.dart';
+import '../../core/persistence/riri_providers.dart';
 import '../../core/notifications/personality_copy.dart';
 import '../../theme/riri_theme.dart';
 
-class ChatScreen extends StatefulWidget {
-  final RiriRepository repository;
-
-  const ChatScreen({Key? key, required this.repository}) : super(key: key);
+class ChatScreen extends ConsumerStatefulWidget {
+  const ChatScreen({Key? key}) : super(key: key);
 
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ChatResponseEngine _responseEngine = ChatResponseEngine();
   List<RiriChatMessage> _messages = [];
   bool _isTyping = false;
   PersonalityMode _personalityMode = PersonalityMode.bestie;
@@ -28,10 +30,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _loadPersonalityAndHistory() async {
-    final mode = await widget.repository.getPersonalityMode();
+    final repo = ref.read(repositoryProvider);
+    final mode = await repo.getPersonalityMode();
     setState(() {
       _personalityMode = mode;
-      _messages = widget.repository.chatHistory;
+      _messages = repo.chatHistory;
     });
 
     if (_messages.isEmpty) {
@@ -40,6 +43,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _sendRiriGreeting() {
+    final repo = ref.read(repositoryProvider);
     String greeting;
     switch (_personalityMode) {
       case PersonalityMode.bestie:
@@ -56,14 +60,14 @@ class _ChatScreenState extends State<ChatScreen> {
         break;
     }
 
-    widget.repository.addChatMessage(
+    repo.addChatMessage(
       text: greeting,
       isUser: false,
       stickerName: _personalityMode == PersonalityMode.malupit ? 'Angry' : 'Welcoming',
     );
 
     setState(() {
-      _messages = widget.repository.chatHistory;
+      _messages = repo.chatHistory;
     });
   }
 
@@ -72,138 +76,53 @@ class _ChatScreenState extends State<ChatScreen> {
     if (text.isEmpty) return;
 
     _messageController.clear();
+    final repo = ref.read(repositoryProvider);
 
-    widget.repository.addChatMessage(
+    repo.addChatMessage(
       text: text,
       isUser: true,
     );
 
     setState(() {
-      _messages = widget.repository.chatHistory;
+      _messages = repo.chatHistory;
       _isTyping = true;
     });
 
     _scrollToBottom();
 
-    Timer(const Duration(milliseconds: 1000), () {
-      final response = _generateResponse(text);
-      widget.repository.addChatMessage(
-        text: response,
+    Timer(const Duration(milliseconds: 1000), () async {
+      // 1. Generate standard persona response using ChatResponseEngine
+      final response = _responseEngine.generateResponse(
+        userInput: text,
+        personalityMode: _personalityMode,
+      );
+
+      // 2. Perform task creation if intent is detected
+      if (response.extractedTitle != null &&
+          response.extractedCategory != null &&
+          response.extractedDueDate != null) {
+        await repo.addReminder(
+          title: response.extractedTitle!,
+          category: response.extractedCategory!,
+          dueDateTime: response.extractedDueDate!,
+        );
+      }
+
+      // 3. Save Riri chat response message cleanly in repository
+      await repo.addChatMessage(
+        text: response.text,
         isUser: false,
-        stickerName: _determineSticker(response),
+        stickerName: response.stickerName,
       );
 
       if (mounted) {
         setState(() {
-          _messages = widget.repository.chatHistory;
+          _messages = repo.chatHistory;
           _isTyping = false;
         });
         _scrollToBottom();
       }
     });
-  }
-
-  String _generateResponse(String input) {
-    final lower = input.toLowerCase();
-
-    // Check for inline task definitions
-    if (lower.contains('remind') || 
-        lower.contains('paalala') || 
-        lower.contains('reminder') ||
-        lower.contains('gawin') || 
-        lower.contains('ilista')) {
-      
-      String extractedTitle = input
-          .replaceAll(RegExp(r'(remind me to|paalala mo|pakilista|ilista|gawin|reminder to)', caseSensitive: false), '')
-          .trim();
-      
-      if (extractedTitle.isEmpty) extractedTitle = 'Special Task ✨';
-
-      widget.repository.addReminder(
-        title: extractedTitle,
-        category: ReminderCategory.personal,
-        dueDateTime: DateTime.now().add(const Duration(hours: 4)),
-      );
-
-      switch (_personalityMode) {
-        case PersonalityMode.bestie:
-          return 'Naka-set na bestie! "$extractedTitle" is added! Check mo sa dashboard! 💅';
-        case PersonalityMode.malupit:
-          return 'Fine. "$extractedTitle" has been saved. Don\'t slack off.';
-        case PersonalityMode.chill:
-          return 'Relax ka lang, nailista ko na: "$extractedTitle". ✨';
-        case PersonalityMode.tita:
-          return 'Naku anak, nalista ko na: "$extractedTitle". Alagaan mo ang sarili mo ha? 🙏';
-      }
-    }
-
-    // Standard responses based on current personality mode
-    switch (_personalityMode) {
-      case PersonalityMode.bestie:
-        if (lower.contains('hi') || lower.contains('hello') || lower.contains('hoy')) {
-          return 'Hoy din bestie! Handang-handa na ako rito. Ready to take over? 💅';
-        }
-        if (lower.contains('salamat') || lower.contains('thanks')) {
-          return 'Naku, you\'re welcome! Basta ikaw, gagawin natin lahat! Iced coffee next? ☕';
-        }
-        if (lower.contains('tired') || lower.contains('pagod')) {
-          return 'Aww, felt! Okay lang mapagod bestie, pero bawal sumuko! Rest ka muna tapos game ulit! 💕';
-        }
-        return 'Narinig kita! Sobrang solid nyan pero focus din tayo sa mga reminders ha? 💪';
-
-      case PersonalityMode.malupit:
-        if (lower.contains('hi') || lower.contains('hello')) {
-          return 'Bakit ka bumabati? May natapos ka na bang task? Focus.';
-        }
-        if (lower.contains('salamat') || lower.contains('thanks')) {
-          return 'No need for thanks. Just finish your work and don\'t snooze.';
-        }
-        if (lower.contains('tired') || lower.contains('pagod')) {
-          return 'Pagod? Everyone is. Get up and get to work. No excuses.';
-        }
-        return 'Stop chatting and check your dashboard. Time is ticking.';
-
-      case PersonalityMode.chill:
-        if (lower.contains('hi') || lower.contains('hello')) {
-          return 'Hey bestie~ Chill lang tayo today, no pressure. Kamusta? 🍃';
-        }
-        if (lower.contains('salamat') || lower.contains('thanks')) {
-          return 'No worries~ take your time, everything is fine. 🌙';
-        }
-        if (lower.contains('tired') || lower.contains('pagod')) {
-          return 'Pahinga ka muna bestie, deserved mo yan. Bukas na natin isipin ang iba. 🍃';
-        }
-        return 'Ganyan talaga ang life. Relax ka lang, magagawa din natin yan. 🌙';
-
-      case PersonalityMode.tita:
-        if (lower.contains('hi') || lower.contains('hello')) {
-          return 'Hello anak! Kumain ka na ba? Wag kang magpapakapagod masyado ha? 👵';
-        }
-        if (lower.contains('salamat') || lower.contains('thanks')) {
-          return 'Walang anuman anak, basta mag-aral kang mabuti ha. Proud ako sayo! ✨';
-        }
-        if (lower.contains('tired') || lower.contains('pagod')) {
-          return 'Hala anak, uminom ka ba ng maraming tubig? Matulog ka nang maaga ha, huwag magpuyat. 👵';
-        }
-        return 'Naku anak, ganun ba? Basta palaging magdadasal at mag-iingat ha. ✨';
-    }
-  }
-
-  String _determineSticker(String response) {
-    final lower = response.toLowerCase();
-    if (lower.contains('galit') || lower.contains('no excuses') || lower.contains('stop chatting')) {
-      return 'Angry';
-    }
-    if (lower.contains('salamat') || lower.contains('slay') || lower.contains('proud')) {
-      return 'Confetti_Explosion';
-    }
-    if (lower.contains('pahinga') || lower.contains('rest') || lower.contains('chill')) {
-      return 'Inactive';
-    }
-    if (lower.contains('set na') || lower.contains('naka-set')) {
-      return 'Confident_Suggestion';
-    }
-    return 'Wink';
   }
 
   void _scrollToBottom() {
@@ -219,7 +138,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _clearChatHistory() async {
-    await widget.repository.clearChatHistory();
+    final repo = ref.read(repositoryProvider);
+    await repo.clearChatHistory();
     setState(() {
       _messages = [];
     });

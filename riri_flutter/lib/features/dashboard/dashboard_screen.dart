@@ -1,26 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/ai/ai_models.dart';
 import '../../core/persistence/riri_repository.dart';
+import '../../core/persistence/riri_providers.dart';
 import '../../theme/riri_theme.dart';
+import '../reminders/add_reminder_sheet.dart';
 import 'riri_asset_mapper.dart';
 
-class DashboardScreen extends StatelessWidget {
-  final String username;
-  final List<RiriReminder> reminders;
-  final Function(int) onToggleCompletion;
-  final Function(int) onDeleteReminder;
-  final VoidCallback onAddReminderTap;
+class DashboardScreen extends ConsumerWidget {
+  const DashboardScreen({Key? key}) : super(key: key);
 
-  const DashboardScreen({
-    Key? key,
-    required this.username,
-    required this.reminders,
-    required this.onToggleCompletion,
-    required this.onDeleteReminder,
-    required this.onAddReminderTap,
-  }) : super(key: key);
-
-  DashboardState _determineCharacterState(List<RiriReminder> tasks) {
+  /// Pure computation helper to determine Riri's interactive character state.
+  static DashboardState determineCharacterState(List<RiriReminder> tasks) {
     final active = tasks.where((t) => !t.isCompleted).toList();
     if (tasks.isEmpty) return DashboardState.empty;
     if (active.isEmpty) return DashboardState.success;
@@ -36,16 +27,49 @@ class DashboardScreen extends StatelessWidget {
     return DashboardState.ready;
   }
 
+  /// Explicit static bottom sheet helper.
+  static void _showAddReminderBottomSheet(BuildContext context, RiriRepository repository) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return AddReminderSheet(
+          onSave: ({
+            required String title,
+            String? description,
+            required ReminderCategory category,
+            required DateTime dueDateTime,
+          }) {
+            repository.addReminder(
+              title: title,
+              description: description,
+              category: category,
+              dueDateTime: dueDateTime,
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final charState = _determineCharacterState(reminders);
+    
+    // Watch providers directly to decouple callback prop-drilling
+    final repository = ref.watch(repositoryProvider);
+    final remindersAsync = ref.watch(remindersStreamProvider);
+    final reminders = remindersAsync.value ?? repository.currentReminders;
+    final username = ref.watch(usernameProvider);
+
+    final charState = determineCharacterState(reminders);
     final activeReminders = reminders.where((t) => !t.isCompleted).toList();
 
     return Scaffold(
       backgroundColor: RiriTheme.darkBg,
       floatingActionButton: FloatingActionButton(
-        onPressed: onAddReminderTap,
+        onPressed: () => _showAddReminderBottomSheet(context, repository),
         child: Container(
           width: 56,
           height: 56,
@@ -203,10 +227,10 @@ class DashboardScreen extends StatelessWidget {
                                         ),
                                         child: const Icon(Icons.delete, color: Colors.white),
                                       ),
-                                      onDismissed: (direction) => onDeleteReminder(reminder.id),
+                                      onDismissed: (direction) => repository.deleteReminder(reminder.id),
                                       child: _ReminderCard(
                                         reminder: reminder,
-                                        onToggle: () => onToggleCompletion(reminder.id),
+                                        onToggle: () => repository.toggleReminderCompletion(reminder.id),
                                       ),
                                     );
                                   },
