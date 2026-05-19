@@ -40,6 +40,8 @@ val appModule = module {
     single { OnnxFallbackEngine(androidContext(), get(), get()) }
     single { LocalLLMEngine(androidContext()) }
     single { ModelDownloadManager(androidContext()) }
+    single { IntentClassifier() }
+    single { ChatSession() }
     single { AIEngineRouter(get(), get(), get()) }
     single { RiriNotificationManager(androidContext()) }
     single { UserPreferencesDataStore(androidContext()) }
@@ -54,7 +56,7 @@ val appModule = module {
     viewModel { DashboardViewModel(get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get()) }
     viewModel { ProfileViewModel(get(), get(), get(), get(), get()) }
-    viewModel { ChatViewModel(get(), get(), get(), get(), get()) }
+    viewModel { ChatViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { StatsViewModel(get()) }
     viewModel { com.riri.app.ui.screens.dashboard.AddReminderViewModel(get()) }
     viewModel { com.riri.app.ui.screens.onboarding.OnboardingViewModel(get(), get()) }

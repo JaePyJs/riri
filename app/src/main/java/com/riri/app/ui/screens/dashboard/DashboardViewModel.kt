@@ -50,6 +50,12 @@ class DashboardViewModel(
         }
     }
 
+    fun updateReminder(reminder: com.riri.app.data.db.entities.Reminder) {
+        viewModelScope.launch {
+            reminderRepository.update(reminder)
+        }
+    }
+
     fun toggleReminderCompletion(reminder: com.riri.app.data.db.entities.Reminder) {
         viewModelScope.launch {
             if (reminder.isCompleted) {

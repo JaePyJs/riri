@@ -19,12 +19,17 @@ class TaglishParser {
         val lowerInput = input.lowercase()
 
         // 1. Determine the Base Date
-        if (lowerInput.contains("bukas")) {
+        if (lowerInput.contains("bukas") || lowerInput.contains("tomorrow")) {
             targetDateTime = now.plusDays(1)
-        } else if (lowerInput.contains("makalawa")) {
+        } else if (lowerInput.contains("makalawa") || lowerInput.contains("day after tomorrow")) {
             targetDateTime = now.plusDays(2)
-        } else if (lowerInput.contains("linggo")) {
+        } else if (lowerInput.contains("linggo") || lowerInput.contains("next week")) {
             targetDateTime = now.plusWeeks(1)
+        } else if (lowerInput.contains("mamaya") || lowerInput.contains("later")) {
+            targetDateTime = now.plusHours(2)
+        } else if (lowerInput.contains("tonight") || lowerInput.contains("mamayang gabi")) {
+            targetDateTime = now.withHour(20).withMinute(0)
+            if (targetDateTime.isBefore(now)) targetDateTime = targetDateTime.plusDays(1)
         }
 
         // 2. Extract Time
@@ -50,25 +55,45 @@ class TaglishParser {
         }
 
         // 3. Extract Title (strip intent and time keywords)
+        val stopPhrases = listOf(
+            "(?i)set me (a )?reminder",
+            "(?i)pa-remind",
+            "(?i)remind me",
+            "(?i)ipaalala",
+            "(?i)paalala",
+            "(?i)paki-remind",
+            "(?i)bukas",
+            "(?i)tomorrow",
+            "(?i)makalawa",
+            "(?i)next week",
+            "(?i)ngayon",
+            "(?i)later",
+            "(?i)mamaya",
+            "(?i)mamayang gabi",
+            "(?i)tonight",
+            "(?i)\\b(at|on|in|sa|ng|na|to|po|paki)\\b"
+        )
+        
         var title = input
-            .replace(Regex("(?i)set me (a )?reminder"), "")
-            .replace(Regex("(?i)pa-remind"), "")
-            .replace(Regex("(?i)remind me"), "")
-            .replace(Regex("(?i)bukas"), "")
-            .replace(Regex("(?i)makalawa"), "")
-            .replace(Regex("(?i)ngayon"), "")
-            .replace(Regex("(?i)later"), "")
-            .replace(timePattern.toRegex(), "")
+        stopPhrases.forEach { phrase ->
+            title = title.replace(Regex(phrase), "")
+        }
+        title = title.replace(timePattern.toRegex(), "").trim()
+        
+        // Final cleaning
+        title = title.replace(Regex("^to\\s+"), "")
+            .replace(Regex("^na\\s+"), "")
+            .replace(Regex("\\s+"), " ")
             .trim()
-            .replace(Regex("^to\\s+"), "") // Remove leading "to"
-            .replace(Regex("^na\\s+"), "") // Remove leading "na"
-            .trim()
-
-        if (title.isEmpty()) title = input
 
         return ParsedReminder(
             title = title,
             dueDateTime = targetDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         )
+    }
+
+    fun isValid(parsed: ParsedReminder): Boolean {
+        // A valid title should not be empty and shouldn't just be the input if the input was a command
+        return parsed.title.length > 2 && parsed.title.any { it.isLetter() }
     }
 }

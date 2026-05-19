@@ -6,8 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.outlined.Wallpaper
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -58,7 +57,7 @@ fun ChaosReportScreen(
                 },
                 actions = {
                     IconButton(onClick = { launcher.launch("image/*") }) {
-                        Icon(imageVector = Icons.Default.Image, contentDescription = "Change background", tint = AmberSecondary, modifier = Modifier.size(24.dp))
+                        Icon(imageVector = Icons.Outlined.Wallpaper, contentDescription = "Change background", tint = AmberSecondary, modifier = Modifier.size(24.dp))
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(

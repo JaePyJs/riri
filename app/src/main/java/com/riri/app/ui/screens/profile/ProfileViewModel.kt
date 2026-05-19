@@ -71,19 +71,17 @@ class ProfileViewModel(
                     )
                     
                     ProfileUiState(
-                        userName = "",
+                        userName = _uiState.value.userName, // Preserve current name
                         completionRate = if (reminders.isNotEmpty()) (totalDone * 100 / reminders.size) else 0,
                         totalDone = totalDone,
                         streakCount = currentStats.currentStreak,
-                        bestStreak = currentStats.longestStreak.coerceAtLeast(12),
+                        bestStreak = currentStats.longestStreak.coerceAtLeast(0),
                         currentTitle = currentStats.personalityTitle,
                         bondProgress = 0.45f,
                         isLoading = false
                     )
                 }.collect { newState ->
-                    _uiState.update { current ->
-                        newState.copy(userName = current.userName)
-                    }
+                    _uiState.update { current -> newState.copy(userName = current.userName) }
                 }
         }
     }

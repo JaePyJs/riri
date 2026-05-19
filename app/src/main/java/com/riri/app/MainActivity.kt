@@ -3,25 +3,23 @@ package com.riri.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.*
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
 import com.riri.app.ui.screens.splash.SplashScreen
 import com.riri.app.ui.screens.onboarding.OnboardingScreen
+import com.riri.app.data.db.entities.Reminder
 import com.riri.app.ui.screens.profile.*
 import com.riri.app.ui.screens.settings.*
 import com.riri.app.ui.screens.chat.*
@@ -51,6 +49,7 @@ class MainActivity : ComponentActivity() {
             RiriTheme {
                 val navController = rememberNavController()
                 var showAddSheet by remember { mutableStateOf(false) }
+                var editingReminder by remember { mutableStateOf<Reminder?>(null) }
 
                 // Check if onboarding has been completed
                 val userPrefsDataStore = org.koin.java.KoinJavaComponent.get<com.riri.app.data.preferences.UserPreferencesDataStore>(
@@ -74,7 +73,7 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 val items = listOf(
                                     Triple("home", "Home", Icons.Default.Home),
-                                    Triple("chat", "Chat", Icons.Default.Chat),
+                                    Triple("chat", "Chat", Icons.AutoMirrored.Filled.Chat),
                                     Triple("chaos_report", "Report", Icons.Default.BarChart),
                                     Triple("profile", "Profile", Icons.Default.Person)
                                 )
@@ -110,7 +109,9 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController, 
                         startDestination = "splash",
-                        modifier = Modifier.padding(padding)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(padding)
                     ) {
                         composable("splash") {
                             SplashScreen(
@@ -158,6 +159,10 @@ class MainActivity : ComponentActivity() {
                                 onReminderClick = { dashboardViewModel.toggleReminderCompletion(it) },
                                 onReminderToggle = { dashboardViewModel.toggleReminderCompletion(it) },
                                 onReminderDelete = { dashboardViewModel.deleteReminder(it) },
+                                onReminderLongClick = { reminder ->
+                                    editingReminder = reminder
+                                    showAddSheet = true
+                                },
                                 onProfileClick = { navController.navigate("profile") },
                                 onChatClick = { navController.navigate("chat") }
                             )
@@ -186,8 +191,13 @@ class MainActivity : ComponentActivity() {
 
                     if (showAddSheet) {
                         AddReminderBottomSheet(
-                            onDismiss = { showAddSheet = false },
-                            onAddClick = { text, dueTime -> dashboardViewModel.addReminder(text, dueTime) }
+                            existingReminder = editingReminder,
+                            onDismiss = { 
+                                showAddSheet = false 
+                                editingReminder = null
+                            },
+                            onAddClick = { text, dueTime -> dashboardViewModel.addReminder(text, dueTime) },
+                            onEditClick = { reminder -> dashboardViewModel.updateReminder(reminder) }
                         )
                     }
                 }

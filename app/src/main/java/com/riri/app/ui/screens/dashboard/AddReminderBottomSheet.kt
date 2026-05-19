@@ -7,7 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.MicNone
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Schedule
@@ -63,14 +63,27 @@ class AddReminderViewModel(
 fun AddReminderBottomSheet(
     onDismiss: () -> Unit,
     onAddClick: (String, Long) -> Unit,
+    onEditClick: (com.riri.app.data.db.entities.Reminder) -> Unit = {},
+    existingReminder: com.riri.app.data.db.entities.Reminder? = null,
     viewModel: AddReminderViewModel = koinViewModel()
 ) {
-    var text by remember { mutableStateOf("") }
+    var text by remember { mutableStateOf(existingReminder?.title ?: "") }
     val isRecording by viewModel.isRecording.collectAsState()
     val context = LocalContext.current
     
-    val calendar = remember { Calendar.getInstance() }
-    var selectedDateTime by remember { mutableStateOf(calendar.timeInMillis + 3600000) } // Default +1hr
+    val calendar = remember { 
+        Calendar.getInstance().apply {
+            if (existingReminder != null) {
+                timeInMillis = existingReminder.dueDateTime
+            }
+        }
+    }
+    var selectedDateTime by remember { mutableStateOf(calendar.timeInMillis) }
+    
+    if (existingReminder == null && selectedDateTime == calendar.timeInMillis) {
+        // Only set default +1hr for NEW reminders if not already set
+        selectedDateTime = calendar.timeInMillis + 3600000
+    }
     
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -92,9 +105,11 @@ fun AddReminderBottomSheet(
             modifier = Modifier
                 .padding(24.dp)
                 .fillMaxWidth()
+                .imePadding()
+                .navigationBarsPadding()
         ) {
                 Text(
-                    text = "New Reminder",
+                    text = if (existingReminder != null) "Edit Reminder" else "New Reminder",
                     style = MaterialTheme.typography.headlineSmall,
                     color = Color.White,
                     fontWeight = FontWeight.Bold
@@ -120,22 +135,34 @@ fun AddReminderBottomSheet(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         if (text.isNotBlank()) {
-                            onAddClick(text, selectedDateTime)
+                            if (existingReminder != null) {
+                                onEditClick(existingReminder.copy(title = text, dueDateTime = selectedDateTime))
+                            } else {
+                                onAddClick(text, selectedDateTime)
+                            }
                             onDismiss()
                         }
                     }
                 ),
                 trailingIcon = {
+                    val permissionLauncher = rememberLauncherForActivityResult(
+                        contract = ActivityResultContracts.RequestPermission()
+                    ) { isGranted ->
+                        if (isGranted) {
+                            viewModel.startVoiceRecording { transcription ->
+                                text = transcription
+                            }
+                        }
+                    }
+
                     Row {
                         IconButton(
                             onClick = { 
-                                viewModel.startVoiceRecording { transcription ->
-                                    text = transcription
-                                }
+                                permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
                             }
                         ) {
                             Icon(
-                                imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
+                                imageVector = if (isRecording) Icons.Default.MicNone else Icons.Default.Mic,
                                 contentDescription = "Voice input",
                                 modifier = Modifier.size(24.dp),
                                 tint = if (isRecording) com.riri.app.ui.theme.PrimaryViolet else com.riri.app.ui.theme.MutedText
@@ -236,7 +263,11 @@ fun AddReminderBottomSheet(
                 Button(
                     onClick = { 
                         if (text.isNotBlank()) {
-                            onAddClick(text, selectedDateTime)
+                            if (existingReminder != null) {
+                                onEditClick(existingReminder.copy(title = text, dueDateTime = selectedDateTime))
+                            } else {
+                                onAddClick(text, selectedDateTime)
+                            }
                             onDismiss()
                         }
                     },
@@ -249,7 +280,7 @@ fun AddReminderBottomSheet(
                         modifier = Modifier.fillMaxSize().background(com.riri.app.ui.theme.RiriGradient),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Add Reminder", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(if (existingReminder != null) "Save Changes" else "Add Reminder", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             }

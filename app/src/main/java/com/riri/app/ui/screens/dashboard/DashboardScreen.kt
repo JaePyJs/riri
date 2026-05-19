@@ -5,10 +5,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -47,6 +49,7 @@ fun DashboardScreen(
     onReminderClick: (Reminder) -> Unit,
     onReminderToggle: (Reminder) -> Unit,
     onReminderDelete: (Reminder) -> Unit,
+    onReminderLongClick: (Reminder) -> Unit,
     onProfileClick: () -> Unit,
     onChatClick: () -> Unit
 ) {
@@ -167,12 +170,49 @@ fun DashboardScreen(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(uiState.reminders) { reminder ->
-                            ReminderItem(
-                                reminder = reminder,
-                                onClick = { onReminderClick(reminder) },
-                                onToggle = { onReminderToggle(reminder) }
+                        items(
+                            items = uiState.reminders,
+                            key = { it.id }
+                        ) { reminder ->
+                            val dismissState = rememberSwipeToDismissBoxState(
+                                confirmValueChange = {
+                                    if (it == SwipeToDismissBoxValue.EndToStart) {
+                                        onReminderDelete(reminder)
+                                        true
+                                    } else false
+                                }
                             )
+
+                            SwipeToDismissBox(
+                                state = dismissState,
+                                backgroundContent = {
+                                    val color = if (dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
+                                        Color.Red.copy(alpha = 0.5f)
+                                    } else Color.Transparent
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(color),
+                                        contentAlignment = Alignment.CenterEnd
+                                    ) {
+                                        Icon(
+                                            androidx.compose.material.icons.Icons.Default.Delete,
+                                            contentDescription = "Delete",
+                                            tint = Color.White,
+                                            modifier = Modifier.padding(end = 16.dp)
+                                        )
+                                    }
+                                },
+                                enableDismissFromStartToEnd = false
+                            ) {
+                                ReminderItem(
+                                    reminder = reminder,
+                                    onClick = { onReminderClick(reminder) },
+                                    onLongClick = { onReminderLongClick(reminder) },
+                                    onToggle = { onReminderToggle(reminder) }
+                                )
+                            }
                         }
                     }
                 }
@@ -185,6 +225,7 @@ fun DashboardScreen(
 fun ReminderItem(
     reminder: Reminder,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     onToggle: () -> Unit
 ) {
     val isOverdue = !reminder.isCompleted && reminder.dueDateTime < System.currentTimeMillis()
@@ -195,8 +236,12 @@ fun ReminderItem(
     }
 
     Surface(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
         shape = RoundedCornerShape(16.dp),
         color = com.riri.app.ui.theme.SurfaceBg
     ) {

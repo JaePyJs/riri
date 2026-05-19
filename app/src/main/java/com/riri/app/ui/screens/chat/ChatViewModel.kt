@@ -21,7 +21,9 @@ class ChatViewModel(
     private val reminderRepository: com.riri.app.data.repository.ReminderRepository,
     private val aiRouter: AIEngineRouter,
     private val localLLM: LocalLLMEngine,
-    private val preferences: UserPreferencesDataStore
+    private val preferences: UserPreferencesDataStore,
+    private val intentClassifier: com.riri.app.core.ai.IntentClassifier,
+    private val chatSession: com.riri.app.core.ai.ChatSession
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -58,27 +60,60 @@ class ChatViewModel(
             chatRepository.sendMessage(text, isUser = true)
             _uiState.update { it.copy(isTyping = true) }
 
-            // 2. Check reminder intent BEFORE going to LLM
-            if (isReminderIntent(text)) {
-                // Try to parse and save the reminder
-                val saved = tryCreateReminderFromChat(text)
-                val confirmationMsg = if (saved != null) {
-                    val personality = _uiState.value.currentPersonality
-                    when (personality) {
-                        PersonalityMode.BESTIE -> "Sige bestie! Naka-set na ang reminder: \"${saved.title}\" ✅ I'll bug you on time!"
-                        PersonalityMode.MALUPIT -> "Done. \"${saved.title}\" — set na. Wag mong kalimutan."
-                        PersonalityMode.CHILL -> "Okay lang~ naka-save na: \"${saved.title}\" 🌙 I gotchu."
-                        PersonalityMode.TITA -> "Hala anak, naka-save na! \"${saved.title}\" — hindi ka namin pababayaan ✨"
-                    }
-                } else {
-                    "Hmm, di ko ma-parse ng maayos yung reminder mo. Try mo: \"Remind me to [task] at [time]\" para mas klaro! 📝"
-                }
-                chatRepository.sendMessage(confirmationMsg, isUser = false)
+            // 2. Handle Pending Clarification
+            if (chatSession.pendingReminder != null) {
+                val reminder = chatSession.pendingReminder!!.copy(title = text)
+                reminderRepository.upsert(reminder)
+                chatSession.clear()
+                
+                val confirmation = getClarificationConfirmation(reminder.title)
+                chatRepository.sendMessage(confirmation, isUser = false)
                 _uiState.update { it.copy(isTyping = false) }
-                return@launch  // Don't fall through to LLM
+                return@launch
             }
 
-            // 3. Non-reminder message — send to LLM or Lite fallback
+            // 3. Classify Intent
+            val intent = intentClassifier.classify(text)
+            
+            if (intent == com.riri.app.core.ai.RiriIntent.REMINDER) {
+                val parser = com.riri.app.core.ai.TaglishParser()
+                val parsed = parser.parse(text)
+                
+                if (parser.isValid(parsed)) {
+                    val category = aiRouter.categorizeReminder(text)
+                    val reminder = com.riri.app.data.db.entities.Reminder(
+                        title = parsed.title,
+                        description = "Added via chat: \"$text\"",
+                        category = category.name,
+                        dueDateTime = parsed.dueDateTime,
+                        recurringInterval = null,
+                        recurringRuleJson = null,
+                        rawInput = text
+                    )
+                    reminderRepository.upsert(reminder)
+                    
+                    val msg = getReminderConfirmation(reminder.title)
+                    chatRepository.sendMessage(msg, isUser = false)
+                } else {
+                    // Ambiguous/Incomplete reminder
+                    val category = aiRouter.categorizeReminder(text)
+                    chatSession.pendingReminder = com.riri.app.data.db.entities.Reminder(
+                        title = "", // Missing
+                        description = "Pending clarification for: \"$text\"",
+                        category = category.name,
+                        dueDateTime = parsed.dueDateTime,
+                        recurringInterval = null,
+                        recurringRuleJson = null,
+                        rawInput = text
+                    )
+                    val msg = getClarificationRequest()
+                    chatRepository.sendMessage(msg, isUser = false)
+                }
+                _uiState.update { it.copy(isTyping = false) }
+                return@launch
+            }
+
+            // 4. General Chat (LLM or Lite)
             val personality = _uiState.value.currentPersonality
             val prompt = buildPrompt(text, personality)
             var responseBuffer = ""
@@ -89,7 +124,7 @@ class ChatViewModel(
                 onComplete = {
                     viewModelScope.launch {
                         val finalResponse = if (responseBuffer.isBlank()) {
-                            generateLiteResponse(text)
+                            generateLiteResponse(text, personality)
                         } else {
                             responseBuffer.stripModelTokens()
                         }
@@ -101,11 +136,48 @@ class ChatViewModel(
         }
     }
 
-    private fun generateLiteResponse(input: String): String {
-        return when {
-            input.contains("hello", true) || input.contains("hi", true) -> "Hoy! Bestie here. Naka-Lite Mode ako ngayon kasi hindi pa downloaded brain ko, pero I can still help you with reminders! ✨"
-            input.contains("remind", true) || input.contains("task", true) -> "Type mo lang yung task details (e.g. 'Remind me to drink water at 3pm') tapos ako na bahala mag-save! 📝"
-            else -> "Narinig kita! Pero naka-Lite Mode lang ako. I-download mo full brain ko sa settings para mas matalino ako. Pero for now, focus muna tayo sa tasks! 💪"
+    private fun getReminderConfirmation(title: String): String {
+        return when (_uiState.value.currentPersonality) {
+            PersonalityMode.BESTIE -> "Sige bestie! Naka-set na: \"$title\" ✅ I gotchu!"
+            PersonalityMode.MALUPIT -> "Done. \"$title\" is set. Don't fail me."
+            PersonalityMode.CHILL -> "Okay lang~ naka-save na: \"$title\" 🌙 Relax ka lang."
+            PersonalityMode.TITA -> "Hala anak, naka-set na! \"$title\" — wag mong kalimutan ha? ✨"
+        }
+    }
+
+    private fun getClarificationRequest(): String {
+        return when (_uiState.value.currentPersonality) {
+            PersonalityMode.BESTIE -> "Ay wait, anong exact task yan bestie? Para ma-save ko ng maayos! 📝"
+            PersonalityMode.MALUPIT -> "Kulang yung info. Anong task yan? Be specific."
+            PersonalityMode.CHILL -> "Wait lang~ ano palang gagawin natin? 🌙"
+            PersonalityMode.TITA -> "Hala anak, ano palang ipapaalala ko sayo? Para malista ko na. ✨"
+        }
+    }
+
+    private fun getClarificationConfirmation(title: String): String {
+        return when (_uiState.value.currentPersonality) {
+            PersonalityMode.BESTIE -> "Ayun! \"$title\" — naka-save na bestie! ✨"
+            PersonalityMode.MALUPIT -> "Copy. \"$title\" set na."
+            PersonalityMode.CHILL -> "Geh, \"$title\" na yan. 🌙"
+            PersonalityMode.TITA -> "Salamat anak! \"$title\" — naka-lista na ha. ✨"
+        }
+    }
+
+    private fun generateLiteResponse(input: String, mode: PersonalityMode): String {
+        val lower = input.lowercase()
+        return when (mode) {
+            PersonalityMode.BESTIE -> when {
+                lower.contains("hi") || lower.contains("hello") -> "Hoy bestie! Laban tayo today! ✨"
+                lower.contains("salamat") || lower.contains("thanks") -> "No biggie! You're doing great! 💜"
+                else -> "Narinig kita! Pero focus muna tayo sa goals natin today ha? 💪"
+            }
+            PersonalityMode.MALUPIT -> when {
+                lower.contains("hi") || lower.contains("hello") -> "Focus. May gagawin ka pa."
+                lower.contains("salamat") || lower.contains("thanks") -> "Gawin mo na lang yung task."
+                else -> "Whatever. Just finish your reminders."
+            }
+            PersonalityMode.CHILL -> "Relax lang tayo~ Everything will be fine. 🌙"
+            PersonalityMode.TITA -> "Ingat ka palagi anak ha? Wag magpapalipas ng gutom. ✨"
         }
     }
 
@@ -113,43 +185,14 @@ class ChatViewModel(
         val coreInstructions = """
 You are Riri, a Filipino Gen Z reminder and productivity assistant app.
 Your PRIMARY job is to help users SET, TRACK, and MANAGE reminders and tasks.
-
-BEHAVIOR RULES:
-1. If the user's message is a request to set a reminder, create a task, or schedule 
-   something — CONFIRM it clearly and briefly. Do NOT just chat.
-2. If the message contains time words (9am, bukas, mamaya, tonight, tomorrow, 
-   later, ng umaga, ng hapon) or action words (remind, wake, schedule, paalala, 
-   tandaan, don't forget, alarm) — treat it as a REMINDER REQUEST.
-3. Always be brief. Max 2-3 sentences. No essays.
-4. You are NOT a general chatbot. If the user asks something unrelated to 
-   tasks/reminders, gently redirect them back to productivity.
-5. Never say you "can't" set reminders — you can and you do.
+Always be brief. Max 2 sentences. Redirect to productivity if chat goes too long.
 """.trimIndent()
 
         val personalityLayer = when (mode) {
-            PersonalityMode.BESTIE -> """
-Personality: Chill, warm, Taglish-speaking bestie. 
-Reminder confirmations sound like: "Ayos! Naka-set na ang reminder mo ✅"
-Non-reminder replies stay short and redirect to tasks.
-""".trimIndent()
-
-            PersonalityMode.MALUPIT -> """
-Personality: Blunt, no-nonsense, intense pero helpful. Mostly English.
-Reminder confirmations sound like: "Done. Set na. Wag kalimutan."
-Non-reminder replies are curt and redirect immediately.
-""".trimIndent()
-
-            PersonalityMode.CHILL -> """
-Personality: Relaxed, soft, no pressure vibes. Taglish, gentle tone.
-Reminder confirmations sound like: "Okay~ naka-save na reminder mo 🌙"
-Non-reminder replies are soft but still redirect to tasks.
-""".trimIndent()
-
-            PersonalityMode.TITA -> """
-Personality: Loving Filipino tita energy. Uses "anak". More Tagalog.
-Reminder confirmations sound like: "Hala anak, naka-set na! Hindi kita pababayaan ✨"
-Non-reminder replies are warm but redirect to productivity.
-""".trimIndent()
+            PersonalityMode.BESTIE -> "Personality: Chill, warm, Taglish-speaking bestie."
+            PersonalityMode.MALUPIT -> "Personality: Blunt, no-nonsense, intense. English dominant."
+            PersonalityMode.CHILL -> "Personality: Relaxed, soft, no pressure vibes. Taglish."
+            PersonalityMode.TITA -> "Personality: Loving Filipino tita energy. Uses 'anak'."
         }
 
         return "<|im_start|>system\n$coreInstructions\n\n$personalityLayer<|im_end|>\n" +
@@ -157,48 +200,10 @@ Non-reminder replies are warm but redirect to productivity.
                "<|im_start|>assistant\n"
     }
 
-    private fun isReminderIntent(input: String): Boolean {
-        val lower = input.lowercase()
-        val reminderKeywords = listOf(
-            // English
-            "remind", "reminder", "wake me", "wake me up", "alarm", "schedule",
-            "set a", "don't forget", "dont forget", "remember to", "notify me",
-            "alert me", "at ", "by ", "tomorrow", "tonight", "later",
-            // Taglish / Tagalog
-            "paalala", "pa-remind", "ipaalala", "tandaan", "i-schedule",
-            "bukas", "mamaya", "mamayang", "ngayong gabi", "sa umaga",
-            "ng umaga", "ng hapon", "ng gabi", "am", "pm"
-        )
-        return reminderKeywords.any { lower.contains(it) }
-    }
-
-    private suspend fun tryCreateReminderFromChat(input: String): com.riri.app.data.db.entities.Reminder? {
-        return try {
-            val taglishParser = com.riri.app.core.ai.TaglishParser()
-            val parsed = taglishParser.parse(input)
-            val category = aiRouter.categorizeReminder(input)
-
-            val reminder = com.riri.app.data.db.entities.Reminder(
-                title = parsed.title,
-                description = "Added via chat: \"$input\"",
-                category = category.name,
-                dueDateTime = parsed.dueDateTime,
-                isRecurring = parsed.isRecurring,
-                recurringInterval = parsed.recurringInterval,
-                recurringRuleJson = null,
-                rawInput = input
-            )
-            reminderRepository.upsert(reminder)
-            reminder
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
     fun clearHistory() {
         viewModelScope.launch {
             chatRepository.clearHistory()
+            chatSession.clear()
         }
     }
 }
