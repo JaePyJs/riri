@@ -50,90 +50,26 @@ class RiriApp extends ConsumerWidget {
       theme: RiriTheme.darkThemeData,
       home: onboardingCompleted
           ? const RiriAppShell()
-          : const NavigationController(),
+          : const OnboardingScreen(),
     );
-  }
-}
-
-class NavigationController extends ConsumerWidget {
-  const NavigationController({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final repository = ref.watch(repositoryProvider);
-
-    void onLetsGo() async {
-      final prefs = SharedPreferencesAsync();
-      final username = await prefs.getString('riri_username') ?? 'Bestie';
-      
-      // Update Providers cleanly through standard Notifier methods
-      ref.read(usernameProvider.notifier).setUsername(username);
-      ref.read(onboardingCompletedProvider.notifier).complete();
-    }
-
-    return OnboardingScreen(onLetsGoClick: onLetsGo);
   }
 }
 
 class RiriAppShell extends ConsumerWidget {
   const RiriAppShell({Key? key}) : super(key: key);
 
-  void _showAddReminderBottomSheet(BuildContext context, RiriRepository repository) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return AddReminderSheet(
-          onSave: ({
-            required String title,
-            String? description,
-            required ReminderCategory category,
-            required DateTime dueDateTime,
-          }) {
-            repository.addReminder(
-              title: title,
-              description: description,
-              category: category,
-              dueDateTime: dueDateTime,
-            );
-          },
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final repository = ref.watch(repositoryProvider);
-    final remindersAsync = ref.watch(remindersStreamProvider);
-    
-    // Provide dynamic async values with standard repositories fallbacks to prevent initial page flashing
-    final remindersList = remindersAsync.value ?? repository.currentReminders;
-    final username = ref.watch(usernameProvider);
     final currentTabIndex = ref.watch(tabIndexProvider);
-
-    final List<Widget> tabs = [
-      DashboardScreen(
-        username: username,
-        reminders: remindersList,
-        onToggleCompletion: (id) => repository.toggleReminderCompletion(id),
-        onDeleteReminder: (id) => repository.deleteReminder(id),
-        onAddReminderTap: () => _showAddReminderBottomSheet(context, repository),
-      ),
-      ChatScreen(repository: repository),
-      SettingsScreen(
-        repository: repository,
-        onSettingsUpdated: () {
-          ref.read(usernameProvider.notifier).loadUsername();
-        },
-      ),
-    ];
 
     return Scaffold(
       body: IndexedStack(
         index: currentTabIndex,
-        children: tabs,
+        children: const [
+          DashboardTab(),
+          ChatTab(),
+          SettingsTab(),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentTabIndex,
@@ -165,6 +101,76 @@ class RiriAppShell extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class DashboardTab extends ConsumerWidget {
+  const DashboardTab({Key? key}) : super(key: key);
+
+  void _showAddReminderBottomSheet(BuildContext context, RiriRepository repository) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return AddReminderSheet(
+          onSave: ({
+            required String title,
+            String? description,
+            required ReminderCategory category,
+            required DateTime dueDateTime,
+          }) {
+            repository.addReminder(
+              title: title,
+              description: description,
+              category: category,
+              dueDateTime: dueDateTime,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final repository = ref.watch(repositoryProvider);
+    final remindersAsync = ref.watch(remindersStreamProvider);
+    final remindersList = remindersAsync.value ?? repository.currentReminders;
+    final username = ref.watch(usernameProvider);
+
+    return DashboardScreen(
+      username: username,
+      reminders: remindersList,
+      onToggleCompletion: repository.toggleReminderCompletion,
+      onDeleteReminder: repository.deleteReminder,
+      onAddReminderTap: () => _showAddReminderBottomSheet(context, repository),
+    );
+  }
+}
+
+class ChatTab extends ConsumerWidget {
+  const ChatTab({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final repository = ref.watch(repositoryProvider);
+    return ChatScreen(repository: repository);
+  }
+}
+
+class SettingsTab extends ConsumerWidget {
+  const SettingsTab({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final repository = ref.watch(repositoryProvider);
+    return SettingsScreen(
+      repository: repository,
+      onSettingsUpdated: () {
+        ref.read(usernameProvider.notifier).loadUsername();
+      },
     );
   }
 }

@@ -1,18 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/riri_theme.dart';
+import '../../core/persistence/riri_providers.dart';
 
-class OnboardingScreen extends StatefulWidget {
-  final VoidCallback onLetsGoClick;
-
-  const OnboardingScreen({Key? key, required this.onLetsGoClick}) : super(key: key);
+class OnboardingScreen extends ConsumerStatefulWidget {
+  const OnboardingScreen({Key? key}) : super(key: key);
 
   @override
-  _OnboardingScreenState createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final TextEditingController _nameController = TextEditingController();
   bool _isDownloading = false;
   double _downloadProgress = 0.0;
@@ -58,11 +58,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _saveNameAndProceed() async {
     final name = _nameController.text.trim();
     if (name.isNotEmpty) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('riri_username', name);
+      // 1. Write username cleanly through username provider which persists and emits
+      await ref.read(usernameProvider.notifier).setUsername(name);
+
+      // 2. Persist onboarding configs
+      final prefs = SharedPreferencesAsync();
       await prefs.setBool('riri_onboarding_completed', true);
       await prefs.setBool('riri_use_full_llm', _isDownloaded);
-      widget.onLetsGoClick();
+
+      // 3. Mark completed to trigger reactive MaterialApp router update instantly
+      ref.read(onboardingCompletedProvider.notifier).complete();
     }
   }
 

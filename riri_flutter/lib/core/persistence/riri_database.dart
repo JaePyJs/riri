@@ -89,7 +89,15 @@ class RiriDatabase extends _$RiriDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (migrator, from, to) async {
       if (from < 2) {
-        await migrator.alterTable(TableMigration(reminders));
+        await migrator.alterTable(
+          TableMigration(
+            reminders,
+            columnTransformer: {
+              reminders.category: reminders.category.cast<String>().lower(),
+              reminders.personalityMode: const Constant('bestie'),
+            },
+          ),
+        );
       }
     },
   );
