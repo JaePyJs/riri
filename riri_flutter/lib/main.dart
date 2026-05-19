@@ -119,12 +119,6 @@ class SettingsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final repository = ref.watch(repositoryProvider);
-    return SettingsScreen(
-      repository: repository,
-      onSettingsUpdated: () {
-        ref.read(usernameProvider.notifier).loadUsername();
-      },
-    );
+    return const SettingsScreen();
   }
 }

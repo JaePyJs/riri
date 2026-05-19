@@ -180,6 +180,8 @@ class DashboardScreen extends ConsumerWidget {
                           ],
                         ),
                       ),
+                      const SizedBox(height: 16),
+                      _buildProductivityCard(theme, reminders),
                     ],
                   ),
                 ),
@@ -242,6 +244,76 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductivityCard(ThemeData theme, List<RiriReminder> tasks) {
+    final completedCount = tasks.where((t) => t.isCompleted).length;
+    final totalCount = tasks.length;
+
+    // Calculate procrastination index
+    double totalSnoozes = 0;
+    for (final t in tasks) {
+      totalSnoozes += (t.snoozeCount + t.rescheduleCount);
+    }
+    final double avgSnooze = totalCount == 0 ? 0.0 : totalSnoozes / totalCount;
+
+    String label = 'Proactive 👑';
+    Color color = RiriTheme.successGreen;
+    if (avgSnooze > 0 && avgSnooze <= 1.0) {
+      label = 'Mild Slacker ☕';
+      color = RiriTheme.secondaryAmber;
+    } else if (avgSnooze > 1.0 && avgSnooze <= 2.5) {
+      label = 'Active Snoozer ⏰';
+      color = Colors.orangeAccent;
+    } else if (avgSnooze > 2.5) {
+      label = 'Danger Slacker 💀';
+      color = RiriTheme.dangerRed;
+    }
+
+    final int streak = totalCount == 0 ? 0 : (completedCount > 0 ? (completedCount * 1.5).ceil() : 0);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E30),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF2F2F4A), width: 1.0),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          // Streak
+          Column(
+            children: [
+              const Text('Streak 🔥', style: TextStyle(color: RiriTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 4),
+              Text('$streak Days', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          Container(width: 1, height: 24, color: const Color(0xFF2F2F4A)),
+          // Completed
+          Column(
+            children: [
+              const Text('Completed 💅', style: TextStyle(color: RiriTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 4),
+              Text('$completedCount/$totalCount', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          Container(width: 1, height: 24, color: const Color(0xFF2F2F4A)),
+          // Procrastination Index
+          Column(
+            children: [
+              const Text('Procrastination Meter 🧠', style: TextStyle(color: RiriTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
         ],
       ),

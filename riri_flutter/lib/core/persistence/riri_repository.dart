@@ -108,23 +108,23 @@ class RiriRepository {
     if (existing.isEmpty) {
       final now = DateTime.now();
       await _db.insertReminder(RemindersCompanion.insert(
-        title: 'Submit thesis draft kay Prof 📝',
-        description: const Value('Kailangan na talaga to kundi lagot na.'),
-        category: ReminderCategory.school,
+        title: 'Simulan ang first productivity task mo! 📝',
+        description: const Value('Welcome to Riri! Kaya natin to, bestie! Tap the circle when done.'),
+        category: ReminderCategory.personal,
         dueDateTime: now.add(const Duration(hours: 3)),
         createdAt: now,
       ));
       await _db.insertReminder(RemindersCompanion.insert(
-        title: 'Bili ng kape at grocery sa palengke 🛒',
-        description: const Value('Kape is life bestie, baka antukin sa review.'),
-        category: ReminderCategory.errands,
+        title: 'Mag-hydrate at uminom ng tubig 💧',
+        description: const Value('Stay healthy para tuloy-tuloy ang productivity vibe!'),
+        category: ReminderCategory.health,
         dueDateTime: now.add(const Duration(days: 1)),
         createdAt: now,
       ));
       await _db.insertReminder(RemindersCompanion.insert(
-        title: 'Uminom ng vitamins / mag gym 💪',
-        description: const Value('Huwag puro puyat bes, alagaan din ang katawan.'),
-        category: ReminderCategory.health,
+        title: 'Magplano para sa susunod na mga araw 📅',
+        description: const Value('Ilista na ang iyong upcoming tasks o errands kasama si Riri.'),
+        category: ReminderCategory.personal,
         dueDateTime: now.add(const Duration(days: 2)),
         createdAt: now,
       ));
@@ -176,8 +176,8 @@ class RiriRepository {
   }
 
   Future<void> toggleReminderCompletion(int id) async {
-    final existing = await _db.getAllReminders();
-    final item = existing.firstWhere((r) => r.id == id);
+    final item = await _db.getReminderById(id);
+    if (item == null) return;
     final updated = item.copyWith(
       isCompleted: !item.isCompleted,
       completedAt: Value(!item.isCompleted ? DateTime.now() : null),

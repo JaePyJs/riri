@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../notifications/personality_copy.dart';
 import 'riri_database.dart';
 import 'riri_repository.dart';
 
@@ -73,3 +74,50 @@ class UsernameNotifier extends Notifier<String> {
 }
 
 final usernameProvider = NotifierProvider<UsernameNotifier, String>(() => UsernameNotifier());
+
+/// Modern Riverpod 2.x Notifier for Personality Mode management.
+class PersonalityModeNotifier extends Notifier<PersonalityMode> {
+  @override
+  PersonalityMode build() {
+    loadPersonalityMode();
+    return PersonalityMode.bestie;
+  }
+
+  Future<void> loadPersonalityMode() async {
+    final repo = ref.read(repositoryProvider);
+    final mode = await repo.getPersonalityMode();
+    state = mode;
+  }
+
+  Future<void> setPersonalityMode(PersonalityMode mode) async {
+    final repo = ref.read(repositoryProvider);
+    await repo.setPersonalityMode(mode);
+    state = mode;
+  }
+}
+
+final personalityModeProvider = NotifierProvider<PersonalityModeNotifier, PersonalityMode>(() => PersonalityModeNotifier());
+
+/// Modern Riverpod 2.x Notifier for Notifications Enabled state.
+class NotificationsEnabledNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    loadNotificationsEnabled();
+    return true;
+  }
+
+  Future<void> loadNotificationsEnabled() async {
+    final repo = ref.read(repositoryProvider);
+    final enabled = await repo.getNotificationsEnabled();
+    state = enabled;
+  }
+
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    final repo = ref.read(repositoryProvider);
+    await repo.setNotificationsEnabled(enabled);
+    state = enabled;
+  }
+}
+
+final notificationsEnabledProvider = NotifierProvider<NotificationsEnabledNotifier, bool>(() => NotificationsEnabledNotifier());
+

@@ -104,6 +104,7 @@ class RiriDatabase extends _$RiriDatabase {
 
   // Reminders DAOs/Queries
   Future<List<Reminder>> getAllReminders() => select(reminders).get();
+  Future<Reminder?> getReminderById(int id) => (select(reminders)..where((t) => t.id.equals(id))).getSingleOrNull();
   Stream<List<Reminder>> watchAllReminders() => select(reminders).watch();
   Future<int> insertReminder(RemindersCompanion companion) => insert(reminders).insert(companion);
   Future<bool> updateReminder(Reminder reminder) => update(reminders).replace(reminder);

@@ -1,60 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/ai/ai_models.dart';
 import '../../core/persistence/riri_repository.dart';
+import '../../core/persistence/riri_providers.dart';
 import '../../core/notifications/personality_copy.dart';
 import '../../theme/riri_theme.dart';
 
-class SettingsScreen extends StatefulWidget {
-  final RiriRepository repository;
-  final VoidCallback onSettingsUpdated;
+class SettingsScreen extends ConsumerWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
 
-  const SettingsScreen({
-    Key? key,
-    required this.repository,
-    required this.onSettingsUpdated,
-  }) : super(key: key);
-
-  @override
-  _SettingsScreenState createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  PersonalityMode _currentMode = PersonalityMode.bestie;
-  bool _notificationsEnabled = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-  }
-
-  Future<void> _loadSettings() async {
-    final mode = await widget.repository.getPersonalityMode();
-    final notifs = await widget.repository.getNotificationsEnabled();
-    setState(() {
-      _currentMode = mode;
-      _notificationsEnabled = notifs;
-    });
-  }
-
-  Future<void> _updatePersonality(PersonalityMode mode) async {
-    await widget.repository.setPersonalityMode(mode);
-    setState(() {
-      _currentMode = mode;
-    });
-    widget.onSettingsUpdated();
-  }
-
-  Future<void> _updateNotifications(bool value) async {
-    await widget.repository.setNotificationsEnabled(value);
-    setState(() {
-      _notificationsEnabled = value;
-    });
+  /// Shows premium edit nickname dialog
+  void _showNicknameDialog(BuildContext context, WidgetRef ref, String currentName) {
+    final controller = TextEditingController(text: currentName);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: RiriTheme.cardBg,
+        title: const Text('Baguhin ang Pangalan? 👋', style: TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: controller,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: 'Ipasok ang bagong pangalan...',
+            hintStyle: TextStyle(color: RiriTheme.textMuted),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF2F2F4A))),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: RiriTheme.secondaryAmber)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Wag na', style: TextStyle(color: RiriTheme.textMuted)),
+          ),
+          TextButton(
+            onPressed: () {
+              final newName = controller.text.trim();
+              if (newName.isNotEmpty) {
+                ref.read(usernameProvider.notifier).setUsername(newName);
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('I-save 💾', style: TextStyle(color: RiriTheme.secondaryAmber)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final currentMode = ref.watch(personalityModeProvider);
+    final notificationsEnabled = ref.watch(notificationsEnabledProvider);
+    final username = ref.watch(usernameProvider);
 
     return Scaffold(
       backgroundColor: RiriTheme.darkBg,
@@ -115,10 +113,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         const Divider(color: Color(0xFF2F2F4A), height: 1),
                     itemBuilder: (context, index) {
                       final mode = PersonalityMode.values[index];
-                      final isSelected = _currentMode == mode;
+                      final isSelected = currentMode == mode;
 
                       return InkWell(
-                        onTap: () => _updatePersonality(mode),
+                        onTap: () {
+                          ref.read(personalityModeProvider.notifier).setPersonalityMode(mode);
+                        },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                           child: Row(
@@ -147,7 +147,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Section 2: Notifications Toggles
+                // Section 2: Preferences & System
                 Text(
                   'PREFERENCES & SYSTEM',
                   style: theme.textTheme.labelSmall?.copyWith(
@@ -172,6 +172,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   child: Column(
                     children: [
+                      // Edit Nickname Tile
+                      ListTile(
+                        onTap: () => _showNicknameDialog(context, ref, username),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        title: const Text(
+                          'Nickname Display 👋',
+                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          'Kasalukuyan: $username. I-update para sa mas personal na chika.',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                        trailing: const Icon(Icons.edit, color: RiriTheme.secondaryAmber, size: 20),
+                      ),
+                      const Divider(color: Color(0xFF2F2F4A), height: 1),
+
+                      // Notifications Switch
                       SwitchListTile(
                         title: const Text(
                           'Personality Notifications 🔔',
@@ -181,9 +198,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           'Allow Riri to send witty notifications and nagging reminders in Taglish.',
                           style: theme.textTheme.bodyMedium,
                         ),
-                        value: _notificationsEnabled,
+                        value: notificationsEnabled,
                         activeColor: RiriTheme.secondaryAmber,
-                        onChanged: _updateNotifications,
+                        onChanged: (value) {
+                          ref.read(notificationsEnabledProvider.notifier).setNotificationsEnabled(value);
+                        },
                         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                       ),
                     ],

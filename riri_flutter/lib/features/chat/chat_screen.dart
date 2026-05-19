@@ -21,7 +21,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ChatResponseEngine _responseEngine = ChatResponseEngine();
   List<RiriChatMessage> _messages = [];
   bool _isTyping = false;
-  PersonalityMode _personalityMode = PersonalityMode.bestie;
 
   @override
   void initState() {
@@ -31,9 +30,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Future<void> _loadPersonalityAndHistory() async {
     final repo = ref.read(repositoryProvider);
-    final mode = await repo.getPersonalityMode();
     setState(() {
-      _personalityMode = mode;
       _messages = repo.chatHistory;
     });
 
@@ -44,8 +41,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   void _sendRiriGreeting() {
     final repo = ref.read(repositoryProvider);
+    final currentMode = ref.read(personalityModeProvider);
     String greeting;
-    switch (_personalityMode) {
+    switch (currentMode) {
       case PersonalityMode.bestie:
         greeting = 'Hoy bestie! Riri here, ready to slay the day with you! Ano na plano natin today? ✨';
         break;
@@ -63,7 +61,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     repo.addChatMessage(
       text: greeting,
       isUser: false,
-      stickerName: _personalityMode == PersonalityMode.malupit ? 'Angry' : 'Welcoming',
+      stickerName: currentMode == PersonalityMode.malupit ? 'Angry' : 'Welcoming',
     );
 
     setState(() {
@@ -91,10 +89,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _scrollToBottom();
 
     Timer(const Duration(milliseconds: 1000), () async {
+      final currentMode = ref.read(personalityModeProvider);
       // 1. Generate standard persona response using ChatResponseEngine
       final response = _responseEngine.generateResponse(
         userInput: text,
-        personalityMode: _personalityMode,
+        personalityMode: currentMode,
       );
 
       // 2. Perform task creation if intent is detected
@@ -149,6 +148,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final personalityMode = ref.watch(personalityModeProvider);
 
     return Scaffold(
       backgroundColor: RiriTheme.darkBg,
@@ -171,7 +171,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                 ),
                 Text(
-                  _personalityMode.displayLabel.split(' ')[1] + ' Mode Active 💅',
+                  personalityMode.displayLabel.split(' ')[1] + ' Mode Active 💅',
                   style: const TextStyle(
                     color: RiriTheme.secondaryAmber,
                     fontSize: 11,

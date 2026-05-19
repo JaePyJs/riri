@@ -151,16 +151,17 @@ class ChatResponseEngine {
     final now = DateTime.now();
     
     if (lower.contains('tomorrow') || lower.contains('bukas')) {
+      final tomorrow = now.add(const Duration(days: 1));
       if (lower.contains('morning') || lower.contains('umaga')) {
-        return DateTime(now.year, now.month, now.day + 1, 9, 0);
+        return DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 9, 0);
       }
       if (lower.contains('afternoon') || lower.contains('hapon')) {
-        return DateTime(now.year, now.month, now.day + 1, 14, 0);
+        return DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 14, 0);
       }
       if (lower.contains('evening') || lower.contains('gabi')) {
-        return DateTime(now.year, now.month, now.day + 1, 19, 0);
+        return DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 19, 0);
       }
-      return DateTime(now.year, now.month, now.day + 1, 12, 0);
+      return DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 12, 0);
     }
     
     if (lower.contains('next week') || lower.contains('susunod na linggo')) {
@@ -186,18 +187,7 @@ class ChatResponseEngine {
   }) {
     final persona = PersonaConfig.get(personalityMode);
     
-    // Render the standard persona layout to keep copy fully data-driven!
-    final renderedStandard = persona.standard.renderBody({'task': taskTitle});
-
-    switch (personalityMode) {
-      case PersonalityMode.bestie:
-        return 'Naka-set na bestie! "$taskTitle" is added! ($renderedStandard) Check mo sa dashboard! 💅';
-      case PersonalityMode.malupit:
-        return 'Fine. "$taskTitle" has been saved. ($renderedStandard) Don\'t slack off.';
-      case PersonalityMode.chill:
-        return 'Relax ka lang, nailista ko na: "$taskTitle". ($renderedStandard) ✨';
-      case PersonalityMode.tita:
-        return 'Naku anak, nalista ko na: "$taskTitle". ($renderedStandard) Alagaan mo ang sarili mo ha? 🙏';
-    }
+    // Render the standard persona layout to keep copy fully data-driven as the primary response!
+    return persona.standard.renderBody({'task': taskTitle});
   }
 }

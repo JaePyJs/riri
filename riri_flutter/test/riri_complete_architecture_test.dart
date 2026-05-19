@@ -39,6 +39,7 @@ void main() {
 
       expect(response.extractedTitle, 'thesis');
       expect(response.extractedCategory, ReminderCategory.school);
+      expect(response.text, "Uy, reminder mo: thesis. Let's get it done!");
       expect(response.extractedDueDate, isNotNull);
       
       final tomorrow = DateTime.now().add(const Duration(days: 1));
