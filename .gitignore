@@ -1,16 +1,37 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+# Riri - Root Git Ignore File
+
+# Flutter & Dart Bins
+riri_flutter/.dart_tool/
+riri_flutter/build/
+riri_flutter/.packages
+riri_flutter/pubspec.lock
+riri_flutter/.flutter-plugins
+riri_flutter/.flutter-plugins-dependencies
+
+# System Garbage
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+Thumbs.db
+*.log
+*.tmp
+*.bak
+
+# IDE & Editor Configs
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Local Secrets & Settings
+*.properties
+*.env
+*.env.local
 local.properties
-PLANNING.md
+.env*
+
+# Gradle/Legacy leftovers
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/

@@ -1,3 +1,5 @@
+import 'personas.dart';
+
 enum PersonalityMode {
   bestie,
   malupit,
@@ -31,50 +33,33 @@ enum PersonalityMode {
 }
 
 class PersonalityNotificationCopy {
+  
+  /// Formats notification titles and bodies dynamically from data template configurations.
   static Map<String, String> getNotificationText({
     required PersonalityMode mode,
     required String reminderTitle,
     required int snoozeCount,
     required int daysOverdue,
   }) {
-    String title;
-    String body;
+    final persona = PersonaConfig.get(mode);
+    final params = {
+      'task': reminderTitle,
+      'days': daysOverdue.toString(),
+      'snoozeCount': snoozeCount.toString(),
+    };
 
-    switch (mode) {
-      case PersonalityMode.bestie:
-        if (daysOverdue >= 3) {
-          title = 'Bestie... 👀';
-          body = "Ito na yung ika-$daysOverdue araw mo sa '$reminderTitle'. Kakayanin pa ba?";
-        } else if (snoozeCount >= 2) {
-          title = 'Huy! 🔔';
-          body = "I-snooze mo ulit? '$reminderTitle' Hindi pa rin natin magagawa yan nang ganyan.";
-        } else {
-          title = 'Hoy! Riri here 👋';
-          body = "Uy, reminder mo: $reminderTitle. Let's get it done!";
-        }
-        break;
-
-      case PersonalityMode.malupit:
-        if (daysOverdue >= 3) {
-          title = 'Day $daysOverdue. Seriously? 💀';
-          body = "'$reminderTitle'. I have literally nothing more to say to you.";
-        } else {
-          title = 'Get up. 🔔';
-          body = "'$reminderTitle'. Now. Or suffer the consequences.";
-        }
-        break;
-
-      case PersonalityMode.chill:
-        title = 'Hey, no rush ✌️';
-        body = "Just checking — $reminderTitle when you have the energy.";
-        break;
-
-      case PersonalityMode.tita:
-        title = 'Anak, naalala mo ba? 🙏';
-        body = "Yung '$reminderTitle' mo, hindi pa tapos. Gawin mo na bago ka pa makalimot ulit, naku.";
-        break;
+    PersonaTemplate selectedTemplate;
+    if (daysOverdue >= 3) {
+      selectedTemplate = persona.overdue;
+    } else if (snoozeCount >= 2) {
+      selectedTemplate = persona.snooze;
+    } else {
+      selectedTemplate = persona.standard;
     }
 
-    return {'title': title, 'body': body};
+    return {
+      'title': selectedTemplate.renderTitle(params),
+      'body': selectedTemplate.renderBody(params),
+    };
   }
 }
