@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'theme/riri_theme.dart';
+import 'core/persistence/riri_database.dart';
 import 'core/persistence/riri_repository.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
@@ -11,23 +13,28 @@ import 'features/reminders/add_reminder_sheet.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Pre-load preferences to determine starting route
-  final prefs = await SharedPreferences.getInstance();
-  final onboardingCompleted = prefs.getBool('riri_onboarding_completed') ?? false;
-  final username = prefs.getString('riri_username') ?? 'Bestie';
+  // Pre-load preferences using non-blocking SharedPreferencesAsync to determine starting route
+  final prefs = SharedPreferencesAsync();
+  final onboardingCompleted = await prefs.getBool('riri_onboarding_completed') ?? false;
+  final username = await prefs.getString('riri_username') ?? 'Bestie';
+
+  final database = RiriDatabase();
 
   runApp(RiriApp(
+    database: database,
     onboardingCompleted: onboardingCompleted,
     username: username,
   ));
 }
 
 class RiriApp extends StatelessWidget {
+  final RiriDatabase database;
   final bool onboardingCompleted;
   final String username;
 
   const RiriApp({
     Key? key,
+    required this.database,
     required this.onboardingCompleted,
     required this.username,
   }) : super(key: key);
@@ -39,15 +46,16 @@ class RiriApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: RiriTheme.darkThemeData,
       home: onboardingCompleted
-          ? RiriAppShell(initialUsername: username)
-          : NavigationController(initialUsername: username),
+          ? RiriAppShell(database: database, initialUsername: username)
+          : NavigationController(database: database, initialUsername: username),
     );
   }
 }
 
 class NavigationController extends StatefulWidget {
+  final RiriDatabase database;
   final String initialUsername;
-  const NavigationController({Key? key, required this.initialUsername}) : super(key: key);
+  const NavigationController({Key? key, required this.database, required this.initialUsername}) : super(key: key);
 
   @override
   _NavigationControllerState createState() => _NavigationControllerState();
@@ -64,9 +72,10 @@ class _NavigationControllerState extends State<NavigationController> {
   }
 
   void _onLetsGo() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = SharedPreferencesAsync();
+    final username = await prefs.getString('riri_username') ?? 'Bestie';
     setState(() {
-      _username = prefs.getString('riri_username') ?? 'Bestie';
+      _username = username;
       _completed = true;
     });
   }
@@ -74,41 +83,51 @@ class _NavigationControllerState extends State<NavigationController> {
   @override
   Widget build(BuildContext context) {
     if (_completed) {
-      return RiriAppShell(initialUsername: _username);
+      return RiriAppShell(database: widget.database, initialUsername: _username);
     }
     return OnboardingScreen(onLetsGoClick: _onLetsGo);
   }
 }
 
 class RiriAppShell extends StatefulWidget {
+  final RiriDatabase database;
   final String initialUsername;
 
-  const RiriAppShell({Key? key, required this.initialUsername}) : super(key: key);
+  const RiriAppShell({Key? key, required this.database, required this.initialUsername}) : super(key: key);
 
   @override
   _RiriAppShellState createState() => _RiriAppShellState();
 }
 
 class _RiriAppShellState extends State<RiriAppShell> {
-  final RiriRepository _repository = RiriRepository();
+  late final RiriRepository _repository;
   int _currentTabIndex = 0;
   String _username = '';
   List<RiriReminder> _remindersList = [];
+  StreamSubscription<List<RiriReminder>>? _remindersSubscription;
 
   @override
   void initState() {
     super.initState();
+    _repository = RiriRepository(database: widget.database);
     _username = widget.initialUsername;
     _remindersList = _repository.currentReminders;
 
     // React to changes in database reminders
-    _repository.remindersStream.listen((list) {
+    _remindersSubscription = _repository.remindersStream.listen((list) {
       if (mounted) {
         setState(() {
           _remindersList = list;
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _remindersSubscription?.cancel();
+    _repository.dispose();
+    super.dispose();
   }
 
   void _toggleReminderCompletion(int id) {
@@ -145,10 +164,11 @@ class _RiriAppShellState extends State<RiriAppShell> {
   }
 
   void _refreshSettings() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = SharedPreferencesAsync();
+    final username = await prefs.getString('riri_username') ?? 'Bestie';
     if (mounted) {
       setState(() {
-        _username = prefs.getString('riri_username') ?? 'Bestie';
+        _username = username;
       });
     }
   }
