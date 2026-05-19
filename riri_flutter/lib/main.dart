@@ -108,7 +108,7 @@ class RiriAppShell extends ConsumerWidget {
 class DashboardTab extends ConsumerWidget {
   const DashboardTab({Key? key}) : super(key: key);
 
-  void _showAddReminderBottomSheet(BuildContext context, RiriRepository repository) {
+  static void _showAddReminderBottomSheet(BuildContext context, RiriRepository repository) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
