@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/ai/ai_models.dart';
+import '../../core/notifications/personas.dart';
+import '../../core/notifications/personality_copy.dart';
 import '../../core/persistence/riri_repository.dart';
 import '../../core/persistence/riri_providers.dart';
 import '../../theme/riri_theme.dart';
@@ -15,7 +17,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
   ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTickerProviderStateMixin {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerProviderStateMixin {
   late final AnimationController _mascotController;
   late final Animation<Offset> _mascotAnimation;
 
@@ -85,27 +87,60 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   }
 
   void _triggerTaskCompletionPayoff(RiriReminder reminder, RiriRepository repository) async {
-    // Trigger medium haptic feedback!
     HapticFeedback.mediumImpact();
-
     final wasCompleted = reminder.isCompleted;
     await repository.toggleReminderCompletion(reminder.id);
-
-    if (!wasCompleted) {
-      if (mounted) {
-        _showConfettiCelebration(context);
-      }
+    if (!wasCompleted && mounted) {
+      final mode = ref.read(personalityModeProvider);
+      _showConfettiCelebration(context, mode);
     }
   }
 
-  void _showConfettiCelebration(BuildContext context) {
+  void _showConfettiCelebration(BuildContext context, PersonalityMode mode) {
+    // Drive all copy from PersonaConfig — no hardcoded bestie text
+    final persona = PersonaConfig.get(mode);
+    assert(persona.mode == mode); // registry coverage check
+
+    final String headline;
+    final String body;
+    final String buttonLabel;
+
+    switch (mode) {
+      case PersonalityMode.bestie:
+        headline = 'OMG Bestie! 🎉';
+        body = "Natapos mo rin! Ang galing mo naman, proud na proud si Riri sa'yo! 💅✨";
+        buttonLabel = 'Salamat, Bestie! 💖';
+        break;
+      case PersonalityMode.malupit:
+        headline = 'Finally. 💀';
+        body = "Nagawa mo rin pala. Hindi ko aakalaing mangyayari 'to. Next.";
+        buttonLabel = 'Noted. 🫡';
+        break;
+      case PersonalityMode.chill:
+        headline = 'Yay, nice one~ ✌️';
+        body = "Done na 'yan, no stress! Take a breather and vibe. You deserve it 🍃";
+        buttonLabel = 'Thanks bes~ 🌿';
+        break;
+      case PersonalityMode.tita:
+        headline = 'Ay nako, tapos na! 🙏';
+        body = "Ang galing mo naman anak! Kumain ka na para may lakas ka sa susunod na trabaho ha. 💜";
+        buttonLabel = 'Opo Tita! 💜';
+        break;
+    }
+
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Confetti',
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withValues(alpha: 0.7),
       transitionDuration: const Duration(milliseconds: 350),
-      pageBuilder: (context, anim1, anim2) {
+      pageBuilder: (dialogContext, anim1, anim2) {
+        // Auto-dismiss after 2.5s so repeated completions don't force 5x manual taps
+        Future.delayed(const Duration(milliseconds: 2500), () {
+          if (Navigator.of(dialogContext).canPop()) {
+            Navigator.of(dialogContext).pop();
+          }
+        });
         return Center(
           child: Material(
             color: Colors.transparent,
@@ -120,10 +155,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 decoration: BoxDecoration(
                   color: const Color(0xFF252538),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: RiriTheme.hotPink.withOpacity(0.5), width: 2),
+                  border: Border.all(color: RiriTheme.hotPink.withValues(alpha: 0.5), width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: RiriTheme.hotPink.withOpacity(0.25),
+                      color: RiriTheme.hotPink.withValues(alpha: 0.25),
                       blurRadius: 20,
                       spreadRadius: 2,
                     ),
@@ -141,19 +176,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       },
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'OMG Bestie! 🎉',
-                      style: TextStyle(
+                    Text(
+                      headline,
+                      style: const TextStyle(
                         color: RiriTheme.hotPink,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Natapos mo rin! Ang galing mo naman, proud na proud si Riri sa\'yo! 💅✨ No more procrastinating!',
+                    Text(
+                      body,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
                         height: 1.4,
@@ -164,7 +199,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       width: double.infinity,
                       height: 44,
                       child: ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () => Navigator.of(dialogContext).pop(),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: RiriTheme.primaryPurple,
                           foregroundColor: Colors.white,
@@ -172,7 +207,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                             borderRadius: BorderRadius.circular(22),
                           ),
                         ),
-                        child: const Text('Salamat, Bestie! 💖', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: Text(buttonLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -188,7 +223,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     // Watch providers directly to decouple callback prop-drilling
     final repository = ref.watch(repositoryProvider);
     final remindersAsync = ref.watch(remindersStreamProvider);
@@ -222,7 +257,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               height: MediaQuery.of(context).size.height * 0.35,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [RiriTheme.primaryPurple.withOpacity(0.2), Colors.transparent],
+                  colors: [RiriTheme.primaryPurple.withValues(alpha: 0.2), Colors.transparent],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -262,7 +297,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                           border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -314,13 +349,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      _buildProductivityCard(theme, reminders),
                     ],
                   ),
                 ),
 
-                // Main Tasks List Area
+                // Main Tasks List Area — productivity card sits above task list (once, not twice)
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -360,7 +393,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                                         alignment: Alignment.centerRight,
                                         padding: const EdgeInsets.only(right: 20),
                                         decoration: BoxDecoration(
-                                          color: Colors.redAccent.withOpacity(0.8),
+                                          color: Colors.redAccent.withValues(alpha: 0.8),
                                           borderRadius: BorderRadius.circular(16),
                                         ),
                                         child: const Icon(Icons.delete, color: Colors.white),
@@ -393,7 +426,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     final completedCount = tasks.where((t) => t.isCompleted).length;
     final totalCount = tasks.length;
 
-    // Calculate procrastination index
+    // Calculate procrastination index from snooze + reschedule history
     double totalSnoozes = 0;
     for (final t in tasks) {
       totalSnoozes += (t.snoozeCount + t.rescheduleCount);
@@ -413,7 +446,33 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       color = RiriTheme.dangerRed;
     }
 
-    final int streak = totalCount == 0 ? 0 : (completedCount > 0 ? (completedCount * 1.5).ceil() : 0);
+    // Real consecutive-day streak: count distinct calendar days going backwards
+    // from today that each have at least one completed task.
+    final completedDates = tasks
+        .where((t) => t.isCompleted && t.completedAt != null)
+        .map((t) => DateTime(
+              t.completedAt!.year,
+              t.completedAt!.month,
+              t.completedAt!.day,
+            ))
+        .toSet()
+        .toList()
+      ..sort((a, b) => b.compareTo(a)); // descending — most recent first
+
+    int streak = 0;
+    DateTime cursor = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
+    for (final day in completedDates) {
+      if (day == cursor || day == cursor.subtract(const Duration(days: 1))) {
+        streak++;
+        cursor = day;
+      } else {
+        break;
+      }
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -446,7 +505,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
           // Procrastination Index
           Column(
             children: [
-              const Text('Procrastination Meter 🧠', style: TextStyle(color: RiriTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w600)),
+              const Text('Procrastination 🧠', style: TextStyle(color: RiriTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
               Text(
                 label,
@@ -523,7 +582,7 @@ class _ReminderCard extends StatelessWidget {
                               width: 2.0,
                             ),
                             color: reminder.isCompleted
-                                ? RiriTheme.successGreen.withOpacity(0.2)
+                                ? RiriTheme.successGreen.withValues(alpha: 0.2)
                                 : Colors.transparent,
                           ),
                           child: reminder.isCompleted
@@ -562,7 +621,7 @@ class _ReminderCard extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: RiriTheme.primaryPurple.withOpacity(0.15),
+                                    color: RiriTheme.primaryPurple.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(

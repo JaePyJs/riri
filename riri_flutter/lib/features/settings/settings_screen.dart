@@ -68,7 +68,7 @@ class SettingsScreen extends ConsumerWidget {
               height: MediaQuery.of(context).size.height * 0.35,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [RiriTheme.primaryPurple.withOpacity(0.15), Colors.transparent],
+                  colors: [RiriTheme.primaryPurple.withValues(alpha: 0.15), Colors.transparent],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -97,7 +97,7 @@ class SettingsScreen extends ConsumerWidget {
                     border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -162,7 +162,7 @@ class SettingsScreen extends ConsumerWidget {
                     border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -197,7 +197,7 @@ class SettingsScreen extends ConsumerWidget {
                           style: theme.textTheme.bodyMedium,
                         ),
                         value: notificationsEnabled,
-                        activeColor: RiriTheme.secondaryAmber,
+                        activeThumbColor: RiriTheme.secondaryAmber,
                         onChanged: (value) {
                           ref.read(notificationsEnabledProvider.notifier).setNotificationsEnabled(value);
                         },

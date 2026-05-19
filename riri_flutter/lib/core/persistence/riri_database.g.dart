@@ -893,6 +893,316 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
   }
 }
 
+class $ChatMessagesTable extends ChatMessages
+    with TableInfo<$ChatMessagesTable, ChatMessage> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ChatMessagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _messageTextMeta =
+      const VerificationMeta('messageText');
+  @override
+  late final GeneratedColumn<String> messageText = GeneratedColumn<String>(
+      'message_text', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _isUserMeta = const VerificationMeta('isUser');
+  @override
+  late final GeneratedColumn<bool> isUser = GeneratedColumn<bool>(
+      'is_user', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_user" IN (0, 1))'));
+  @override
+  late final GeneratedColumnWithTypeConverter<DateTime, int> timestamp =
+      GeneratedColumn<int>('timestamp', aliasedName, false,
+              type: DriftSqlType.int, requiredDuringInsert: true)
+          .withConverter<DateTime>($ChatMessagesTable.$convertertimestamp);
+  static const VerificationMeta _stickerNameMeta =
+      const VerificationMeta('stickerName');
+  @override
+  late final GeneratedColumn<String> stickerName = GeneratedColumn<String>(
+      'sticker_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, messageText, isUser, timestamp, stickerName];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'chat_messages';
+  @override
+  VerificationContext validateIntegrity(Insertable<ChatMessage> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('message_text')) {
+      context.handle(
+          _messageTextMeta,
+          messageText.isAcceptableOrUnknown(
+              data['message_text']!, _messageTextMeta));
+    } else if (isInserting) {
+      context.missing(_messageTextMeta);
+    }
+    if (data.containsKey('is_user')) {
+      context.handle(_isUserMeta,
+          isUser.isAcceptableOrUnknown(data['is_user']!, _isUserMeta));
+    } else if (isInserting) {
+      context.missing(_isUserMeta);
+    }
+    if (data.containsKey('sticker_name')) {
+      context.handle(
+          _stickerNameMeta,
+          stickerName.isAcceptableOrUnknown(
+              data['sticker_name']!, _stickerNameMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ChatMessage map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ChatMessage(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      messageText: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}message_text'])!,
+      isUser: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_user'])!,
+      timestamp: $ChatMessagesTable.$convertertimestamp.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}timestamp'])!),
+      stickerName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sticker_name']),
+    );
+  }
+
+  @override
+  $ChatMessagesTable createAlias(String alias) {
+    return $ChatMessagesTable(attachedDatabase, alias);
+  }
+
+  static TypeConverter<DateTime, int> $convertertimestamp =
+      const DateTimeConverter();
+}
+
+class ChatMessage extends DataClass implements Insertable<ChatMessage> {
+  final int id;
+  final String messageText;
+  final bool isUser;
+  final DateTime timestamp;
+  final String? stickerName;
+  const ChatMessage(
+      {required this.id,
+      required this.messageText,
+      required this.isUser,
+      required this.timestamp,
+      this.stickerName});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['message_text'] = Variable<String>(messageText);
+    map['is_user'] = Variable<bool>(isUser);
+    {
+      map['timestamp'] = Variable<int>(
+          $ChatMessagesTable.$convertertimestamp.toSql(timestamp));
+    }
+    if (!nullToAbsent || stickerName != null) {
+      map['sticker_name'] = Variable<String>(stickerName);
+    }
+    return map;
+  }
+
+  ChatMessagesCompanion toCompanion(bool nullToAbsent) {
+    return ChatMessagesCompanion(
+      id: Value(id),
+      messageText: Value(messageText),
+      isUser: Value(isUser),
+      timestamp: Value(timestamp),
+      stickerName: stickerName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(stickerName),
+    );
+  }
+
+  factory ChatMessage.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ChatMessage(
+      id: serializer.fromJson<int>(json['id']),
+      messageText: serializer.fromJson<String>(json['messageText']),
+      isUser: serializer.fromJson<bool>(json['isUser']),
+      timestamp: serializer.fromJson<DateTime>(json['timestamp']),
+      stickerName: serializer.fromJson<String?>(json['stickerName']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'messageText': serializer.toJson<String>(messageText),
+      'isUser': serializer.toJson<bool>(isUser),
+      'timestamp': serializer.toJson<DateTime>(timestamp),
+      'stickerName': serializer.toJson<String?>(stickerName),
+    };
+  }
+
+  ChatMessage copyWith(
+          {int? id,
+          String? messageText,
+          bool? isUser,
+          DateTime? timestamp,
+          Value<String?> stickerName = const Value.absent()}) =>
+      ChatMessage(
+        id: id ?? this.id,
+        messageText: messageText ?? this.messageText,
+        isUser: isUser ?? this.isUser,
+        timestamp: timestamp ?? this.timestamp,
+        stickerName: stickerName.present ? stickerName.value : this.stickerName,
+      );
+  ChatMessage copyWithCompanion(ChatMessagesCompanion data) {
+    return ChatMessage(
+      id: data.id.present ? data.id.value : this.id,
+      messageText:
+          data.messageText.present ? data.messageText.value : this.messageText,
+      isUser: data.isUser.present ? data.isUser.value : this.isUser,
+      timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
+      stickerName:
+          data.stickerName.present ? data.stickerName.value : this.stickerName,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChatMessage(')
+          ..write('id: $id, ')
+          ..write('messageText: $messageText, ')
+          ..write('isUser: $isUser, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('stickerName: $stickerName')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, messageText, isUser, timestamp, stickerName);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ChatMessage &&
+          other.id == this.id &&
+          other.messageText == this.messageText &&
+          other.isUser == this.isUser &&
+          other.timestamp == this.timestamp &&
+          other.stickerName == this.stickerName);
+}
+
+class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
+  final Value<int> id;
+  final Value<String> messageText;
+  final Value<bool> isUser;
+  final Value<DateTime> timestamp;
+  final Value<String?> stickerName;
+  const ChatMessagesCompanion({
+    this.id = const Value.absent(),
+    this.messageText = const Value.absent(),
+    this.isUser = const Value.absent(),
+    this.timestamp = const Value.absent(),
+    this.stickerName = const Value.absent(),
+  });
+  ChatMessagesCompanion.insert({
+    this.id = const Value.absent(),
+    required String messageText,
+    required bool isUser,
+    required DateTime timestamp,
+    this.stickerName = const Value.absent(),
+  })  : messageText = Value(messageText),
+        isUser = Value(isUser),
+        timestamp = Value(timestamp);
+  static Insertable<ChatMessage> custom({
+    Expression<int>? id,
+    Expression<String>? messageText,
+    Expression<bool>? isUser,
+    Expression<int>? timestamp,
+    Expression<String>? stickerName,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (messageText != null) 'message_text': messageText,
+      if (isUser != null) 'is_user': isUser,
+      if (timestamp != null) 'timestamp': timestamp,
+      if (stickerName != null) 'sticker_name': stickerName,
+    });
+  }
+
+  ChatMessagesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? messageText,
+      Value<bool>? isUser,
+      Value<DateTime>? timestamp,
+      Value<String?>? stickerName}) {
+    return ChatMessagesCompanion(
+      id: id ?? this.id,
+      messageText: messageText ?? this.messageText,
+      isUser: isUser ?? this.isUser,
+      timestamp: timestamp ?? this.timestamp,
+      stickerName: stickerName ?? this.stickerName,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (messageText.present) {
+      map['message_text'] = Variable<String>(messageText.value);
+    }
+    if (isUser.present) {
+      map['is_user'] = Variable<bool>(isUser.value);
+    }
+    if (timestamp.present) {
+      map['timestamp'] = Variable<int>(
+          $ChatMessagesTable.$convertertimestamp.toSql(timestamp.value));
+    }
+    if (stickerName.present) {
+      map['sticker_name'] = Variable<String>(stickerName.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChatMessagesCompanion(')
+          ..write('id: $id, ')
+          ..write('messageText: $messageText, ')
+          ..write('isUser: $isUser, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('stickerName: $stickerName')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $UserStatsTable extends UserStats
     with TableInfo<$UserStatsTable, UserStat> {
   @override
@@ -1521,12 +1831,14 @@ abstract class _$RiriDatabase extends GeneratedDatabase {
   _$RiriDatabase(QueryExecutor e) : super(e);
   $RiriDatabaseManager get managers => $RiriDatabaseManager(this);
   late final $RemindersTable reminders = $RemindersTable(this);
+  late final $ChatMessagesTable chatMessages = $ChatMessagesTable(this);
   late final $UserStatsTable userStats = $UserStatsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [reminders, userStats];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [reminders, chatMessages, userStats];
 }
 
 typedef $$RemindersTableCreateCompanionBuilder = RemindersCompanion Function({
@@ -1909,6 +2221,175 @@ typedef $$RemindersTableProcessedTableManager = ProcessedTableManager<
     (Reminder, BaseReferences<_$RiriDatabase, $RemindersTable, Reminder>),
     Reminder,
     PrefetchHooks Function()>;
+typedef $$ChatMessagesTableCreateCompanionBuilder = ChatMessagesCompanion
+    Function({
+  Value<int> id,
+  required String messageText,
+  required bool isUser,
+  required DateTime timestamp,
+  Value<String?> stickerName,
+});
+typedef $$ChatMessagesTableUpdateCompanionBuilder = ChatMessagesCompanion
+    Function({
+  Value<int> id,
+  Value<String> messageText,
+  Value<bool> isUser,
+  Value<DateTime> timestamp,
+  Value<String?> stickerName,
+});
+
+class $$ChatMessagesTableFilterComposer
+    extends Composer<_$RiriDatabase, $ChatMessagesTable> {
+  $$ChatMessagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get messageText => $composableBuilder(
+      column: $table.messageText, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isUser => $composableBuilder(
+      column: $table.isUser, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<DateTime, DateTime, int> get timestamp =>
+      $composableBuilder(
+          column: $table.timestamp,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<String> get stickerName => $composableBuilder(
+      column: $table.stickerName, builder: (column) => ColumnFilters(column));
+}
+
+class $$ChatMessagesTableOrderingComposer
+    extends Composer<_$RiriDatabase, $ChatMessagesTable> {
+  $$ChatMessagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get messageText => $composableBuilder(
+      column: $table.messageText, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isUser => $composableBuilder(
+      column: $table.isUser, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get timestamp => $composableBuilder(
+      column: $table.timestamp, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get stickerName => $composableBuilder(
+      column: $table.stickerName, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ChatMessagesTableAnnotationComposer
+    extends Composer<_$RiriDatabase, $ChatMessagesTable> {
+  $$ChatMessagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get messageText => $composableBuilder(
+      column: $table.messageText, builder: (column) => column);
+
+  GeneratedColumn<bool> get isUser =>
+      $composableBuilder(column: $table.isUser, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<DateTime, int> get timestamp =>
+      $composableBuilder(column: $table.timestamp, builder: (column) => column);
+
+  GeneratedColumn<String> get stickerName => $composableBuilder(
+      column: $table.stickerName, builder: (column) => column);
+}
+
+class $$ChatMessagesTableTableManager extends RootTableManager<
+    _$RiriDatabase,
+    $ChatMessagesTable,
+    ChatMessage,
+    $$ChatMessagesTableFilterComposer,
+    $$ChatMessagesTableOrderingComposer,
+    $$ChatMessagesTableAnnotationComposer,
+    $$ChatMessagesTableCreateCompanionBuilder,
+    $$ChatMessagesTableUpdateCompanionBuilder,
+    (
+      ChatMessage,
+      BaseReferences<_$RiriDatabase, $ChatMessagesTable, ChatMessage>
+    ),
+    ChatMessage,
+    PrefetchHooks Function()> {
+  $$ChatMessagesTableTableManager(_$RiriDatabase db, $ChatMessagesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ChatMessagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ChatMessagesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ChatMessagesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> messageText = const Value.absent(),
+            Value<bool> isUser = const Value.absent(),
+            Value<DateTime> timestamp = const Value.absent(),
+            Value<String?> stickerName = const Value.absent(),
+          }) =>
+              ChatMessagesCompanion(
+            id: id,
+            messageText: messageText,
+            isUser: isUser,
+            timestamp: timestamp,
+            stickerName: stickerName,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String messageText,
+            required bool isUser,
+            required DateTime timestamp,
+            Value<String?> stickerName = const Value.absent(),
+          }) =>
+              ChatMessagesCompanion.insert(
+            id: id,
+            messageText: messageText,
+            isUser: isUser,
+            timestamp: timestamp,
+            stickerName: stickerName,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ChatMessagesTableProcessedTableManager = ProcessedTableManager<
+    _$RiriDatabase,
+    $ChatMessagesTable,
+    ChatMessage,
+    $$ChatMessagesTableFilterComposer,
+    $$ChatMessagesTableOrderingComposer,
+    $$ChatMessagesTableAnnotationComposer,
+    $$ChatMessagesTableCreateCompanionBuilder,
+    $$ChatMessagesTableUpdateCompanionBuilder,
+    (
+      ChatMessage,
+      BaseReferences<_$RiriDatabase, $ChatMessagesTable, ChatMessage>
+    ),
+    ChatMessage,
+    PrefetchHooks Function()>;
 typedef $$UserStatsTableCreateCompanionBuilder = UserStatsCompanion Function({
   Value<DateTime> weekStartDate,
   required DateTime weekEndDate,
@@ -2204,6 +2685,8 @@ class $RiriDatabaseManager {
   $RiriDatabaseManager(this._db);
   $$RemindersTableTableManager get reminders =>
       $$RemindersTableTableManager(_db, _db.reminders);
+  $$ChatMessagesTableTableManager get chatMessages =>
+      $$ChatMessagesTableTableManager(_db, _db.chatMessages);
   $$UserStatsTableTableManager get userStats =>
       $$UserStatsTableTableManager(_db, _db.userStats);
 }

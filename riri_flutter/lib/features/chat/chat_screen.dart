@@ -155,7 +155,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundColor: RiriTheme.primaryPurple.withOpacity(0.2),
+              backgroundColor: RiriTheme.primaryPurple.withValues(alpha: 0.2),
               child: const Text('🌸', style: TextStyle(fontSize: 20)),
             ),
             const SizedBox(width: 12),
@@ -221,7 +221,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               height: MediaQuery.of(context).size.height * 0.3,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [RiriTheme.primaryPurple.withOpacity(0.12), Colors.transparent],
+                  colors: [RiriTheme.primaryPurple.withValues(alpha: 0.12), Colors.transparent],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -330,7 +330,7 @@ class _ChatBubble extends StatelessWidget {
               errorBuilder: (context, error, stackTrace) {
                 return CircleAvatar(
                   radius: 20,
-                  backgroundColor: RiriTheme.primaryPurple.withOpacity(0.2),
+                  backgroundColor: RiriTheme.primaryPurple.withValues(alpha: 0.2),
                   child: const Icon(Icons.face, color: RiriTheme.primaryPurple, size: 20),
                 );
               },
@@ -338,7 +338,7 @@ class _ChatBubble extends StatelessWidget {
           ] else ...[
             CircleAvatar(
               radius: 20,
-              backgroundColor: RiriTheme.primaryPurple.withOpacity(0.2),
+              backgroundColor: RiriTheme.primaryPurple.withValues(alpha: 0.2),
               child: const Icon(Icons.face, color: RiriTheme.primaryPurple, size: 20),
             ),
           ],
@@ -404,16 +404,16 @@ class _TypingIndicatorState extends State<_TypingIndicator> with SingleTickerPro
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final double delay = index * 0.2;
-        // Make the bouncing cycle clean and staggered
-        double progress = _controller.value - delay;
-        if (progress < 0.0) progress += 1.0;
-        if (progress > 1.0) progress -= 1.0;
-        
-        final double bounce = (progress < 0.5)
-            ? (progress * 2.0)
-            : (1.0 - (progress - 0.5) * 2.0);
-        final double offset = -bounce * 6.0;
+        final double delay = index * 0.25;
+        // Shift the animation phase per dot, wrap around [0, 1]
+        double progress = (_controller.value - delay) % 1.0;
+        if (progress < 0) progress += 1.0;
+
+        // Apply easeInOut curve on the [0, 1] phase for organic bounce feel
+        final curved = Curves.easeInOut.transform(
+          progress < 0.5 ? progress * 2.0 : 1.0 - (progress - 0.5) * 2.0,
+        );
+        final double offset = -curved * 7.0;
 
         return Transform.translate(
           offset: Offset(0, offset),

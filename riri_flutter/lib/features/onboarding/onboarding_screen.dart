@@ -78,7 +78,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
               height: MediaQuery.of(context).size.height * 0.45,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [RiriTheme.primaryPurple.withOpacity(0.25), Colors.transparent],
+                  colors: [RiriTheme.primaryPurple.withValues(alpha: 0.25), Colors.transparent],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -102,7 +102,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                           height: 200,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: RiriTheme.primaryPurple.withOpacity(0.15),
+                            color: RiriTheme.primaryPurple.withValues(alpha: 0.15),
                           ),
                         ),
                         SlideTransition(
@@ -192,10 +192,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                         style: ElevatedButton.styleFrom(
                           backgroundColor: RiriTheme.primaryPurple,
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: RiriTheme.cardBg.withOpacity(0.5),
+                          disabledBackgroundColor: RiriTheme.cardBg.withValues(alpha: 0.5),
                           disabledForegroundColor: RiriTheme.textMuted,
                           elevation: 8,
-                          shadowColor: RiriTheme.primaryPurple.withOpacity(0.3),
+                          shadowColor: RiriTheme.primaryPurple.withValues(alpha: 0.3),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(28),
                           ),

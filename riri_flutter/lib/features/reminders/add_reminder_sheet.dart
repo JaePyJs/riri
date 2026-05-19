@@ -86,7 +86,7 @@ class _AddReminderSheetState extends State<AddReminderSheet> {
                 width: 40,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: RiriTheme.textMuted.withOpacity(0.3),
+                  color: RiriTheme.textMuted.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -235,7 +235,7 @@ class _AddReminderSheetState extends State<AddReminderSheet> {
                     borderRadius: BorderRadius.circular(26),
                   ),
                   elevation: 6,
-                  shadowColor: RiriTheme.primaryPurple.withOpacity(0.3),
+                  shadowColor: RiriTheme.primaryPurple.withValues(alpha: 0.3),
                 ),
                 child: Container(
                   width: double.infinity,
