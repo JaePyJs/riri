@@ -24,17 +24,38 @@ final remindersStreamProvider = StreamProvider<List<RiriReminder>>((ref) {
   return repo.remindersStream;
 });
 
-/// Tab index manager.
-final tabIndexProvider = StateProvider<int>((ref) => 0);
+/// Modern Riverpod 2.x Notifier for Tab Index management.
+class TabIndexNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
 
-/// Onboarding progress notifier.
-final onboardingCompletedProvider = StateProvider<bool>((ref) => false);
-
-/// Username state management.
-class UsernameNotifier extends StateNotifier<String> {
-  UsernameNotifier() : super('Bestie') {
-    loadUsername();
+  void setTab(int index) {
+    state = index;
   }
+}
+
+final tabIndexProvider = NotifierProvider<TabIndexNotifier, int>(() => TabIndexNotifier());
+
+/// Modern Riverpod 2.x Notifier for Onboarding Completed state.
+class OnboardingCompletedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void complete() {
+    state = true;
+  }
+  
+  void setCompleted(bool completed) {
+    state = completed;
+  }
+}
+
+final onboardingCompletedProvider = NotifierProvider<OnboardingCompletedNotifier, bool>(() => OnboardingCompletedNotifier());
+
+/// Modern Riverpod 2.x Notifier for Username management.
+class UsernameNotifier extends Notifier<String> {
+  @override
+  String build() => 'Bestie';
 
   Future<void> loadUsername() async {
     final prefs = SharedPreferencesAsync();
@@ -51,6 +72,4 @@ class UsernameNotifier extends StateNotifier<String> {
   }
 }
 
-final usernameProvider = StateNotifierProvider<UsernameNotifier, String>((ref) {
-  return UsernameNotifier();
-});
+final usernameProvider = NotifierProvider<UsernameNotifier, String>(() => UsernameNotifier());

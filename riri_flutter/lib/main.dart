@@ -23,8 +23,14 @@ void main() async {
   runApp(
     ProviderScope(
       overrides: [
-        databaseProvider.overrideWithValue(database),
-        onboardingCompletedProvider.overrideWith((ref) => onboardingCompleted),
+        // Fix database disposal leak by registering onDispose inside overrideWith
+        databaseProvider.overrideWith((ref) {
+          ref.onDispose(() => database.close());
+          return database;
+        }),
+        onboardingCompletedProvider.overrideWith(() {
+          return OnboardingCompletedNotifier()..setCompleted(onboardingCompleted);
+        }),
       ],
       child: const RiriApp(),
     ),
@@ -60,9 +66,9 @@ class NavigationController extends ConsumerWidget {
       final prefs = SharedPreferencesAsync();
       final username = await prefs.getString('riri_username') ?? 'Bestie';
       
-      // Update Providers cleanly
+      // Update Providers cleanly through standard Notifier methods
       ref.read(usernameProvider.notifier).setUsername(username);
-      ref.read(onboardingCompletedProvider.notifier).state = true;
+      ref.read(onboardingCompletedProvider.notifier).complete();
     }
 
     return OnboardingScreen(onLetsGoClick: onLetsGo);
@@ -132,7 +138,8 @@ class RiriAppShell extends ConsumerWidget {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentTabIndex,
         onTap: (index) {
-          ref.read(tabIndexProvider.notifier).state = index;
+          // Trigger type-safe tab mutation method instead of direct state assignment
+          ref.read(tabIndexProvider.notifier).setTab(index);
         },
         backgroundColor: RiriTheme.cardBg,
         selectedItemColor: RiriTheme.secondaryAmber,
