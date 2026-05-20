@@ -108,7 +108,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                         SlideTransition(
                           position: _mascotAnimation,
                           child: Image.asset(
-                            'assets/stickers/Welcoming.png',
+                            'assets/stickers/Welcoming.webp',
                             width: 180,
                             height: 180,
                             errorBuilder: (context, error, stackTrace) {

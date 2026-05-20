@@ -23,37 +23,37 @@ class RiriAssetMapper {
     const base = 'assets/stickers/';
     switch (state) {
       case DashboardState.empty:
-        return '${base}Welcoming.png';
+        return '${base}Welcoming.webp';
       case DashboardState.ready:
-        return '${base}Ready.png';
+        return '${base}Ready.webp';
       case DashboardState.working:
-        return '${base}Whispering Nudge.png';
+        return '${base}Whispering Nudge.webp';
       case DashboardState.success:
-        return '${base}Confetti_Explosion.png';
+        return '${base}Confetti_Explosion.webp';
       case DashboardState.overdue:
-        return '${base}Overdue_Alert.png';
+        return '${base}Overdue_Alert.webp';
       case DashboardState.angry:
-        return '${base}Angry.png';
+        return '${base}Angry.webp';
       case DashboardState.barkada:
-        return '${base}Barkada Mode.png';
+        return '${base}Barkada Mode.webp';
       case DashboardState.streak:
         return Random().nextBool() 
-            ? '${base}Streak_Celebration.png' 
-            : '${base}Hype_Jump.png';
+            ? '${base}Streak_Celebration.webp' 
+            : '${base}Hype_Jump.webp';
       case DashboardState.chaosReport:
-        return '${base}Chaos_Report_Laugh.png';
+        return '${base}Chaos_Report_Laugh.webp';
       case DashboardState.thinking:
-        return '${base}Thinking.png';
+        return '${base}Thinking.webp';
       case DashboardState.embarrassed:
-        return '${base}Embarrassed.png';
+        return '${base}Embarrassed.webp';
       case DashboardState.confident:
-        return '${base}Confident_Suggestion.png';
+        return '${base}Confident_Suggestion.webp';
       case DashboardState.inactive:
-        return '${base}Inactive.png';
+        return '${base}Inactive.webp';
       case DashboardState.abandoned:
-        return '${base}Abandoned_App.png';
+        return '${base}Abandoned_App.webp';
       case DashboardState.achievement:
-        return '${base}Achievement.png';
+        return '${base}Achievement.webp';
     }
   }
 

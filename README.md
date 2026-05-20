@@ -60,16 +60,3 @@ flutter test
 # 5. Launch (Desktop or Chrome Web)
 flutter run
 ```
-
----
-
-## Working in Google Antigravity
-
-Riri is fully prepared for agent-assisted pair programming in the **Google Antigravity** IDE.
-
-* **Recommended Settings**: Open the workspace and select **Review-driven development** to prompt approvals before running commands.
-* **Specialized Agent Workflows**: We ship native prompt specs under `.agents/skills/` allowing you to trigger targeted agent workflows:
-  - `"Antigravity, generate Taglish copywriting variants using riri_copywriter.json"`
-  - `"Antigravity, refactor this controller layer using riri_refactor.json"`
-
-For full configuration guidelines, refer to the [Antigravity Guide](file:///c:/Users/jmbar/AndroidStudioProjects/riri/docs/antigravity.md).

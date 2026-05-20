@@ -27,13 +27,13 @@ class _PersonaSelectorScreenState extends ConsumerState<PersonaSelectorScreen> {
   String _getStickerForPersona(PersonalityMode mode) {
     switch (mode) {
       case PersonalityMode.bestie:
-        return 'assets/stickers/Barkada Mode.png';
+        return 'assets/stickers/Barkada Mode.webp';
       case PersonalityMode.malupit:
-        return 'assets/stickers/Angry.png';
+        return 'assets/stickers/Angry.webp';
       case PersonalityMode.chill:
-        return 'assets/stickers/Sunglasses.png';
+        return 'assets/stickers/Sunglasses.webp';
       case PersonalityMode.tita:
-        return 'assets/stickers/Whispering Nudge.png';
+        return 'assets/stickers/Whispering Nudge.webp';
     }
   }
 

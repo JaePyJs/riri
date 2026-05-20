@@ -370,7 +370,7 @@ class _ChatBubble extends StatelessWidget {
                 child: child,
               ),
               child: Image.asset(
-                'assets/stickers/${message.stickerName}.png',
+                'assets/stickers/${message.stickerName}.webp',
                 width: 44,
                 height: 44,
                 errorBuilder: (context, error, stackTrace) {
