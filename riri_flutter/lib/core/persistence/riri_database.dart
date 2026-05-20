@@ -54,6 +54,7 @@ class ChatMessages extends Table {
   BoolColumn get isUser => boolean()();
   IntColumn get timestamp => integer().map(const DateTimeConverter())();
   TextColumn get stickerName => text().nullable()();
+  TextColumn get threadId => text().nullable()();
 }
 
 // User Stats Table
@@ -80,7 +81,7 @@ class RiriDatabase extends _$RiriDatabase {
   RiriDatabase([QueryExecutor? connection]) : super(connection ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -96,6 +97,9 @@ class RiriDatabase extends _$RiriDatabase {
           ),
         );
       }
+      if (from < 3) {
+        await migrator.addColumn(chatMessages, chatMessages.threadId);
+      }
     },
   );
 
@@ -109,10 +113,16 @@ class RiriDatabase extends _$RiriDatabase {
 
   // ChatMessages DAOs/Queries
   Future<List<ChatMessage>> getChatHistory() => select(chatMessages).get();
+  Future<List<ChatMessage>> getChatHistoryByThread(String threadId) =>
+      (select(chatMessages)..where((t) => t.threadId.equals(threadId))).get();
   Future<int> insertChatMessage(ChatMessagesCompanion companion) => into(chatMessages).insert(companion);
   Future<int> updateChatMessageText(int id, String text) =>
       (update(chatMessages)..where((t) => t.id.equals(id))).write(ChatMessagesCompanion(messageText: Value(text)));
   Future<void> clearChatHistory() => delete(chatMessages).go();
+  Future<void> deleteChatHistoryByThread(String threadId) =>
+      (delete(chatMessages)..where((t) => t.threadId.equals(threadId))).go();
+  Future<void> seedNullThreadIds(String defaultThreadId) =>
+      (update(chatMessages)..where((t) => t.threadId.isNull())).write(ChatMessagesCompanion(threadId: Value(defaultThreadId)));
 
   // UserStats DAOs/Queries
   Future<UserStat?> getLatestStats() => (select(userStats)..orderBy([(t) => OrderingTerm.desc(t.generatedAt)])).getSingleOrNull();

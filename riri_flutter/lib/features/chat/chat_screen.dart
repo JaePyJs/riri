@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/ai/ai_models.dart';
@@ -24,6 +25,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ChatResponseEngine _responseEngine = ChatResponseEngine();
   List<RiriChatMessage> _messages = [];
   bool _isTyping = false;
+  bool _showVoiceOverlay = false;
   int _lastAnimatedCount = 0; // Messages at or below this index skip entrance animation
 
   @override
@@ -139,13 +141,39 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _sendRiriGreeting();
   }
 
+  void _startVoiceSimulation() {
+    setState(() {
+      _showVoiceOverlay = true;
+    });
+  }
+
+  void _onSpeechCompleted(String transcription) {
+    setState(() {
+      _showVoiceOverlay = false;
+    });
+    _messageController.text = transcription;
+    _sendMessage();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final personalityMode = ref.watch(personalityModeProvider);
+    final repo = ref.read(repositoryProvider);
 
     return Scaffold(
       backgroundColor: RiriTheme.darkBg,
+      drawer: _ChatHistoryDrawer(
+        onThreadSelected: () {
+          setState(() {
+            _messages = repo.chatHistory;
+            _lastAnimatedCount = _messages.length;
+          });
+          if (_messages.isEmpty) {
+            _sendRiriGreeting();
+          }
+        },
+      ),
       appBar: AppBar(
         title: Row(
           children: [
@@ -289,6 +317,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 child: Row(
                   children: [
+                    GestureDetector(
+                      onTap: _startVoiceSimulation,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: RiriTheme.primaryPurple.withValues(alpha: 0.15),
+                          border: Border.all(
+                            color: RiriTheme.primaryPurple.withValues(alpha: 0.3),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.mic,
+                          color: RiriTheme.hotPink,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
@@ -329,6 +377,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
             ],
           ),
+          if (_showVoiceOverlay)
+            _VoiceSimulationOverlay(
+              onClose: () {
+                setState(() {
+                  _showVoiceOverlay = false;
+                });
+              },
+              onSpeechCompleted: _onSpeechCompleted,
+            ),
         ],
       ),
     );
@@ -1146,5 +1203,480 @@ class _TypingIndicatorState extends State<_TypingIndicator> with SingleTickerPro
         _buildDot(2),
       ],
     );
+  }
+}
+
+class _ChatHistoryDrawer extends ConsumerWidget {
+  final VoidCallback onThreadSelected;
+
+  const _ChatHistoryDrawer({required this.onThreadSelected});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final repo = ref.watch(repositoryProvider);
+
+    return Drawer(
+      backgroundColor: RiriTheme.darkBg,
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Drawer Header
+            const Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Conversations 📜',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    'Swapping your nagging topics...',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: RiriTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const Divider(color: Color(0xFF2F2F4A), height: 1),
+
+            // + New Thread Button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              child: Container(
+                width: double.infinity,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: RiriTheme.brandGradient,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final newId = DateTime.now().millisecondsSinceEpoch.toString();
+                    await repo.createNewThread(
+                      id: newId,
+                      title: 'New Thread',
+                    );
+                    onThreadSelected();
+                  },
+                  icon: const Icon(Icons.add, color: Colors.white, size: 20),
+                  label: const Text(
+                    'New Conversation',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Scrollable list of threads
+            Expanded(
+              child: StreamBuilder<List<RiriChatThread>>(
+                stream: repo.threadsStream,
+                initialData: repo.threads,
+                builder: (context, snapshot) {
+                  final list = snapshot.data ?? [];
+                  if (list.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'Walang conversations... 😭',
+                        style: TextStyle(color: RiriTheme.textMuted),
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    itemCount: list.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 4),
+                    itemBuilder: (context, index) {
+                      final thread = list[index];
+                      final isActive = thread.id == repo.activeThreadId;
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: isActive ? RiriTheme.primaryPurple.withValues(alpha: 0.15) : Colors.transparent,
+                          borderRadius: BorderRadius.circular(16),
+                          border: isActive
+                              ? Border.all(color: RiriTheme.primaryPurple.withValues(alpha: 0.4), width: 1.0)
+                              : Border.all(color: Colors.transparent, width: 1.0),
+                        ),
+                        child: ListTile(
+                          onTap: () async {
+                            await repo.switchActiveThread(thread.id);
+                            onThreadSelected();
+                          },
+                          leading: Icon(
+                            isActive ? Icons.chat_bubble : Icons.chat_bubble_outline,
+                            color: isActive ? RiriTheme.primaryPurple : RiriTheme.textSecondary,
+                            size: 20,
+                          ),
+                          title: Text(
+                            thread.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: isActive ? Colors.white : RiriTheme.offWhite,
+                              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                              fontSize: 13,
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Don't show delete on the only default thread
+                              if (list.length > 1)
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: RiriTheme.textMuted, size: 18),
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        backgroundColor: RiriTheme.cardBg,
+                                        title: const Text('Delete Thread? 💔'),
+                                        content: Text('Sigurado ka bang burahin ang "${thread.title}"?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context),
+                                            child: const Text('Wag muna', style: TextStyle(color: RiriTheme.textMuted)),
+                                          ),
+                                          TextButton(
+                                            onPressed: () async {
+                                              Navigator.pop(context);
+                                              await repo.deleteThread(thread.id);
+                                              onThreadSelected();
+                                            },
+                                            child: const Text('Burahin', style: TextStyle(color: RiriTheme.dangerRed)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VoiceSimulationOverlay extends StatefulWidget {
+  final VoidCallback onClose;
+  final ValueChanged<String> onSpeechCompleted;
+
+  const _VoiceSimulationOverlay({
+    required this.onClose,
+    required this.onSpeechCompleted,
+  });
+
+  @override
+  State<_VoiceSimulationOverlay> createState() => _VoiceSimulationOverlayState();
+}
+
+class _VoiceSimulationOverlayState extends State<_VoiceSimulationOverlay> with SingleTickerProviderStateMixin {
+  late final AnimationController _waveController;
+  Timer? _typingTimer;
+  String _targetText = '';
+  String _typedText = '';
+  int _charIndex = 0;
+  bool _isSuccess = false;
+
+  final List<String> _taglishPrompts = [
+    "Riri, paki-nag naman ako mamaya na gumawa ng assignments... Sobrang tinatamad ako eh!",
+    "Musta Riri! Paki-remind naman ako na uminom ng tubig at mag-stretching. Salamat!",
+    "Riri, super pagod ako today. Pwede bang mag-log ng personal task para magpahinga at manood ng series?"
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _waveController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+
+    _targetText = _taglishPrompts[Random().nextInt(_taglishPrompts.length)];
+
+    Timer(const Duration(milliseconds: 800), _startTypingSimulation);
+  }
+
+  void _startTypingSimulation() {
+    _typingTimer = Timer.periodic(const Duration(milliseconds: 60), (timer) {
+      if (!mounted) return;
+      if (_charIndex < _targetText.length) {
+        setState(() {
+          _charIndex++;
+          _typedText = _targetText.substring(0, _charIndex);
+        });
+      } else {
+        _typingTimer?.cancel();
+        setState(() {
+          _isSuccess = true;
+        });
+        Timer(const Duration(milliseconds: 1000), () {
+          if (mounted) {
+            widget.onSpeechCompleted(_targetText);
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _waveController.dispose();
+    _typingTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: Material(
+        color: Colors.black.withValues(alpha: 0.6),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Top Title
+                  Column(
+                    children: [
+                      const SizedBox(height: 40),
+                      Text(
+                        _isSuccess ? 'Success! 🎉' : 'Listening... 🎙️',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _isSuccess ? 'Sending transcript to Riri...' : 'Say something in English or Taglish',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: RiriTheme.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Center Waveform Visualizer
+                  Column(
+                    children: [
+                      AnimatedBuilder(
+                        animation: _waveController,
+                        builder: (context, child) {
+                          return CustomPaint(
+                            size: const Size(double.infinity, 120),
+                            painter: SinusoidalWavePainter(
+                              animationValue: _waveController.value,
+                              amplitude: _isSuccess ? 0.0 : 35.0,
+                              color: _isSuccess ? RiriTheme.successGreen : RiriTheme.primaryPurple,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        width: 76,
+                        height: 76,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: (_isSuccess ? RiriTheme.successGreen : RiriTheme.primaryPurple).withValues(alpha: 0.2),
+                          border: Border.all(
+                            color: (_isSuccess ? RiriTheme.successGreen : RiriTheme.primaryPurple).withValues(alpha: 0.5),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (_isSuccess ? RiriTheme.successGreen : RiriTheme.primaryPurple).withValues(alpha: 0.3),
+                              blurRadius: 20,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          _isSuccess ? Icons.check : Icons.mic,
+                          color: Colors.white,
+                          size: 36,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Bottom Speech to Text Simulation Box
+                  Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E1E2F).withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFF2F2F4A),
+                            width: 1.2,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'TRANSCRIBED VOICE',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: RiriTheme.textSecondary,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              height: 60,
+                              child: SingleChildScrollView(
+                                child: Text(
+                                  '$_typedText${_isSuccess ? "" : "_"}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                    height: 1.4,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      TextButton(
+                        onPressed: widget.onClose,
+                        style: TextButton.styleFrom(
+                          foregroundColor: RiriTheme.textMuted,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SinusoidalWavePainter extends CustomPainter {
+  final double animationValue;
+  final double amplitude;
+  final Color color;
+
+  SinusoidalWavePainter({
+    required this.animationValue,
+    this.amplitude = 30.0,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+    final yCenter = size.height / 2;
+
+    for (double x = 0; x <= size.width; x++) {
+      final y = yCenter + amplitude * sin((x / size.width * 2 * pi * 2.5) - (animationValue * 2 * pi));
+      if (x == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+
+    canvas.drawPath(path, paint);
+
+    final path2 = Path();
+    final paint2 = Paint()
+      ..color = color.withOpacity(0.5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    for (double x = 0; x <= size.width; x++) {
+      final y = yCenter + (amplitude * 0.6) * sin((x / size.width * 2 * pi * 3.0) + (animationValue * 2 * pi));
+      if (x == 0) {
+        path2.moveTo(x, y);
+      } else {
+        path2.lineTo(x, y);
+      }
+    }
+    canvas.drawPath(path2, paint2);
+
+    final path3 = Path();
+    final paint3 = Paint()
+      ..color = color.withOpacity(0.2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    for (double x = 0; x <= size.width; x++) {
+      final y = yCenter + (amplitude * 0.4) * sin((x / size.width * 2 * pi * 1.5) - (animationValue * pi));
+      if (x == 0) {
+        path3.moveTo(x, y);
+      } else {
+        path3.lineTo(x, y);
+      }
+    }
+    canvas.drawPath(path3, paint3);
+  }
+
+  @override
+  bool shouldRepaint(covariant SinusoidalWavePainter oldDelegate) {
+    return oldDelegate.animationValue != animationValue ||
+        oldDelegate.amplitude != amplitude ||
+        oldDelegate.color != color;
   }
 }

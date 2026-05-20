@@ -112,7 +112,6 @@ class RiriAppShell extends ConsumerWidget {
         index: currentTabIndex,
         children: const [
           DashboardScreen(),
-          PersonaSelectorScreen(),
           ChatTab(),
           SettingsTab(),
         ],
@@ -127,11 +126,6 @@ class RiriAppShell extends ConsumerWidget {
             icon: Icon(Icons.calendar_month_outlined),
             selectedIcon: Icon(Icons.calendar_month),
             label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.mood_outlined),
-            selectedIcon: Icon(Icons.mood),
-            label: 'Personas',
           ),
           NavigationDestination(
             icon: Icon(Icons.chat_bubble_outline),

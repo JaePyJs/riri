@@ -51,7 +51,7 @@ class ChatResponseEngine {
           break;
         case PersonalityMode.tita:
           responseText =
-              "Napakagandang pangalan naman, $newlyLearnedName anak! Sige, tatandaan ni Tita Riri 'yan para gabayan kita nang mabuti. Kumain ka na ba? 👵";
+              "Napakagandang pangalan naman, $newlyLearnedName! Sige, tatandaan ni Tita Riri 'yan para gabayan kita nang mabuti. Kumain ka na ba? 👵";
           stickerName = 'Welcoming';
           break;
       }
@@ -134,8 +134,8 @@ class ChatResponseEngine {
           break;
         case PersonalityMode.tita:
           text = parsedTime != null
-              ? "Naku, opo anak. Gisingin kita ng $parsedTime ha? Mag-alarm ka rin sa tabi mo para sigurado. Wag magpuyat! 👵⏰"
-              : "Anong oras kita gigisingin anak? Sabihin mo kay Tita Riri yung oras para ma-set natin. 👵";
+              ? "Naku, opo. Gisingin kita ng $parsedTime ha? Mag-alarm ka rin sa tabi mo para sigurado. Wag magpuyat! 👵⏰"
+              : "Anong oras kita gigisingin? Sabihin mo kay Tita Riri yung oras para ma-set natin. 👵";
           sticker = 'Welcoming';
           break;
       }
@@ -169,7 +169,7 @@ class ChatResponseEngine {
             break;
           case PersonalityMode.tita:
             text =
-                "Ay gusto mo maglaro anak? Sige, Bato-Bato-Pick tayo! Ano ang taya mo: Bato, Papel, o Gunting? 👵";
+                "Ay gusto mo maglaro? Sige, Bato-Bato-Pick tayo! Ano ang taya mo: Bato, Papel, o Gunting? 👵";
             break;
         }
         return ChatResponse(text: text, stickerName: 'Wink');
@@ -234,7 +234,7 @@ class ChatResponseEngine {
           case PersonalityMode.tita:
             if (result == 'tie') {
               text =
-                  "Ay tabla anak! Parehong $ririChoice ang taya natin. Ulitin ba natin? 👵";
+                  "Ay tabla! Parehong $ririChoice ang taya natin. Ulitin ba natin? 👵";
             } else if (result == 'win') {
               text =
                   "Naku ang galing naman, panalo ka! $userChoice mo laban sa $ririChoice ni Tita. Ang swerte mo ngayon ha! 👵💖";
@@ -265,8 +265,8 @@ class ChatResponseEngine {
         "Joke tayo. Anong tawag sa saging na nakasuot ng wig? Eh di... Ba-na-na-wig. Relax lang, tawa ka na please~ 🌙"
       ];
       final titaJokes = [
-        "Naku anak, may tsismis si Tita sa'yo. Alam mo ba si Mareng Susan, bumili ng bagong air fryer tapos nasunog yung lumpia nya kahapon! Sayang talaga. 👵",
-        "Joke ba? Anong isda ang laging nabubulunan? Eh di... Salmon! Kasi sal-mon ng sal-mon ng pagkain! Haha, kain ka na ha anak? 👵🥰"
+        "Naku, may tsismis si Tita sa'yo. Alam mo ba si Mareng Susan, bumili ng bagong air fryer tapos nasunog yung lumpia nya kahapon! Sayang talaga. 👵",
+        "Joke ba? Anong isda ang laging nabubulunan? Eh di... Salmon! Kasi sal-mon ng sal-mon ng pagkain! Haha, kain ka na ha? 👵🥰"
       ];
 
       String text = '';
@@ -326,7 +326,7 @@ class ChatResponseEngine {
           break;
         case PersonalityMode.tita:
           text = random.nextBool()
-              ? "Kumain ka na ba anak? Naku, wag na wag mong lilipasan ang gutom mo ha! Ipagluluto kita ng masarap na sinigang kung malapit lang ako. Kain na dali! 👵🍲"
+              ? "Kumain ka na ba? Naku, wag na wag mong lilipasan ang gutom mo ha! Ipagluluto kita ng masarap na sinigang kung malapit lang ako. Kain na dali! 👵🍲"
               : "Kumain ka na ng tanghalian/hapunan ha? Masama sa tyan ang magpalipas ng gutom. Iwan muna ang ginagawa at kumain na ng masustansya! 👵🍚";
           sticker = 'Welcoming';
           break;
@@ -362,8 +362,8 @@ class ChatResponseEngine {
           break;
         case PersonalityMode.tita:
           text = random.nextBool()
-              ? "Naku anak, matulog ka na ha? Bawal magpuyat at masama yan sa kalusugan mo. Inom ka muna ng maligamgam na tubig bago matulog. Goodnight! 👵💤"
-              : "Higa na at magpahinga, anak. Napaka-hardworking mo naman today. Sleep well at gigisingin kita bukas ha? 👵😴";
+              ? "Naku, matulog ka na ha? Bawal magpuyat at masama yan sa kalusugan mo. Inom ka muna ng maligamgam na tubig bago matulog. Goodnight! 👵💤"
+              : "Higa na at magpahinga. Napaka-hardworking mo naman today. Sleep well at gigisingin kita bukas ha? 👵😴";
           sticker = 'Inactive';
           break;
       }
@@ -538,8 +538,8 @@ class ChatResponseEngine {
             lower.contains('kamusta') ||
             lower.contains('kumusta')) {
           final replies = [
-            'Hello anak! Kumain ka na ba? Wag kang magpapakapagod masyado ha? 👵',
-            'Naku, kumusta naman ang araw ng aking favorite anak? May kailangan ka ba? 🍲',
+            'Hello! Kumain ka na ba? Wag kang magpapakapagod masyado ha? 👵',
+            'Naku, kumusta naman ang araw mo? May kailangan ka ba? 🍲',
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Welcoming';
@@ -547,8 +547,8 @@ class ChatResponseEngine {
             lower.contains('thanks') ||
             lower.contains('thank you')) {
           final replies = [
-            'Walang anuman anak, basta mag-aral kang mabuti ha. Proud ako sayo! ✨',
-            'Siyempre naman anak, laging nandito si Tita para gabayan ka. ✨',
+            'Walang anuman, basta mag-aral kang mabuti ha. Proud ako sayo! ✨',
+            'Siyempre naman, laging nandito si Tita para gabayan ka. ✨',
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Confetti_Explosion';
@@ -558,7 +558,7 @@ class ChatResponseEngine {
             lower.contains('sad') ||
             lower.contains('stress')) {
           final replies = [
-            'Hala anak, uminom ka ba ng maraming tubig? Matulog ka nang maaga ha, huwag magpuyat. 👵',
+            'Hala, uminom ka ba ng maraming tubig? Matulog ka nang maaga ha, huwag magpuyat. 👵',
             'Naku, stress? Ipagluluto kita ng sopas o kaya champorado. Higa ka muna sandali. 🍲',
           ];
           responseText = replies[random.nextInt(replies.length)];
@@ -567,12 +567,12 @@ class ChatResponseEngine {
             lower.contains('mahal') ||
             lower.contains('cute')) {
           responseText =
-              'Mahal din kita anak! Laging mag-iingat sa pagtawid ha. 👵';
+              'Mahal din kita! Laging mag-iingat sa pagtawid ha. 👵';
           stickerName = 'Wink';
         } else {
           final replies = [
-            'Naku anak, ganun ba? Basta palaging magdadasal at mag-iingat ha. ✨',
-            'Ilista natin yan anak para hindi mo malimutan, mahirap na makalimot katulad ni Tita. 👵',
+            'Naku, ganun ba? Basta palaging magdadasal at mag-iingat ha. ✨',
+            'Ilista natin yan para hindi mo malimutan, mahirap na makalimot katulad ni Tita. 👵',
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Wink';

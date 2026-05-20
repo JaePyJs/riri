@@ -248,7 +248,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'G na tayo today! ✨',
+                        "Let's handle your tasks one step at a time.",
                         style: TextStyle(
                           color: activePersona.accentColor,
                           fontWeight: FontWeight.bold,

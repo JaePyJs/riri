@@ -12,155 +12,238 @@ class $RemindersTable extends Reminders
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _descriptionMeta =
-      const VerificationMeta('description');
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
   @override
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
-      'description', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   late final GeneratedColumnWithTypeConverter<ReminderCategory, String>
-      category = GeneratedColumn<String>('category', aliasedName, false,
-              type: DriftSqlType.string, requiredDuringInsert: true)
-          .withConverter<ReminderCategory>($RemindersTable.$convertercategory);
+  category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  ).withConverter<ReminderCategory>($RemindersTable.$convertercategory);
   @override
   late final GeneratedColumnWithTypeConverter<PersonalityMode, String>
-      personalityMode = GeneratedColumn<String>(
-              'personality_mode', aliasedName, false,
-              type: DriftSqlType.string,
-              requiredDuringInsert: false,
-              defaultValue: const Constant('bestie'))
-          .withConverter<PersonalityMode>(
-              $RemindersTable.$converterpersonalityMode);
+  personalityMode = GeneratedColumn<String>(
+    'personality_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('bestie'),
+  ).withConverter<PersonalityMode>($RemindersTable.$converterpersonalityMode);
   @override
   late final GeneratedColumnWithTypeConverter<DateTime, int> dueDateTime =
-      GeneratedColumn<int>('due_date_time', aliasedName, false,
-              type: DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<DateTime>($RemindersTable.$converterdueDateTime);
+      GeneratedColumn<int>(
+        'due_date_time',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<DateTime>($RemindersTable.$converterdueDateTime);
   @override
   late final GeneratedColumnWithTypeConverter<DateTime, int> createdAt =
-      GeneratedColumn<int>('created_at', aliasedName, false,
-              type: DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<DateTime>($RemindersTable.$convertercreatedAt);
+      GeneratedColumn<int>(
+        'created_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<DateTime>($RemindersTable.$convertercreatedAt);
   @override
   late final GeneratedColumnWithTypeConverter<DateTime?, int> completedAt =
-      GeneratedColumn<int>('completed_at', aliasedName, true,
-              type: DriftSqlType.int, requiredDuringInsert: false)
-          .withConverter<DateTime?>($RemindersTable.$convertercompletedAtn);
-  static const VerificationMeta _isCompletedMeta =
-      const VerificationMeta('isCompleted');
+      GeneratedColumn<int>(
+        'completed_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+      ).withConverter<DateTime?>($RemindersTable.$convertercompletedAtn);
+  static const VerificationMeta _isCompletedMeta = const VerificationMeta(
+    'isCompleted',
+  );
   @override
   late final GeneratedColumn<bool> isCompleted = GeneratedColumn<bool>(
-      'is_completed', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'CHECK ("is_completed" IN (0, 1))'),
-      defaultValue: const Constant(false));
-  static const VerificationMeta _isRecurringMeta =
-      const VerificationMeta('isRecurring');
+    'is_completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_completed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isRecurringMeta = const VerificationMeta(
+    'isRecurring',
+  );
   @override
   late final GeneratedColumn<bool> isRecurring = GeneratedColumn<bool>(
-      'is_recurring', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'CHECK ("is_recurring" IN (0, 1))'),
-      defaultValue: const Constant(false));
-  static const VerificationMeta _recurringIntervalMeta =
-      const VerificationMeta('recurringInterval');
+    'is_recurring',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_recurring" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _recurringIntervalMeta = const VerificationMeta(
+    'recurringInterval',
+  );
   @override
   late final GeneratedColumn<String> recurringInterval =
-      GeneratedColumn<String>('recurring_interval', aliasedName, true,
-          type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _recurringRuleJsonMeta =
-      const VerificationMeta('recurringRuleJson');
+      GeneratedColumn<String>(
+        'recurring_interval',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _recurringRuleJsonMeta = const VerificationMeta(
+    'recurringRuleJson',
+  );
   @override
   late final GeneratedColumn<String> recurringRuleJson =
-      GeneratedColumn<String>('recurring_rule_json', aliasedName, true,
-          type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _snoozeCountMeta =
-      const VerificationMeta('snoozeCount');
+      GeneratedColumn<String>(
+        'recurring_rule_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _snoozeCountMeta = const VerificationMeta(
+    'snoozeCount',
+  );
   @override
   late final GeneratedColumn<int> snoozeCount = GeneratedColumn<int>(
-      'snooze_count', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _rescheduleCountMeta =
-      const VerificationMeta('rescheduleCount');
+    'snooze_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _rescheduleCountMeta = const VerificationMeta(
+    'rescheduleCount',
+  );
   @override
   late final GeneratedColumn<int> rescheduleCount = GeneratedColumn<int>(
-      'reschedule_count', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _rawInputMeta =
-      const VerificationMeta('rawInput');
+    'reschedule_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _rawInputMeta = const VerificationMeta(
+    'rawInput',
+  );
   @override
   late final GeneratedColumn<String> rawInput = GeneratedColumn<String>(
-      'raw_input', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _taglishNormalizedMeta =
-      const VerificationMeta('taglishNormalized');
+    'raw_input',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _taglishNormalizedMeta = const VerificationMeta(
+    'taglishNormalized',
+  );
   @override
   late final GeneratedColumn<String> taglishNormalized =
-      GeneratedColumn<String>('taglish_normalized', aliasedName, true,
-          type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _taglishTokensJsonMeta =
-      const VerificationMeta('taglishTokensJson');
+      GeneratedColumn<String>(
+        'taglish_normalized',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _taglishTokensJsonMeta = const VerificationMeta(
+    'taglishTokensJson',
+  );
   @override
   late final GeneratedColumn<String> taglishTokensJson =
-      GeneratedColumn<String>('taglish_tokens_json', aliasedName, true,
-          type: DriftSqlType.string, requiredDuringInsert: false);
+      GeneratedColumn<String>(
+        'taglish_tokens_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _procrastinationScoreMeta =
       const VerificationMeta('procrastinationScore');
   @override
   late final GeneratedColumn<double> procrastinationScore =
-      GeneratedColumn<double>('procrastination_score', aliasedName, false,
-          type: DriftSqlType.double,
-          requiredDuringInsert: false,
-          defaultValue: const Constant(0.0));
+      GeneratedColumn<double>(
+        'procrastination_score',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(0.0),
+      );
   @override
   List<GeneratedColumn> get $columns => [
-        id,
-        title,
-        description,
-        category,
-        personalityMode,
-        dueDateTime,
-        createdAt,
-        completedAt,
-        isCompleted,
-        isRecurring,
-        recurringInterval,
-        recurringRuleJson,
-        snoozeCount,
-        rescheduleCount,
-        rawInput,
-        taglishNormalized,
-        taglishTokensJson,
-        procrastinationScore
-      ];
+    id,
+    title,
+    description,
+    category,
+    personalityMode,
+    dueDateTime,
+    createdAt,
+    completedAt,
+    isCompleted,
+    isRecurring,
+    recurringInterval,
+    recurringRuleJson,
+    snoozeCount,
+    rescheduleCount,
+    rawInput,
+    taglishNormalized,
+    taglishTokensJson,
+    procrastinationScore,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'reminders';
   @override
-  VerificationContext validateIntegrity(Insertable<Reminder> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<Reminder> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -168,73 +251,107 @@ class $RemindersTable extends Reminders
     }
     if (data.containsKey('title')) {
       context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('description')) {
       context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
           _descriptionMeta,
-          description.isAcceptableOrUnknown(
-              data['description']!, _descriptionMeta));
+        ),
+      );
     }
     if (data.containsKey('is_completed')) {
       context.handle(
+        _isCompletedMeta,
+        isCompleted.isAcceptableOrUnknown(
+          data['is_completed']!,
           _isCompletedMeta,
-          isCompleted.isAcceptableOrUnknown(
-              data['is_completed']!, _isCompletedMeta));
+        ),
+      );
     }
     if (data.containsKey('is_recurring')) {
       context.handle(
+        _isRecurringMeta,
+        isRecurring.isAcceptableOrUnknown(
+          data['is_recurring']!,
           _isRecurringMeta,
-          isRecurring.isAcceptableOrUnknown(
-              data['is_recurring']!, _isRecurringMeta));
+        ),
+      );
     }
     if (data.containsKey('recurring_interval')) {
       context.handle(
+        _recurringIntervalMeta,
+        recurringInterval.isAcceptableOrUnknown(
+          data['recurring_interval']!,
           _recurringIntervalMeta,
-          recurringInterval.isAcceptableOrUnknown(
-              data['recurring_interval']!, _recurringIntervalMeta));
+        ),
+      );
     }
     if (data.containsKey('recurring_rule_json')) {
       context.handle(
+        _recurringRuleJsonMeta,
+        recurringRuleJson.isAcceptableOrUnknown(
+          data['recurring_rule_json']!,
           _recurringRuleJsonMeta,
-          recurringRuleJson.isAcceptableOrUnknown(
-              data['recurring_rule_json']!, _recurringRuleJsonMeta));
+        ),
+      );
     }
     if (data.containsKey('snooze_count')) {
       context.handle(
+        _snoozeCountMeta,
+        snoozeCount.isAcceptableOrUnknown(
+          data['snooze_count']!,
           _snoozeCountMeta,
-          snoozeCount.isAcceptableOrUnknown(
-              data['snooze_count']!, _snoozeCountMeta));
+        ),
+      );
     }
     if (data.containsKey('reschedule_count')) {
       context.handle(
+        _rescheduleCountMeta,
+        rescheduleCount.isAcceptableOrUnknown(
+          data['reschedule_count']!,
           _rescheduleCountMeta,
-          rescheduleCount.isAcceptableOrUnknown(
-              data['reschedule_count']!, _rescheduleCountMeta));
+        ),
+      );
     }
     if (data.containsKey('raw_input')) {
-      context.handle(_rawInputMeta,
-          rawInput.isAcceptableOrUnknown(data['raw_input']!, _rawInputMeta));
+      context.handle(
+        _rawInputMeta,
+        rawInput.isAcceptableOrUnknown(data['raw_input']!, _rawInputMeta),
+      );
     }
     if (data.containsKey('taglish_normalized')) {
       context.handle(
+        _taglishNormalizedMeta,
+        taglishNormalized.isAcceptableOrUnknown(
+          data['taglish_normalized']!,
           _taglishNormalizedMeta,
-          taglishNormalized.isAcceptableOrUnknown(
-              data['taglish_normalized']!, _taglishNormalizedMeta));
+        ),
+      );
     }
     if (data.containsKey('taglish_tokens_json')) {
       context.handle(
+        _taglishTokensJsonMeta,
+        taglishTokensJson.isAcceptableOrUnknown(
+          data['taglish_tokens_json']!,
           _taglishTokensJsonMeta,
-          taglishTokensJson.isAcceptableOrUnknown(
-              data['taglish_tokens_json']!, _taglishTokensJsonMeta));
+        ),
+      );
     }
     if (data.containsKey('procrastination_score')) {
       context.handle(
+        _procrastinationScoreMeta,
+        procrastinationScore.isAcceptableOrUnknown(
+          data['procrastination_score']!,
           _procrastinationScoreMeta,
-          procrastinationScore.isAcceptableOrUnknown(
-              data['procrastination_score']!, _procrastinationScoreMeta));
+        ),
+      );
     }
     return context;
   }
@@ -245,48 +362,88 @@ class $RemindersTable extends Reminders
   Reminder map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Reminder(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      description: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}description']),
-      category: $RemindersTable.$convertercategory.fromSql(attachedDatabase
-          .typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}category'])!),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      category: $RemindersTable.$convertercategory.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}category'],
+        )!,
+      ),
       personalityMode: $RemindersTable.$converterpersonalityMode.fromSql(
-          attachedDatabase.typeMapping.read(DriftSqlType.string,
-              data['${effectivePrefix}personality_mode'])!),
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}personality_mode'],
+        )!,
+      ),
       dueDateTime: $RemindersTable.$converterdueDateTime.fromSql(
-          attachedDatabase.typeMapping.read(
-              DriftSqlType.int, data['${effectivePrefix}due_date_time'])!),
-      createdAt: $RemindersTable.$convertercreatedAt.fromSql(attachedDatabase
-          .typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}created_at'])!),
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}due_date_time'],
+        )!,
+      ),
+      createdAt: $RemindersTable.$convertercreatedAt.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}created_at'],
+        )!,
+      ),
       completedAt: $RemindersTable.$convertercompletedAtn.fromSql(
-          attachedDatabase.typeMapping
-              .read(DriftSqlType.int, data['${effectivePrefix}completed_at'])),
-      isCompleted: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_completed'])!,
-      isRecurring: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_recurring'])!,
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}completed_at'],
+        ),
+      ),
+      isCompleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_completed'],
+      )!,
+      isRecurring: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_recurring'],
+      )!,
       recurringInterval: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}recurring_interval']),
+        DriftSqlType.string,
+        data['${effectivePrefix}recurring_interval'],
+      ),
       recurringRuleJson: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}recurring_rule_json']),
-      snoozeCount: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}snooze_count'])!,
-      rescheduleCount: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}reschedule_count'])!,
-      rawInput: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}raw_input']),
+        DriftSqlType.string,
+        data['${effectivePrefix}recurring_rule_json'],
+      ),
+      snoozeCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}snooze_count'],
+      )!,
+      rescheduleCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}reschedule_count'],
+      )!,
+      rawInput: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}raw_input'],
+      ),
       taglishNormalized: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}taglish_normalized']),
+        DriftSqlType.string,
+        data['${effectivePrefix}taglish_normalized'],
+      ),
       taglishTokensJson: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}taglish_tokens_json']),
+        DriftSqlType.string,
+        data['${effectivePrefix}taglish_tokens_json'],
+      ),
       procrastinationScore: attachedDatabase.typeMapping.read(
-          DriftSqlType.double,
-          data['${effectivePrefix}procrastination_score'])!,
+        DriftSqlType.double,
+        data['${effectivePrefix}procrastination_score'],
+      )!,
     );
   }
 
@@ -296,11 +453,13 @@ class $RemindersTable extends Reminders
   }
 
   static JsonTypeConverter2<ReminderCategory, String, String>
-      $convertercategory =
-      const EnumNameConverter<ReminderCategory>(ReminderCategory.values);
+  $convertercategory = const EnumNameConverter<ReminderCategory>(
+    ReminderCategory.values,
+  );
   static JsonTypeConverter2<PersonalityMode, String, String>
-      $converterpersonalityMode =
-      const EnumNameConverter<PersonalityMode>(PersonalityMode.values);
+  $converterpersonalityMode = const EnumNameConverter<PersonalityMode>(
+    PersonalityMode.values,
+  );
   static TypeConverter<DateTime, int> $converterdueDateTime =
       const DateTimeConverter();
   static TypeConverter<DateTime, int> $convertercreatedAt =
@@ -330,25 +489,26 @@ class Reminder extends DataClass implements Insertable<Reminder> {
   final String? taglishNormalized;
   final String? taglishTokensJson;
   final double procrastinationScore;
-  const Reminder(
-      {required this.id,
-      required this.title,
-      this.description,
-      required this.category,
-      required this.personalityMode,
-      required this.dueDateTime,
-      required this.createdAt,
-      this.completedAt,
-      required this.isCompleted,
-      required this.isRecurring,
-      this.recurringInterval,
-      this.recurringRuleJson,
-      required this.snoozeCount,
-      required this.rescheduleCount,
-      this.rawInput,
-      this.taglishNormalized,
-      this.taglishTokensJson,
-      required this.procrastinationScore});
+  const Reminder({
+    required this.id,
+    required this.title,
+    this.description,
+    required this.category,
+    required this.personalityMode,
+    required this.dueDateTime,
+    required this.createdAt,
+    this.completedAt,
+    required this.isCompleted,
+    required this.isRecurring,
+    this.recurringInterval,
+    this.recurringRuleJson,
+    required this.snoozeCount,
+    required this.rescheduleCount,
+    this.rawInput,
+    this.taglishNormalized,
+    this.taglishTokensJson,
+    required this.procrastinationScore,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -358,24 +518,29 @@ class Reminder extends DataClass implements Insertable<Reminder> {
       map['description'] = Variable<String>(description);
     }
     {
-      map['category'] =
-          Variable<String>($RemindersTable.$convertercategory.toSql(category));
+      map['category'] = Variable<String>(
+        $RemindersTable.$convertercategory.toSql(category),
+      );
     }
     {
       map['personality_mode'] = Variable<String>(
-          $RemindersTable.$converterpersonalityMode.toSql(personalityMode));
+        $RemindersTable.$converterpersonalityMode.toSql(personalityMode),
+      );
     }
     {
       map['due_date_time'] = Variable<int>(
-          $RemindersTable.$converterdueDateTime.toSql(dueDateTime));
+        $RemindersTable.$converterdueDateTime.toSql(dueDateTime),
+      );
     }
     {
-      map['created_at'] =
-          Variable<int>($RemindersTable.$convertercreatedAt.toSql(createdAt));
+      map['created_at'] = Variable<int>(
+        $RemindersTable.$convertercreatedAt.toSql(createdAt),
+      );
     }
     if (!nullToAbsent || completedAt != null) {
       map['completed_at'] = Variable<int>(
-          $RemindersTable.$convertercompletedAtn.toSql(completedAt));
+        $RemindersTable.$convertercompletedAtn.toSql(completedAt),
+      );
     }
     map['is_completed'] = Variable<bool>(isCompleted);
     map['is_recurring'] = Variable<bool>(isRecurring);
@@ -437,35 +602,44 @@ class Reminder extends DataClass implements Insertable<Reminder> {
     );
   }
 
-  factory Reminder.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory Reminder.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Reminder(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String?>(json['description']),
-      category: $RemindersTable.$convertercategory
-          .fromJson(serializer.fromJson<String>(json['category'])),
-      personalityMode: $RemindersTable.$converterpersonalityMode
-          .fromJson(serializer.fromJson<String>(json['personalityMode'])),
+      category: $RemindersTable.$convertercategory.fromJson(
+        serializer.fromJson<String>(json['category']),
+      ),
+      personalityMode: $RemindersTable.$converterpersonalityMode.fromJson(
+        serializer.fromJson<String>(json['personalityMode']),
+      ),
       dueDateTime: serializer.fromJson<DateTime>(json['dueDateTime']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
       isCompleted: serializer.fromJson<bool>(json['isCompleted']),
       isRecurring: serializer.fromJson<bool>(json['isRecurring']),
-      recurringInterval:
-          serializer.fromJson<String?>(json['recurringInterval']),
-      recurringRuleJson:
-          serializer.fromJson<String?>(json['recurringRuleJson']),
+      recurringInterval: serializer.fromJson<String?>(
+        json['recurringInterval'],
+      ),
+      recurringRuleJson: serializer.fromJson<String?>(
+        json['recurringRuleJson'],
+      ),
       snoozeCount: serializer.fromJson<int>(json['snoozeCount']),
       rescheduleCount: serializer.fromJson<int>(json['rescheduleCount']),
       rawInput: serializer.fromJson<String?>(json['rawInput']),
-      taglishNormalized:
-          serializer.fromJson<String?>(json['taglishNormalized']),
-      taglishTokensJson:
-          serializer.fromJson<String?>(json['taglishTokensJson']),
-      procrastinationScore:
-          serializer.fromJson<double>(json['procrastinationScore']),
+      taglishNormalized: serializer.fromJson<String?>(
+        json['taglishNormalized'],
+      ),
+      taglishTokensJson: serializer.fromJson<String?>(
+        json['taglishTokensJson'],
+      ),
+      procrastinationScore: serializer.fromJson<double>(
+        json['procrastinationScore'],
+      ),
     );
   }
   @override
@@ -475,10 +649,12 @@ class Reminder extends DataClass implements Insertable<Reminder> {
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String?>(description),
-      'category': serializer
-          .toJson<String>($RemindersTable.$convertercategory.toJson(category)),
+      'category': serializer.toJson<String>(
+        $RemindersTable.$convertercategory.toJson(category),
+      ),
       'personalityMode': serializer.toJson<String>(
-          $RemindersTable.$converterpersonalityMode.toJson(personalityMode)),
+        $RemindersTable.$converterpersonalityMode.toJson(personalityMode),
+      ),
       'dueDateTime': serializer.toJson<DateTime>(dueDateTime),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'completedAt': serializer.toJson<DateTime?>(completedAt),
@@ -495,80 +671,86 @@ class Reminder extends DataClass implements Insertable<Reminder> {
     };
   }
 
-  Reminder copyWith(
-          {int? id,
-          String? title,
-          Value<String?> description = const Value.absent(),
-          ReminderCategory? category,
-          PersonalityMode? personalityMode,
-          DateTime? dueDateTime,
-          DateTime? createdAt,
-          Value<DateTime?> completedAt = const Value.absent(),
-          bool? isCompleted,
-          bool? isRecurring,
-          Value<String?> recurringInterval = const Value.absent(),
-          Value<String?> recurringRuleJson = const Value.absent(),
-          int? snoozeCount,
-          int? rescheduleCount,
-          Value<String?> rawInput = const Value.absent(),
-          Value<String?> taglishNormalized = const Value.absent(),
-          Value<String?> taglishTokensJson = const Value.absent(),
-          double? procrastinationScore}) =>
-      Reminder(
-        id: id ?? this.id,
-        title: title ?? this.title,
-        description: description.present ? description.value : this.description,
-        category: category ?? this.category,
-        personalityMode: personalityMode ?? this.personalityMode,
-        dueDateTime: dueDateTime ?? this.dueDateTime,
-        createdAt: createdAt ?? this.createdAt,
-        completedAt: completedAt.present ? completedAt.value : this.completedAt,
-        isCompleted: isCompleted ?? this.isCompleted,
-        isRecurring: isRecurring ?? this.isRecurring,
-        recurringInterval: recurringInterval.present
-            ? recurringInterval.value
-            : this.recurringInterval,
-        recurringRuleJson: recurringRuleJson.present
-            ? recurringRuleJson.value
-            : this.recurringRuleJson,
-        snoozeCount: snoozeCount ?? this.snoozeCount,
-        rescheduleCount: rescheduleCount ?? this.rescheduleCount,
-        rawInput: rawInput.present ? rawInput.value : this.rawInput,
-        taglishNormalized: taglishNormalized.present
-            ? taglishNormalized.value
-            : this.taglishNormalized,
-        taglishTokensJson: taglishTokensJson.present
-            ? taglishTokensJson.value
-            : this.taglishTokensJson,
-        procrastinationScore: procrastinationScore ?? this.procrastinationScore,
-      );
+  Reminder copyWith({
+    int? id,
+    String? title,
+    Value<String?> description = const Value.absent(),
+    ReminderCategory? category,
+    PersonalityMode? personalityMode,
+    DateTime? dueDateTime,
+    DateTime? createdAt,
+    Value<DateTime?> completedAt = const Value.absent(),
+    bool? isCompleted,
+    bool? isRecurring,
+    Value<String?> recurringInterval = const Value.absent(),
+    Value<String?> recurringRuleJson = const Value.absent(),
+    int? snoozeCount,
+    int? rescheduleCount,
+    Value<String?> rawInput = const Value.absent(),
+    Value<String?> taglishNormalized = const Value.absent(),
+    Value<String?> taglishTokensJson = const Value.absent(),
+    double? procrastinationScore,
+  }) => Reminder(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    description: description.present ? description.value : this.description,
+    category: category ?? this.category,
+    personalityMode: personalityMode ?? this.personalityMode,
+    dueDateTime: dueDateTime ?? this.dueDateTime,
+    createdAt: createdAt ?? this.createdAt,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    isCompleted: isCompleted ?? this.isCompleted,
+    isRecurring: isRecurring ?? this.isRecurring,
+    recurringInterval: recurringInterval.present
+        ? recurringInterval.value
+        : this.recurringInterval,
+    recurringRuleJson: recurringRuleJson.present
+        ? recurringRuleJson.value
+        : this.recurringRuleJson,
+    snoozeCount: snoozeCount ?? this.snoozeCount,
+    rescheduleCount: rescheduleCount ?? this.rescheduleCount,
+    rawInput: rawInput.present ? rawInput.value : this.rawInput,
+    taglishNormalized: taglishNormalized.present
+        ? taglishNormalized.value
+        : this.taglishNormalized,
+    taglishTokensJson: taglishTokensJson.present
+        ? taglishTokensJson.value
+        : this.taglishTokensJson,
+    procrastinationScore: procrastinationScore ?? this.procrastinationScore,
+  );
   Reminder copyWithCompanion(RemindersCompanion data) {
     return Reminder(
       id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
-      description:
-          data.description.present ? data.description.value : this.description,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
       category: data.category.present ? data.category.value : this.category,
       personalityMode: data.personalityMode.present
           ? data.personalityMode.value
           : this.personalityMode,
-      dueDateTime:
-          data.dueDateTime.present ? data.dueDateTime.value : this.dueDateTime,
+      dueDateTime: data.dueDateTime.present
+          ? data.dueDateTime.value
+          : this.dueDateTime,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      completedAt:
-          data.completedAt.present ? data.completedAt.value : this.completedAt,
-      isCompleted:
-          data.isCompleted.present ? data.isCompleted.value : this.isCompleted,
-      isRecurring:
-          data.isRecurring.present ? data.isRecurring.value : this.isRecurring,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      isCompleted: data.isCompleted.present
+          ? data.isCompleted.value
+          : this.isCompleted,
+      isRecurring: data.isRecurring.present
+          ? data.isRecurring.value
+          : this.isRecurring,
       recurringInterval: data.recurringInterval.present
           ? data.recurringInterval.value
           : this.recurringInterval,
       recurringRuleJson: data.recurringRuleJson.present
           ? data.recurringRuleJson.value
           : this.recurringRuleJson,
-      snoozeCount:
-          data.snoozeCount.present ? data.snoozeCount.value : this.snoozeCount,
+      snoozeCount: data.snoozeCount.present
+          ? data.snoozeCount.value
+          : this.snoozeCount,
       rescheduleCount: data.rescheduleCount.present
           ? data.rescheduleCount.value
           : this.rescheduleCount,
@@ -612,24 +794,25 @@ class Reminder extends DataClass implements Insertable<Reminder> {
 
   @override
   int get hashCode => Object.hash(
-      id,
-      title,
-      description,
-      category,
-      personalityMode,
-      dueDateTime,
-      createdAt,
-      completedAt,
-      isCompleted,
-      isRecurring,
-      recurringInterval,
-      recurringRuleJson,
-      snoozeCount,
-      rescheduleCount,
-      rawInput,
-      taglishNormalized,
-      taglishTokensJson,
-      procrastinationScore);
+    id,
+    title,
+    description,
+    category,
+    personalityMode,
+    dueDateTime,
+    createdAt,
+    completedAt,
+    isCompleted,
+    isRecurring,
+    recurringInterval,
+    recurringRuleJson,
+    snoozeCount,
+    rescheduleCount,
+    rawInput,
+    taglishNormalized,
+    taglishTokensJson,
+    procrastinationScore,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -712,10 +895,10 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
     this.taglishNormalized = const Value.absent(),
     this.taglishTokensJson = const Value.absent(),
     this.procrastinationScore = const Value.absent(),
-  })  : title = Value(title),
-        category = Value(category),
-        dueDateTime = Value(dueDateTime),
-        createdAt = Value(createdAt);
+  }) : title = Value(title),
+       category = Value(category),
+       dueDateTime = Value(dueDateTime),
+       createdAt = Value(createdAt);
   static Insertable<Reminder> custom({
     Expression<int>? id,
     Expression<String>? title,
@@ -759,25 +942,26 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
     });
   }
 
-  RemindersCompanion copyWith(
-      {Value<int>? id,
-      Value<String>? title,
-      Value<String?>? description,
-      Value<ReminderCategory>? category,
-      Value<PersonalityMode>? personalityMode,
-      Value<DateTime>? dueDateTime,
-      Value<DateTime>? createdAt,
-      Value<DateTime?>? completedAt,
-      Value<bool>? isCompleted,
-      Value<bool>? isRecurring,
-      Value<String?>? recurringInterval,
-      Value<String?>? recurringRuleJson,
-      Value<int>? snoozeCount,
-      Value<int>? rescheduleCount,
-      Value<String?>? rawInput,
-      Value<String?>? taglishNormalized,
-      Value<String?>? taglishTokensJson,
-      Value<double>? procrastinationScore}) {
+  RemindersCompanion copyWith({
+    Value<int>? id,
+    Value<String>? title,
+    Value<String?>? description,
+    Value<ReminderCategory>? category,
+    Value<PersonalityMode>? personalityMode,
+    Value<DateTime>? dueDateTime,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? completedAt,
+    Value<bool>? isCompleted,
+    Value<bool>? isRecurring,
+    Value<String?>? recurringInterval,
+    Value<String?>? recurringRuleJson,
+    Value<int>? snoozeCount,
+    Value<int>? rescheduleCount,
+    Value<String?>? rawInput,
+    Value<String?>? taglishNormalized,
+    Value<String?>? taglishTokensJson,
+    Value<double>? procrastinationScore,
+  }) {
     return RemindersCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
@@ -814,24 +998,28 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
     }
     if (category.present) {
       map['category'] = Variable<String>(
-          $RemindersTable.$convertercategory.toSql(category.value));
+        $RemindersTable.$convertercategory.toSql(category.value),
+      );
     }
     if (personalityMode.present) {
-      map['personality_mode'] = Variable<String>($RemindersTable
-          .$converterpersonalityMode
-          .toSql(personalityMode.value));
+      map['personality_mode'] = Variable<String>(
+        $RemindersTable.$converterpersonalityMode.toSql(personalityMode.value),
+      );
     }
     if (dueDateTime.present) {
       map['due_date_time'] = Variable<int>(
-          $RemindersTable.$converterdueDateTime.toSql(dueDateTime.value));
+        $RemindersTable.$converterdueDateTime.toSql(dueDateTime.value),
+      );
     }
     if (createdAt.present) {
       map['created_at'] = Variable<int>(
-          $RemindersTable.$convertercreatedAt.toSql(createdAt.value));
+        $RemindersTable.$convertercreatedAt.toSql(createdAt.value),
+      );
     }
     if (completedAt.present) {
       map['completed_at'] = Variable<int>(
-          $RemindersTable.$convertercompletedAtn.toSql(completedAt.value));
+        $RemindersTable.$convertercompletedAtn.toSql(completedAt.value),
+      );
     }
     if (isCompleted.present) {
       map['is_completed'] = Variable<bool>(isCompleted.value);
@@ -861,8 +1049,9 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
       map['taglish_tokens_json'] = Variable<String>(taglishTokensJson.value);
     }
     if (procrastinationScore.present) {
-      map['procrastination_score'] =
-          Variable<double>(procrastinationScore.value);
+      map['procrastination_score'] = Variable<double>(
+        procrastinationScore.value,
+      );
     }
     return map;
   }
@@ -902,48 +1091,89 @@ class $ChatMessagesTable extends ChatMessages
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _messageTextMeta =
-      const VerificationMeta('messageText');
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _messageTextMeta = const VerificationMeta(
+    'messageText',
+  );
   @override
   late final GeneratedColumn<String> messageText = GeneratedColumn<String>(
-      'message_text', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'message_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _isUserMeta = const VerificationMeta('isUser');
   @override
   late final GeneratedColumn<bool> isUser = GeneratedColumn<bool>(
-      'is_user', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: true,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_user" IN (0, 1))'));
+    'is_user',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_user" IN (0, 1))',
+    ),
+  );
   @override
   late final GeneratedColumnWithTypeConverter<DateTime, int> timestamp =
-      GeneratedColumn<int>('timestamp', aliasedName, false,
-              type: DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<DateTime>($ChatMessagesTable.$convertertimestamp);
-  static const VerificationMeta _stickerNameMeta =
-      const VerificationMeta('stickerName');
+      GeneratedColumn<int>(
+        'timestamp',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<DateTime>($ChatMessagesTable.$convertertimestamp);
+  static const VerificationMeta _stickerNameMeta = const VerificationMeta(
+    'stickerName',
+  );
   @override
   late final GeneratedColumn<String> stickerName = GeneratedColumn<String>(
-      'sticker_name', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'sticker_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _threadIdMeta = const VerificationMeta(
+    'threadId',
+  );
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, messageText, isUser, timestamp, stickerName];
+  late final GeneratedColumn<String> threadId = GeneratedColumn<String>(
+    'thread_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    messageText,
+    isUser,
+    timestamp,
+    stickerName,
+    threadId,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'chat_messages';
   @override
-  VerificationContext validateIntegrity(Insertable<ChatMessage> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<ChatMessage> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -951,23 +1181,37 @@ class $ChatMessagesTable extends ChatMessages
     }
     if (data.containsKey('message_text')) {
       context.handle(
+        _messageTextMeta,
+        messageText.isAcceptableOrUnknown(
+          data['message_text']!,
           _messageTextMeta,
-          messageText.isAcceptableOrUnknown(
-              data['message_text']!, _messageTextMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_messageTextMeta);
     }
     if (data.containsKey('is_user')) {
-      context.handle(_isUserMeta,
-          isUser.isAcceptableOrUnknown(data['is_user']!, _isUserMeta));
+      context.handle(
+        _isUserMeta,
+        isUser.isAcceptableOrUnknown(data['is_user']!, _isUserMeta),
+      );
     } else if (isInserting) {
       context.missing(_isUserMeta);
     }
     if (data.containsKey('sticker_name')) {
       context.handle(
+        _stickerNameMeta,
+        stickerName.isAcceptableOrUnknown(
+          data['sticker_name']!,
           _stickerNameMeta,
-          stickerName.isAcceptableOrUnknown(
-              data['sticker_name']!, _stickerNameMeta));
+        ),
+      );
+    }
+    if (data.containsKey('thread_id')) {
+      context.handle(
+        _threadIdMeta,
+        threadId.isAcceptableOrUnknown(data['thread_id']!, _threadIdMeta),
+      );
     }
     return context;
   }
@@ -978,17 +1222,32 @@ class $ChatMessagesTable extends ChatMessages
   ChatMessage map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ChatMessage(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      messageText: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}message_text'])!,
-      isUser: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_user'])!,
-      timestamp: $ChatMessagesTable.$convertertimestamp.fromSql(attachedDatabase
-          .typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}timestamp'])!),
-      stickerName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}sticker_name']),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      messageText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}message_text'],
+      )!,
+      isUser: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_user'],
+      )!,
+      timestamp: $ChatMessagesTable.$convertertimestamp.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}timestamp'],
+        )!,
+      ),
+      stickerName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sticker_name'],
+      ),
+      threadId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}thread_id'],
+      ),
     );
   }
 
@@ -1007,12 +1266,15 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
   final bool isUser;
   final DateTime timestamp;
   final String? stickerName;
-  const ChatMessage(
-      {required this.id,
-      required this.messageText,
-      required this.isUser,
-      required this.timestamp,
-      this.stickerName});
+  final String? threadId;
+  const ChatMessage({
+    required this.id,
+    required this.messageText,
+    required this.isUser,
+    required this.timestamp,
+    this.stickerName,
+    this.threadId,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1021,10 +1283,14 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
     map['is_user'] = Variable<bool>(isUser);
     {
       map['timestamp'] = Variable<int>(
-          $ChatMessagesTable.$convertertimestamp.toSql(timestamp));
+        $ChatMessagesTable.$convertertimestamp.toSql(timestamp),
+      );
     }
     if (!nullToAbsent || stickerName != null) {
       map['sticker_name'] = Variable<String>(stickerName);
+    }
+    if (!nullToAbsent || threadId != null) {
+      map['thread_id'] = Variable<String>(threadId);
     }
     return map;
   }
@@ -1038,11 +1304,16 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
       stickerName: stickerName == null && nullToAbsent
           ? const Value.absent()
           : Value(stickerName),
+      threadId: threadId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(threadId),
     );
   }
 
-  factory ChatMessage.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory ChatMessage.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ChatMessage(
       id: serializer.fromJson<int>(json['id']),
@@ -1050,6 +1321,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
       isUser: serializer.fromJson<bool>(json['isUser']),
       timestamp: serializer.fromJson<DateTime>(json['timestamp']),
       stickerName: serializer.fromJson<String?>(json['stickerName']),
+      threadId: serializer.fromJson<String?>(json['threadId']),
     );
   }
   @override
@@ -1061,31 +1333,37 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
       'isUser': serializer.toJson<bool>(isUser),
       'timestamp': serializer.toJson<DateTime>(timestamp),
       'stickerName': serializer.toJson<String?>(stickerName),
+      'threadId': serializer.toJson<String?>(threadId),
     };
   }
 
-  ChatMessage copyWith(
-          {int? id,
-          String? messageText,
-          bool? isUser,
-          DateTime? timestamp,
-          Value<String?> stickerName = const Value.absent()}) =>
-      ChatMessage(
-        id: id ?? this.id,
-        messageText: messageText ?? this.messageText,
-        isUser: isUser ?? this.isUser,
-        timestamp: timestamp ?? this.timestamp,
-        stickerName: stickerName.present ? stickerName.value : this.stickerName,
-      );
+  ChatMessage copyWith({
+    int? id,
+    String? messageText,
+    bool? isUser,
+    DateTime? timestamp,
+    Value<String?> stickerName = const Value.absent(),
+    Value<String?> threadId = const Value.absent(),
+  }) => ChatMessage(
+    id: id ?? this.id,
+    messageText: messageText ?? this.messageText,
+    isUser: isUser ?? this.isUser,
+    timestamp: timestamp ?? this.timestamp,
+    stickerName: stickerName.present ? stickerName.value : this.stickerName,
+    threadId: threadId.present ? threadId.value : this.threadId,
+  );
   ChatMessage copyWithCompanion(ChatMessagesCompanion data) {
     return ChatMessage(
       id: data.id.present ? data.id.value : this.id,
-      messageText:
-          data.messageText.present ? data.messageText.value : this.messageText,
+      messageText: data.messageText.present
+          ? data.messageText.value
+          : this.messageText,
       isUser: data.isUser.present ? data.isUser.value : this.isUser,
       timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
-      stickerName:
-          data.stickerName.present ? data.stickerName.value : this.stickerName,
+      stickerName: data.stickerName.present
+          ? data.stickerName.value
+          : this.stickerName,
+      threadId: data.threadId.present ? data.threadId.value : this.threadId,
     );
   }
 
@@ -1096,14 +1374,15 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
           ..write('messageText: $messageText, ')
           ..write('isUser: $isUser, ')
           ..write('timestamp: $timestamp, ')
-          ..write('stickerName: $stickerName')
+          ..write('stickerName: $stickerName, ')
+          ..write('threadId: $threadId')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, messageText, isUser, timestamp, stickerName);
+      Object.hash(id, messageText, isUser, timestamp, stickerName, threadId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1112,7 +1391,8 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
           other.messageText == this.messageText &&
           other.isUser == this.isUser &&
           other.timestamp == this.timestamp &&
-          other.stickerName == this.stickerName);
+          other.stickerName == this.stickerName &&
+          other.threadId == this.threadId);
 }
 
 class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
@@ -1121,12 +1401,14 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
   final Value<bool> isUser;
   final Value<DateTime> timestamp;
   final Value<String?> stickerName;
+  final Value<String?> threadId;
   const ChatMessagesCompanion({
     this.id = const Value.absent(),
     this.messageText = const Value.absent(),
     this.isUser = const Value.absent(),
     this.timestamp = const Value.absent(),
     this.stickerName = const Value.absent(),
+    this.threadId = const Value.absent(),
   });
   ChatMessagesCompanion.insert({
     this.id = const Value.absent(),
@@ -1134,15 +1416,17 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
     required bool isUser,
     required DateTime timestamp,
     this.stickerName = const Value.absent(),
-  })  : messageText = Value(messageText),
-        isUser = Value(isUser),
-        timestamp = Value(timestamp);
+    this.threadId = const Value.absent(),
+  }) : messageText = Value(messageText),
+       isUser = Value(isUser),
+       timestamp = Value(timestamp);
   static Insertable<ChatMessage> custom({
     Expression<int>? id,
     Expression<String>? messageText,
     Expression<bool>? isUser,
     Expression<int>? timestamp,
     Expression<String>? stickerName,
+    Expression<String>? threadId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1150,21 +1434,25 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
       if (isUser != null) 'is_user': isUser,
       if (timestamp != null) 'timestamp': timestamp,
       if (stickerName != null) 'sticker_name': stickerName,
+      if (threadId != null) 'thread_id': threadId,
     });
   }
 
-  ChatMessagesCompanion copyWith(
-      {Value<int>? id,
-      Value<String>? messageText,
-      Value<bool>? isUser,
-      Value<DateTime>? timestamp,
-      Value<String?>? stickerName}) {
+  ChatMessagesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? messageText,
+    Value<bool>? isUser,
+    Value<DateTime>? timestamp,
+    Value<String?>? stickerName,
+    Value<String?>? threadId,
+  }) {
     return ChatMessagesCompanion(
       id: id ?? this.id,
       messageText: messageText ?? this.messageText,
       isUser: isUser ?? this.isUser,
       timestamp: timestamp ?? this.timestamp,
       stickerName: stickerName ?? this.stickerName,
+      threadId: threadId ?? this.threadId,
     );
   }
 
@@ -1182,10 +1470,14 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
     }
     if (timestamp.present) {
       map['timestamp'] = Variable<int>(
-          $ChatMessagesTable.$convertertimestamp.toSql(timestamp.value));
+        $ChatMessagesTable.$convertertimestamp.toSql(timestamp.value),
+      );
     }
     if (stickerName.present) {
       map['sticker_name'] = Variable<String>(stickerName.value);
+    }
+    if (threadId.present) {
+      map['thread_id'] = Variable<String>(threadId.value);
     }
     return map;
   }
@@ -1197,7 +1489,8 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
           ..write('messageText: $messageText, ')
           ..write('isUser: $isUser, ')
           ..write('timestamp: $timestamp, ')
-          ..write('stickerName: $stickerName')
+          ..write('stickerName: $stickerName, ')
+          ..write('threadId: $threadId')
           ..write(')'))
         .toString();
   }
@@ -1211,158 +1504,238 @@ class $UserStatsTable extends UserStats
   $UserStatsTable(this.attachedDatabase, [this._alias]);
   @override
   late final GeneratedColumnWithTypeConverter<DateTime, int> weekStartDate =
-      GeneratedColumn<int>('week_start_date', aliasedName, false,
-              type: DriftSqlType.int, requiredDuringInsert: false)
-          .withConverter<DateTime>($UserStatsTable.$converterweekStartDate);
+      GeneratedColumn<int>(
+        'week_start_date',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+      ).withConverter<DateTime>($UserStatsTable.$converterweekStartDate);
   @override
   late final GeneratedColumnWithTypeConverter<DateTime, int> weekEndDate =
-      GeneratedColumn<int>('week_end_date', aliasedName, false,
-              type: DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<DateTime>($UserStatsTable.$converterweekEndDate);
-  static const VerificationMeta _totalSetMeta =
-      const VerificationMeta('totalSet');
+      GeneratedColumn<int>(
+        'week_end_date',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<DateTime>($UserStatsTable.$converterweekEndDate);
+  static const VerificationMeta _totalSetMeta = const VerificationMeta(
+    'totalSet',
+  );
   @override
   late final GeneratedColumn<int> totalSet = GeneratedColumn<int>(
-      'total_set', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _totalCompletedMeta =
-      const VerificationMeta('totalCompleted');
+    'total_set',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalCompletedMeta = const VerificationMeta(
+    'totalCompleted',
+  );
   @override
   late final GeneratedColumn<int> totalCompleted = GeneratedColumn<int>(
-      'total_completed', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _totalIgnoredMeta =
-      const VerificationMeta('totalIgnored');
+    'total_completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalIgnoredMeta = const VerificationMeta(
+    'totalIgnored',
+  );
   @override
   late final GeneratedColumn<int> totalIgnored = GeneratedColumn<int>(
-      'total_ignored', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _totalRescheduledMeta =
-      const VerificationMeta('totalRescheduled');
+    'total_ignored',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalRescheduledMeta = const VerificationMeta(
+    'totalRescheduled',
+  );
   @override
   late final GeneratedColumn<int> totalRescheduled = GeneratedColumn<int>(
-      'total_rescheduled', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _currentStreakMeta =
-      const VerificationMeta('currentStreak');
+    'total_rescheduled',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _currentStreakMeta = const VerificationMeta(
+    'currentStreak',
+  );
   @override
   late final GeneratedColumn<int> currentStreak = GeneratedColumn<int>(
-      'current_streak', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _longestStreakMeta =
-      const VerificationMeta('longestStreak');
+    'current_streak',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _longestStreakMeta = const VerificationMeta(
+    'longestStreak',
+  );
   @override
   late final GeneratedColumn<int> longestStreak = GeneratedColumn<int>(
-      'longest_streak', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _personalityTitleMeta =
-      const VerificationMeta('personalityTitle');
+    'longest_streak',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _personalityTitleMeta = const VerificationMeta(
+    'personalityTitle',
+  );
   @override
   late final GeneratedColumn<String> personalityTitle = GeneratedColumn<String>(
-      'personality_title', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'personality_title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _procrastinationScoreMeta =
       const VerificationMeta('procrastinationScore');
   @override
   late final GeneratedColumn<double> procrastinationScore =
-      GeneratedColumn<double>('procrastination_score', aliasedName, false,
-          type: DriftSqlType.double, requiredDuringInsert: true);
+      GeneratedColumn<double>(
+        'procrastination_score',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
   @override
   late final GeneratedColumnWithTypeConverter<DateTime, int> lastCompletedDate =
-      GeneratedColumn<int>('last_completed_date', aliasedName, false,
-              type: DriftSqlType.int,
-              requiredDuringInsert: false,
-              defaultValue: const Constant(0))
-          .withConverter<DateTime>($UserStatsTable.$converterlastCompletedDate);
+      GeneratedColumn<int>(
+        'last_completed_date',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(0),
+      ).withConverter<DateTime>($UserStatsTable.$converterlastCompletedDate);
   @override
   late final GeneratedColumnWithTypeConverter<DateTime, int> generatedAt =
-      GeneratedColumn<int>('generated_at', aliasedName, false,
-              type: DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<DateTime>($UserStatsTable.$convertergeneratedAt);
+      GeneratedColumn<int>(
+        'generated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<DateTime>($UserStatsTable.$convertergeneratedAt);
   @override
   List<GeneratedColumn> get $columns => [
-        weekStartDate,
-        weekEndDate,
-        totalSet,
-        totalCompleted,
-        totalIgnored,
-        totalRescheduled,
-        currentStreak,
-        longestStreak,
-        personalityTitle,
-        procrastinationScore,
-        lastCompletedDate,
-        generatedAt
-      ];
+    weekStartDate,
+    weekEndDate,
+    totalSet,
+    totalCompleted,
+    totalIgnored,
+    totalRescheduled,
+    currentStreak,
+    longestStreak,
+    personalityTitle,
+    procrastinationScore,
+    lastCompletedDate,
+    generatedAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'user_stats';
   @override
-  VerificationContext validateIntegrity(Insertable<UserStat> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<UserStat> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('total_set')) {
-      context.handle(_totalSetMeta,
-          totalSet.isAcceptableOrUnknown(data['total_set']!, _totalSetMeta));
+      context.handle(
+        _totalSetMeta,
+        totalSet.isAcceptableOrUnknown(data['total_set']!, _totalSetMeta),
+      );
     } else if (isInserting) {
       context.missing(_totalSetMeta);
     }
     if (data.containsKey('total_completed')) {
       context.handle(
+        _totalCompletedMeta,
+        totalCompleted.isAcceptableOrUnknown(
+          data['total_completed']!,
           _totalCompletedMeta,
-          totalCompleted.isAcceptableOrUnknown(
-              data['total_completed']!, _totalCompletedMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_totalCompletedMeta);
     }
     if (data.containsKey('total_ignored')) {
       context.handle(
+        _totalIgnoredMeta,
+        totalIgnored.isAcceptableOrUnknown(
+          data['total_ignored']!,
           _totalIgnoredMeta,
-          totalIgnored.isAcceptableOrUnknown(
-              data['total_ignored']!, _totalIgnoredMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_totalIgnoredMeta);
     }
     if (data.containsKey('total_rescheduled')) {
       context.handle(
+        _totalRescheduledMeta,
+        totalRescheduled.isAcceptableOrUnknown(
+          data['total_rescheduled']!,
           _totalRescheduledMeta,
-          totalRescheduled.isAcceptableOrUnknown(
-              data['total_rescheduled']!, _totalRescheduledMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_totalRescheduledMeta);
     }
     if (data.containsKey('current_streak')) {
       context.handle(
+        _currentStreakMeta,
+        currentStreak.isAcceptableOrUnknown(
+          data['current_streak']!,
           _currentStreakMeta,
-          currentStreak.isAcceptableOrUnknown(
-              data['current_streak']!, _currentStreakMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_currentStreakMeta);
     }
     if (data.containsKey('longest_streak')) {
       context.handle(
+        _longestStreakMeta,
+        longestStreak.isAcceptableOrUnknown(
+          data['longest_streak']!,
           _longestStreakMeta,
-          longestStreak.isAcceptableOrUnknown(
-              data['longest_streak']!, _longestStreakMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_longestStreakMeta);
     }
     if (data.containsKey('personality_title')) {
       context.handle(
+        _personalityTitleMeta,
+        personalityTitle.isAcceptableOrUnknown(
+          data['personality_title']!,
           _personalityTitleMeta,
-          personalityTitle.isAcceptableOrUnknown(
-              data['personality_title']!, _personalityTitleMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_personalityTitleMeta);
     }
     if (data.containsKey('procrastination_score')) {
       context.handle(
+        _procrastinationScoreMeta,
+        procrastinationScore.isAcceptableOrUnknown(
+          data['procrastination_score']!,
           _procrastinationScoreMeta,
-          procrastinationScore.isAcceptableOrUnknown(
-              data['procrastination_score']!, _procrastinationScoreMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_procrastinationScoreMeta);
     }
@@ -1376,34 +1749,61 @@ class $UserStatsTable extends UserStats
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return UserStat(
       weekStartDate: $UserStatsTable.$converterweekStartDate.fromSql(
-          attachedDatabase.typeMapping.read(
-              DriftSqlType.int, data['${effectivePrefix}week_start_date'])!),
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}week_start_date'],
+        )!,
+      ),
       weekEndDate: $UserStatsTable.$converterweekEndDate.fromSql(
-          attachedDatabase.typeMapping.read(
-              DriftSqlType.int, data['${effectivePrefix}week_end_date'])!),
-      totalSet: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}total_set'])!,
-      totalCompleted: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}total_completed'])!,
-      totalIgnored: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}total_ignored'])!,
-      totalRescheduled: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}total_rescheduled'])!,
-      currentStreak: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}current_streak'])!,
-      longestStreak: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}longest_streak'])!,
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}week_end_date'],
+        )!,
+      ),
+      totalSet: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_set'],
+      )!,
+      totalCompleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_completed'],
+      )!,
+      totalIgnored: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_ignored'],
+      )!,
+      totalRescheduled: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_rescheduled'],
+      )!,
+      currentStreak: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_streak'],
+      )!,
+      longestStreak: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}longest_streak'],
+      )!,
       personalityTitle: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}personality_title'])!,
+        DriftSqlType.string,
+        data['${effectivePrefix}personality_title'],
+      )!,
       procrastinationScore: attachedDatabase.typeMapping.read(
-          DriftSqlType.double,
-          data['${effectivePrefix}procrastination_score'])!,
+        DriftSqlType.double,
+        data['${effectivePrefix}procrastination_score'],
+      )!,
       lastCompletedDate: $UserStatsTable.$converterlastCompletedDate.fromSql(
-          attachedDatabase.typeMapping.read(DriftSqlType.int,
-              data['${effectivePrefix}last_completed_date'])!),
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}last_completed_date'],
+        )!,
+      ),
       generatedAt: $UserStatsTable.$convertergeneratedAt.fromSql(
-          attachedDatabase.typeMapping
-              .read(DriftSqlType.int, data['${effectivePrefix}generated_at'])!),
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}generated_at'],
+        )!,
+      ),
     );
   }
 
@@ -1435,29 +1835,32 @@ class UserStat extends DataClass implements Insertable<UserStat> {
   final double procrastinationScore;
   final DateTime lastCompletedDate;
   final DateTime generatedAt;
-  const UserStat(
-      {required this.weekStartDate,
-      required this.weekEndDate,
-      required this.totalSet,
-      required this.totalCompleted,
-      required this.totalIgnored,
-      required this.totalRescheduled,
-      required this.currentStreak,
-      required this.longestStreak,
-      required this.personalityTitle,
-      required this.procrastinationScore,
-      required this.lastCompletedDate,
-      required this.generatedAt});
+  const UserStat({
+    required this.weekStartDate,
+    required this.weekEndDate,
+    required this.totalSet,
+    required this.totalCompleted,
+    required this.totalIgnored,
+    required this.totalRescheduled,
+    required this.currentStreak,
+    required this.longestStreak,
+    required this.personalityTitle,
+    required this.procrastinationScore,
+    required this.lastCompletedDate,
+    required this.generatedAt,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     {
       map['week_start_date'] = Variable<int>(
-          $UserStatsTable.$converterweekStartDate.toSql(weekStartDate));
+        $UserStatsTable.$converterweekStartDate.toSql(weekStartDate),
+      );
     }
     {
       map['week_end_date'] = Variable<int>(
-          $UserStatsTable.$converterweekEndDate.toSql(weekEndDate));
+        $UserStatsTable.$converterweekEndDate.toSql(weekEndDate),
+      );
     }
     map['total_set'] = Variable<int>(totalSet);
     map['total_completed'] = Variable<int>(totalCompleted);
@@ -1469,11 +1872,13 @@ class UserStat extends DataClass implements Insertable<UserStat> {
     map['procrastination_score'] = Variable<double>(procrastinationScore);
     {
       map['last_completed_date'] = Variable<int>(
-          $UserStatsTable.$converterlastCompletedDate.toSql(lastCompletedDate));
+        $UserStatsTable.$converterlastCompletedDate.toSql(lastCompletedDate),
+      );
     }
     {
       map['generated_at'] = Variable<int>(
-          $UserStatsTable.$convertergeneratedAt.toSql(generatedAt));
+        $UserStatsTable.$convertergeneratedAt.toSql(generatedAt),
+      );
     }
     return map;
   }
@@ -1495,8 +1900,10 @@ class UserStat extends DataClass implements Insertable<UserStat> {
     );
   }
 
-  factory UserStat.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory UserStat.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return UserStat(
       weekStartDate: serializer.fromJson<DateTime>(json['weekStartDate']),
@@ -1508,10 +1915,12 @@ class UserStat extends DataClass implements Insertable<UserStat> {
       currentStreak: serializer.fromJson<int>(json['currentStreak']),
       longestStreak: serializer.fromJson<int>(json['longestStreak']),
       personalityTitle: serializer.fromJson<String>(json['personalityTitle']),
-      procrastinationScore:
-          serializer.fromJson<double>(json['procrastinationScore']),
-      lastCompletedDate:
-          serializer.fromJson<DateTime>(json['lastCompletedDate']),
+      procrastinationScore: serializer.fromJson<double>(
+        json['procrastinationScore'],
+      ),
+      lastCompletedDate: serializer.fromJson<DateTime>(
+        json['lastCompletedDate'],
+      ),
       generatedAt: serializer.fromJson<DateTime>(json['generatedAt']),
     );
   }
@@ -1534,40 +1943,41 @@ class UserStat extends DataClass implements Insertable<UserStat> {
     };
   }
 
-  UserStat copyWith(
-          {DateTime? weekStartDate,
-          DateTime? weekEndDate,
-          int? totalSet,
-          int? totalCompleted,
-          int? totalIgnored,
-          int? totalRescheduled,
-          int? currentStreak,
-          int? longestStreak,
-          String? personalityTitle,
-          double? procrastinationScore,
-          DateTime? lastCompletedDate,
-          DateTime? generatedAt}) =>
-      UserStat(
-        weekStartDate: weekStartDate ?? this.weekStartDate,
-        weekEndDate: weekEndDate ?? this.weekEndDate,
-        totalSet: totalSet ?? this.totalSet,
-        totalCompleted: totalCompleted ?? this.totalCompleted,
-        totalIgnored: totalIgnored ?? this.totalIgnored,
-        totalRescheduled: totalRescheduled ?? this.totalRescheduled,
-        currentStreak: currentStreak ?? this.currentStreak,
-        longestStreak: longestStreak ?? this.longestStreak,
-        personalityTitle: personalityTitle ?? this.personalityTitle,
-        procrastinationScore: procrastinationScore ?? this.procrastinationScore,
-        lastCompletedDate: lastCompletedDate ?? this.lastCompletedDate,
-        generatedAt: generatedAt ?? this.generatedAt,
-      );
+  UserStat copyWith({
+    DateTime? weekStartDate,
+    DateTime? weekEndDate,
+    int? totalSet,
+    int? totalCompleted,
+    int? totalIgnored,
+    int? totalRescheduled,
+    int? currentStreak,
+    int? longestStreak,
+    String? personalityTitle,
+    double? procrastinationScore,
+    DateTime? lastCompletedDate,
+    DateTime? generatedAt,
+  }) => UserStat(
+    weekStartDate: weekStartDate ?? this.weekStartDate,
+    weekEndDate: weekEndDate ?? this.weekEndDate,
+    totalSet: totalSet ?? this.totalSet,
+    totalCompleted: totalCompleted ?? this.totalCompleted,
+    totalIgnored: totalIgnored ?? this.totalIgnored,
+    totalRescheduled: totalRescheduled ?? this.totalRescheduled,
+    currentStreak: currentStreak ?? this.currentStreak,
+    longestStreak: longestStreak ?? this.longestStreak,
+    personalityTitle: personalityTitle ?? this.personalityTitle,
+    procrastinationScore: procrastinationScore ?? this.procrastinationScore,
+    lastCompletedDate: lastCompletedDate ?? this.lastCompletedDate,
+    generatedAt: generatedAt ?? this.generatedAt,
+  );
   UserStat copyWithCompanion(UserStatsCompanion data) {
     return UserStat(
       weekStartDate: data.weekStartDate.present
           ? data.weekStartDate.value
           : this.weekStartDate,
-      weekEndDate:
-          data.weekEndDate.present ? data.weekEndDate.value : this.weekEndDate,
+      weekEndDate: data.weekEndDate.present
+          ? data.weekEndDate.value
+          : this.weekEndDate,
       totalSet: data.totalSet.present ? data.totalSet.value : this.totalSet,
       totalCompleted: data.totalCompleted.present
           ? data.totalCompleted.value
@@ -1593,8 +2003,9 @@ class UserStat extends DataClass implements Insertable<UserStat> {
       lastCompletedDate: data.lastCompletedDate.present
           ? data.lastCompletedDate.value
           : this.lastCompletedDate,
-      generatedAt:
-          data.generatedAt.present ? data.generatedAt.value : this.generatedAt,
+      generatedAt: data.generatedAt.present
+          ? data.generatedAt.value
+          : this.generatedAt,
     );
   }
 
@@ -1619,18 +2030,19 @@ class UserStat extends DataClass implements Insertable<UserStat> {
 
   @override
   int get hashCode => Object.hash(
-      weekStartDate,
-      weekEndDate,
-      totalSet,
-      totalCompleted,
-      totalIgnored,
-      totalRescheduled,
-      currentStreak,
-      longestStreak,
-      personalityTitle,
-      procrastinationScore,
-      lastCompletedDate,
-      generatedAt);
+    weekStartDate,
+    weekEndDate,
+    totalSet,
+    totalCompleted,
+    totalIgnored,
+    totalRescheduled,
+    currentStreak,
+    longestStreak,
+    personalityTitle,
+    procrastinationScore,
+    lastCompletedDate,
+    generatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1689,16 +2101,16 @@ class UserStatsCompanion extends UpdateCompanion<UserStat> {
     required double procrastinationScore,
     this.lastCompletedDate = const Value.absent(),
     required DateTime generatedAt,
-  })  : weekEndDate = Value(weekEndDate),
-        totalSet = Value(totalSet),
-        totalCompleted = Value(totalCompleted),
-        totalIgnored = Value(totalIgnored),
-        totalRescheduled = Value(totalRescheduled),
-        currentStreak = Value(currentStreak),
-        longestStreak = Value(longestStreak),
-        personalityTitle = Value(personalityTitle),
-        procrastinationScore = Value(procrastinationScore),
-        generatedAt = Value(generatedAt);
+  }) : weekEndDate = Value(weekEndDate),
+       totalSet = Value(totalSet),
+       totalCompleted = Value(totalCompleted),
+       totalIgnored = Value(totalIgnored),
+       totalRescheduled = Value(totalRescheduled),
+       currentStreak = Value(currentStreak),
+       longestStreak = Value(longestStreak),
+       personalityTitle = Value(personalityTitle),
+       procrastinationScore = Value(procrastinationScore),
+       generatedAt = Value(generatedAt);
   static Insertable<UserStat> custom({
     Expression<int>? weekStartDate,
     Expression<int>? weekEndDate,
@@ -1730,19 +2142,20 @@ class UserStatsCompanion extends UpdateCompanion<UserStat> {
     });
   }
 
-  UserStatsCompanion copyWith(
-      {Value<DateTime>? weekStartDate,
-      Value<DateTime>? weekEndDate,
-      Value<int>? totalSet,
-      Value<int>? totalCompleted,
-      Value<int>? totalIgnored,
-      Value<int>? totalRescheduled,
-      Value<int>? currentStreak,
-      Value<int>? longestStreak,
-      Value<String>? personalityTitle,
-      Value<double>? procrastinationScore,
-      Value<DateTime>? lastCompletedDate,
-      Value<DateTime>? generatedAt}) {
+  UserStatsCompanion copyWith({
+    Value<DateTime>? weekStartDate,
+    Value<DateTime>? weekEndDate,
+    Value<int>? totalSet,
+    Value<int>? totalCompleted,
+    Value<int>? totalIgnored,
+    Value<int>? totalRescheduled,
+    Value<int>? currentStreak,
+    Value<int>? longestStreak,
+    Value<String>? personalityTitle,
+    Value<double>? procrastinationScore,
+    Value<DateTime>? lastCompletedDate,
+    Value<DateTime>? generatedAt,
+  }) {
     return UserStatsCompanion(
       weekStartDate: weekStartDate ?? this.weekStartDate,
       weekEndDate: weekEndDate ?? this.weekEndDate,
@@ -1764,11 +2177,13 @@ class UserStatsCompanion extends UpdateCompanion<UserStat> {
     final map = <String, Expression>{};
     if (weekStartDate.present) {
       map['week_start_date'] = Variable<int>(
-          $UserStatsTable.$converterweekStartDate.toSql(weekStartDate.value));
+        $UserStatsTable.$converterweekStartDate.toSql(weekStartDate.value),
+      );
     }
     if (weekEndDate.present) {
       map['week_end_date'] = Variable<int>(
-          $UserStatsTable.$converterweekEndDate.toSql(weekEndDate.value));
+        $UserStatsTable.$converterweekEndDate.toSql(weekEndDate.value),
+      );
     }
     if (totalSet.present) {
       map['total_set'] = Variable<int>(totalSet.value);
@@ -1792,17 +2207,21 @@ class UserStatsCompanion extends UpdateCompanion<UserStat> {
       map['personality_title'] = Variable<String>(personalityTitle.value);
     }
     if (procrastinationScore.present) {
-      map['procrastination_score'] =
-          Variable<double>(procrastinationScore.value);
+      map['procrastination_score'] = Variable<double>(
+        procrastinationScore.value,
+      );
     }
     if (lastCompletedDate.present) {
-      map['last_completed_date'] = Variable<int>($UserStatsTable
-          .$converterlastCompletedDate
-          .toSql(lastCompletedDate.value));
+      map['last_completed_date'] = Variable<int>(
+        $UserStatsTable.$converterlastCompletedDate.toSql(
+          lastCompletedDate.value,
+        ),
+      );
     }
     if (generatedAt.present) {
       map['generated_at'] = Variable<int>(
-          $UserStatsTable.$convertergeneratedAt.toSql(generatedAt.value));
+        $UserStatsTable.$convertergeneratedAt.toSql(generatedAt.value),
+      );
     }
     return map;
   }
@@ -1837,50 +2256,55 @@ abstract class _$RiriDatabase extends GeneratedDatabase {
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [reminders, chatMessages, userStats];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    reminders,
+    chatMessages,
+    userStats,
+  ];
 }
 
-typedef $$RemindersTableCreateCompanionBuilder = RemindersCompanion Function({
-  Value<int> id,
-  required String title,
-  Value<String?> description,
-  required ReminderCategory category,
-  Value<PersonalityMode> personalityMode,
-  required DateTime dueDateTime,
-  required DateTime createdAt,
-  Value<DateTime?> completedAt,
-  Value<bool> isCompleted,
-  Value<bool> isRecurring,
-  Value<String?> recurringInterval,
-  Value<String?> recurringRuleJson,
-  Value<int> snoozeCount,
-  Value<int> rescheduleCount,
-  Value<String?> rawInput,
-  Value<String?> taglishNormalized,
-  Value<String?> taglishTokensJson,
-  Value<double> procrastinationScore,
-});
-typedef $$RemindersTableUpdateCompanionBuilder = RemindersCompanion Function({
-  Value<int> id,
-  Value<String> title,
-  Value<String?> description,
-  Value<ReminderCategory> category,
-  Value<PersonalityMode> personalityMode,
-  Value<DateTime> dueDateTime,
-  Value<DateTime> createdAt,
-  Value<DateTime?> completedAt,
-  Value<bool> isCompleted,
-  Value<bool> isRecurring,
-  Value<String?> recurringInterval,
-  Value<String?> recurringRuleJson,
-  Value<int> snoozeCount,
-  Value<int> rescheduleCount,
-  Value<String?> rawInput,
-  Value<String?> taglishNormalized,
-  Value<String?> taglishTokensJson,
-  Value<double> procrastinationScore,
-});
+typedef $$RemindersTableCreateCompanionBuilder =
+    RemindersCompanion Function({
+      Value<int> id,
+      required String title,
+      Value<String?> description,
+      required ReminderCategory category,
+      Value<PersonalityMode> personalityMode,
+      required DateTime dueDateTime,
+      required DateTime createdAt,
+      Value<DateTime?> completedAt,
+      Value<bool> isCompleted,
+      Value<bool> isRecurring,
+      Value<String?> recurringInterval,
+      Value<String?> recurringRuleJson,
+      Value<int> snoozeCount,
+      Value<int> rescheduleCount,
+      Value<String?> rawInput,
+      Value<String?> taglishNormalized,
+      Value<String?> taglishTokensJson,
+      Value<double> procrastinationScore,
+    });
+typedef $$RemindersTableUpdateCompanionBuilder =
+    RemindersCompanion Function({
+      Value<int> id,
+      Value<String> title,
+      Value<String?> description,
+      Value<ReminderCategory> category,
+      Value<PersonalityMode> personalityMode,
+      Value<DateTime> dueDateTime,
+      Value<DateTime> createdAt,
+      Value<DateTime?> completedAt,
+      Value<bool> isCompleted,
+      Value<bool> isRecurring,
+      Value<String?> recurringInterval,
+      Value<String?> recurringRuleJson,
+      Value<int> snoozeCount,
+      Value<int> rescheduleCount,
+      Value<String?> rawInput,
+      Value<String?> taglishNormalized,
+      Value<String?> taglishTokensJson,
+      Value<double> procrastinationScore,
+    });
 
 class $$RemindersTableFilterComposer
     extends Composer<_$RiriDatabase, $RemindersTable> {
@@ -1892,74 +2316,99 @@ class $$RemindersTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnFilters(column));
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get description => $composableBuilder(
-      column: $table.description, builder: (column) => ColumnFilters(column));
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnWithTypeConverterFilters<ReminderCategory, ReminderCategory, String>
-      get category => $composableBuilder(
-          column: $table.category,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
+  get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
 
   ColumnWithTypeConverterFilters<PersonalityMode, PersonalityMode, String>
-      get personalityMode => $composableBuilder(
-          column: $table.personalityMode,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
+  get personalityMode => $composableBuilder(
+    column: $table.personalityMode,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
 
   ColumnWithTypeConverterFilters<DateTime, DateTime, int> get dueDateTime =>
       $composableBuilder(
-          column: $table.dueDateTime,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
+        column: $table.dueDateTime,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnWithTypeConverterFilters<DateTime, DateTime, int> get createdAt =>
       $composableBuilder(
-          column: $table.createdAt,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
+        column: $table.createdAt,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnWithTypeConverterFilters<DateTime?, DateTime, int> get completedAt =>
       $composableBuilder(
-          column: $table.completedAt,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
+        column: $table.completedAt,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<bool> get isCompleted => $composableBuilder(
-      column: $table.isCompleted, builder: (column) => ColumnFilters(column));
+    column: $table.isCompleted,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<bool> get isRecurring => $composableBuilder(
-      column: $table.isRecurring, builder: (column) => ColumnFilters(column));
+    column: $table.isRecurring,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get recurringInterval => $composableBuilder(
-      column: $table.recurringInterval,
-      builder: (column) => ColumnFilters(column));
+    column: $table.recurringInterval,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get recurringRuleJson => $composableBuilder(
-      column: $table.recurringRuleJson,
-      builder: (column) => ColumnFilters(column));
+    column: $table.recurringRuleJson,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<int> get snoozeCount => $composableBuilder(
-      column: $table.snoozeCount, builder: (column) => ColumnFilters(column));
+    column: $table.snoozeCount,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<int> get rescheduleCount => $composableBuilder(
-      column: $table.rescheduleCount,
-      builder: (column) => ColumnFilters(column));
+    column: $table.rescheduleCount,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get rawInput => $composableBuilder(
-      column: $table.rawInput, builder: (column) => ColumnFilters(column));
+    column: $table.rawInput,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get taglishNormalized => $composableBuilder(
-      column: $table.taglishNormalized,
-      builder: (column) => ColumnFilters(column));
+    column: $table.taglishNormalized,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get taglishTokensJson => $composableBuilder(
-      column: $table.taglishTokensJson,
-      builder: (column) => ColumnFilters(column));
+    column: $table.taglishTokensJson,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<double> get procrastinationScore => $composableBuilder(
-      column: $table.procrastinationScore,
-      builder: (column) => ColumnFilters(column));
+    column: $table.procrastinationScore,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$RemindersTableOrderingComposer
@@ -1972,65 +2421,94 @@ class $$RemindersTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnOrderings(column));
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get description => $composableBuilder(
-      column: $table.description, builder: (column) => ColumnOrderings(column));
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get category => $composableBuilder(
-      column: $table.category, builder: (column) => ColumnOrderings(column));
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get personalityMode => $composableBuilder(
-      column: $table.personalityMode,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.personalityMode,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get dueDateTime => $composableBuilder(
-      column: $table.dueDateTime, builder: (column) => ColumnOrderings(column));
+    column: $table.dueDateTime,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get createdAt => $composableBuilder(
-      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get completedAt => $composableBuilder(
-      column: $table.completedAt, builder: (column) => ColumnOrderings(column));
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<bool> get isCompleted => $composableBuilder(
-      column: $table.isCompleted, builder: (column) => ColumnOrderings(column));
+    column: $table.isCompleted,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<bool> get isRecurring => $composableBuilder(
-      column: $table.isRecurring, builder: (column) => ColumnOrderings(column));
+    column: $table.isRecurring,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get recurringInterval => $composableBuilder(
-      column: $table.recurringInterval,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.recurringInterval,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get recurringRuleJson => $composableBuilder(
-      column: $table.recurringRuleJson,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.recurringRuleJson,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get snoozeCount => $composableBuilder(
-      column: $table.snoozeCount, builder: (column) => ColumnOrderings(column));
+    column: $table.snoozeCount,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get rescheduleCount => $composableBuilder(
-      column: $table.rescheduleCount,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.rescheduleCount,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get rawInput => $composableBuilder(
-      column: $table.rawInput, builder: (column) => ColumnOrderings(column));
+    column: $table.rawInput,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get taglishNormalized => $composableBuilder(
-      column: $table.taglishNormalized,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.taglishNormalized,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get taglishTokensJson => $composableBuilder(
-      column: $table.taglishTokensJson,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.taglishTokensJson,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<double> get procrastinationScore => $composableBuilder(
-      column: $table.procrastinationScore,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.procrastinationScore,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$RemindersTableAnnotationComposer
@@ -2049,71 +2527,101 @@ class $$RemindersTableAnnotationComposer
       $composableBuilder(column: $table.title, builder: (column) => column);
 
   GeneratedColumn<String> get description => $composableBuilder(
-      column: $table.description, builder: (column) => column);
+    column: $table.description,
+    builder: (column) => column,
+  );
 
   GeneratedColumnWithTypeConverter<ReminderCategory, String> get category =>
       $composableBuilder(column: $table.category, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<PersonalityMode, String>
-      get personalityMode => $composableBuilder(
-          column: $table.personalityMode, builder: (column) => column);
+  get personalityMode => $composableBuilder(
+    column: $table.personalityMode,
+    builder: (column) => column,
+  );
 
   GeneratedColumnWithTypeConverter<DateTime, int> get dueDateTime =>
       $composableBuilder(
-          column: $table.dueDateTime, builder: (column) => column);
+        column: $table.dueDateTime,
+        builder: (column) => column,
+      );
 
   GeneratedColumnWithTypeConverter<DateTime, int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<DateTime?, int> get completedAt =>
       $composableBuilder(
-          column: $table.completedAt, builder: (column) => column);
+        column: $table.completedAt,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<bool> get isCompleted => $composableBuilder(
-      column: $table.isCompleted, builder: (column) => column);
+    column: $table.isCompleted,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get isRecurring => $composableBuilder(
-      column: $table.isRecurring, builder: (column) => column);
+    column: $table.isRecurring,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get recurringInterval => $composableBuilder(
-      column: $table.recurringInterval, builder: (column) => column);
+    column: $table.recurringInterval,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get recurringRuleJson => $composableBuilder(
-      column: $table.recurringRuleJson, builder: (column) => column);
+    column: $table.recurringRuleJson,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get snoozeCount => $composableBuilder(
-      column: $table.snoozeCount, builder: (column) => column);
+    column: $table.snoozeCount,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get rescheduleCount => $composableBuilder(
-      column: $table.rescheduleCount, builder: (column) => column);
+    column: $table.rescheduleCount,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get rawInput =>
       $composableBuilder(column: $table.rawInput, builder: (column) => column);
 
   GeneratedColumn<String> get taglishNormalized => $composableBuilder(
-      column: $table.taglishNormalized, builder: (column) => column);
+    column: $table.taglishNormalized,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get taglishTokensJson => $composableBuilder(
-      column: $table.taglishTokensJson, builder: (column) => column);
+    column: $table.taglishTokensJson,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<double> get procrastinationScore => $composableBuilder(
-      column: $table.procrastinationScore, builder: (column) => column);
+    column: $table.procrastinationScore,
+    builder: (column) => column,
+  );
 }
 
-class $$RemindersTableTableManager extends RootTableManager<
-    _$RiriDatabase,
-    $RemindersTable,
-    Reminder,
-    $$RemindersTableFilterComposer,
-    $$RemindersTableOrderingComposer,
-    $$RemindersTableAnnotationComposer,
-    $$RemindersTableCreateCompanionBuilder,
-    $$RemindersTableUpdateCompanionBuilder,
-    (Reminder, BaseReferences<_$RiriDatabase, $RemindersTable, Reminder>),
-    Reminder,
-    PrefetchHooks Function()> {
+class $$RemindersTableTableManager
+    extends
+        RootTableManager<
+          _$RiriDatabase,
+          $RemindersTable,
+          Reminder,
+          $$RemindersTableFilterComposer,
+          $$RemindersTableOrderingComposer,
+          $$RemindersTableAnnotationComposer,
+          $$RemindersTableCreateCompanionBuilder,
+          $$RemindersTableUpdateCompanionBuilder,
+          (Reminder, BaseReferences<_$RiriDatabase, $RemindersTable, Reminder>),
+          Reminder,
+          PrefetchHooks Function()
+        > {
   $$RemindersTableTableManager(_$RiriDatabase db, $RemindersTable table)
-      : super(TableManagerState(
+    : super(
+        TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -2122,121 +2630,126 @@ class $$RemindersTableTableManager extends RootTableManager<
               $$RemindersTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$RemindersTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> title = const Value.absent(),
-            Value<String?> description = const Value.absent(),
-            Value<ReminderCategory> category = const Value.absent(),
-            Value<PersonalityMode> personalityMode = const Value.absent(),
-            Value<DateTime> dueDateTime = const Value.absent(),
-            Value<DateTime> createdAt = const Value.absent(),
-            Value<DateTime?> completedAt = const Value.absent(),
-            Value<bool> isCompleted = const Value.absent(),
-            Value<bool> isRecurring = const Value.absent(),
-            Value<String?> recurringInterval = const Value.absent(),
-            Value<String?> recurringRuleJson = const Value.absent(),
-            Value<int> snoozeCount = const Value.absent(),
-            Value<int> rescheduleCount = const Value.absent(),
-            Value<String?> rawInput = const Value.absent(),
-            Value<String?> taglishNormalized = const Value.absent(),
-            Value<String?> taglishTokensJson = const Value.absent(),
-            Value<double> procrastinationScore = const Value.absent(),
-          }) =>
-              RemindersCompanion(
-            id: id,
-            title: title,
-            description: description,
-            category: category,
-            personalityMode: personalityMode,
-            dueDateTime: dueDateTime,
-            createdAt: createdAt,
-            completedAt: completedAt,
-            isCompleted: isCompleted,
-            isRecurring: isRecurring,
-            recurringInterval: recurringInterval,
-            recurringRuleJson: recurringRuleJson,
-            snoozeCount: snoozeCount,
-            rescheduleCount: rescheduleCount,
-            rawInput: rawInput,
-            taglishNormalized: taglishNormalized,
-            taglishTokensJson: taglishTokensJson,
-            procrastinationScore: procrastinationScore,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String title,
-            Value<String?> description = const Value.absent(),
-            required ReminderCategory category,
-            Value<PersonalityMode> personalityMode = const Value.absent(),
-            required DateTime dueDateTime,
-            required DateTime createdAt,
-            Value<DateTime?> completedAt = const Value.absent(),
-            Value<bool> isCompleted = const Value.absent(),
-            Value<bool> isRecurring = const Value.absent(),
-            Value<String?> recurringInterval = const Value.absent(),
-            Value<String?> recurringRuleJson = const Value.absent(),
-            Value<int> snoozeCount = const Value.absent(),
-            Value<int> rescheduleCount = const Value.absent(),
-            Value<String?> rawInput = const Value.absent(),
-            Value<String?> taglishNormalized = const Value.absent(),
-            Value<String?> taglishTokensJson = const Value.absent(),
-            Value<double> procrastinationScore = const Value.absent(),
-          }) =>
-              RemindersCompanion.insert(
-            id: id,
-            title: title,
-            description: description,
-            category: category,
-            personalityMode: personalityMode,
-            dueDateTime: dueDateTime,
-            createdAt: createdAt,
-            completedAt: completedAt,
-            isCompleted: isCompleted,
-            isRecurring: isRecurring,
-            recurringInterval: recurringInterval,
-            recurringRuleJson: recurringRuleJson,
-            snoozeCount: snoozeCount,
-            rescheduleCount: rescheduleCount,
-            rawInput: rawInput,
-            taglishNormalized: taglishNormalized,
-            taglishTokensJson: taglishTokensJson,
-            procrastinationScore: procrastinationScore,
-          ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<ReminderCategory> category = const Value.absent(),
+                Value<PersonalityMode> personalityMode = const Value.absent(),
+                Value<DateTime> dueDateTime = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<bool> isCompleted = const Value.absent(),
+                Value<bool> isRecurring = const Value.absent(),
+                Value<String?> recurringInterval = const Value.absent(),
+                Value<String?> recurringRuleJson = const Value.absent(),
+                Value<int> snoozeCount = const Value.absent(),
+                Value<int> rescheduleCount = const Value.absent(),
+                Value<String?> rawInput = const Value.absent(),
+                Value<String?> taglishNormalized = const Value.absent(),
+                Value<String?> taglishTokensJson = const Value.absent(),
+                Value<double> procrastinationScore = const Value.absent(),
+              }) => RemindersCompanion(
+                id: id,
+                title: title,
+                description: description,
+                category: category,
+                personalityMode: personalityMode,
+                dueDateTime: dueDateTime,
+                createdAt: createdAt,
+                completedAt: completedAt,
+                isCompleted: isCompleted,
+                isRecurring: isRecurring,
+                recurringInterval: recurringInterval,
+                recurringRuleJson: recurringRuleJson,
+                snoozeCount: snoozeCount,
+                rescheduleCount: rescheduleCount,
+                rawInput: rawInput,
+                taglishNormalized: taglishNormalized,
+                taglishTokensJson: taglishTokensJson,
+                procrastinationScore: procrastinationScore,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String title,
+                Value<String?> description = const Value.absent(),
+                required ReminderCategory category,
+                Value<PersonalityMode> personalityMode = const Value.absent(),
+                required DateTime dueDateTime,
+                required DateTime createdAt,
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<bool> isCompleted = const Value.absent(),
+                Value<bool> isRecurring = const Value.absent(),
+                Value<String?> recurringInterval = const Value.absent(),
+                Value<String?> recurringRuleJson = const Value.absent(),
+                Value<int> snoozeCount = const Value.absent(),
+                Value<int> rescheduleCount = const Value.absent(),
+                Value<String?> rawInput = const Value.absent(),
+                Value<String?> taglishNormalized = const Value.absent(),
+                Value<String?> taglishTokensJson = const Value.absent(),
+                Value<double> procrastinationScore = const Value.absent(),
+              }) => RemindersCompanion.insert(
+                id: id,
+                title: title,
+                description: description,
+                category: category,
+                personalityMode: personalityMode,
+                dueDateTime: dueDateTime,
+                createdAt: createdAt,
+                completedAt: completedAt,
+                isCompleted: isCompleted,
+                isRecurring: isRecurring,
+                recurringInterval: recurringInterval,
+                recurringRuleJson: recurringRuleJson,
+                snoozeCount: snoozeCount,
+                rescheduleCount: rescheduleCount,
+                rawInput: rawInput,
+                taglishNormalized: taglishNormalized,
+                taglishTokensJson: taglishTokensJson,
+                procrastinationScore: procrastinationScore,
+              ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
-        ));
+        ),
+      );
 }
 
-typedef $$RemindersTableProcessedTableManager = ProcessedTableManager<
-    _$RiriDatabase,
-    $RemindersTable,
-    Reminder,
-    $$RemindersTableFilterComposer,
-    $$RemindersTableOrderingComposer,
-    $$RemindersTableAnnotationComposer,
-    $$RemindersTableCreateCompanionBuilder,
-    $$RemindersTableUpdateCompanionBuilder,
-    (Reminder, BaseReferences<_$RiriDatabase, $RemindersTable, Reminder>),
-    Reminder,
-    PrefetchHooks Function()>;
-typedef $$ChatMessagesTableCreateCompanionBuilder = ChatMessagesCompanion
-    Function({
-  Value<int> id,
-  required String messageText,
-  required bool isUser,
-  required DateTime timestamp,
-  Value<String?> stickerName,
-});
-typedef $$ChatMessagesTableUpdateCompanionBuilder = ChatMessagesCompanion
-    Function({
-  Value<int> id,
-  Value<String> messageText,
-  Value<bool> isUser,
-  Value<DateTime> timestamp,
-  Value<String?> stickerName,
-});
+typedef $$RemindersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$RiriDatabase,
+      $RemindersTable,
+      Reminder,
+      $$RemindersTableFilterComposer,
+      $$RemindersTableOrderingComposer,
+      $$RemindersTableAnnotationComposer,
+      $$RemindersTableCreateCompanionBuilder,
+      $$RemindersTableUpdateCompanionBuilder,
+      (Reminder, BaseReferences<_$RiriDatabase, $RemindersTable, Reminder>),
+      Reminder,
+      PrefetchHooks Function()
+    >;
+typedef $$ChatMessagesTableCreateCompanionBuilder =
+    ChatMessagesCompanion Function({
+      Value<int> id,
+      required String messageText,
+      required bool isUser,
+      required DateTime timestamp,
+      Value<String?> stickerName,
+      Value<String?> threadId,
+    });
+typedef $$ChatMessagesTableUpdateCompanionBuilder =
+    ChatMessagesCompanion Function({
+      Value<int> id,
+      Value<String> messageText,
+      Value<bool> isUser,
+      Value<DateTime> timestamp,
+      Value<String?> stickerName,
+      Value<String?> threadId,
+    });
 
 class $$ChatMessagesTableFilterComposer
     extends Composer<_$RiriDatabase, $ChatMessagesTable> {
@@ -2248,21 +2761,35 @@ class $$ChatMessagesTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get messageText => $composableBuilder(
-      column: $table.messageText, builder: (column) => ColumnFilters(column));
+    column: $table.messageText,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<bool> get isUser => $composableBuilder(
-      column: $table.isUser, builder: (column) => ColumnFilters(column));
+    column: $table.isUser,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnWithTypeConverterFilters<DateTime, DateTime, int> get timestamp =>
       $composableBuilder(
-          column: $table.timestamp,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
+        column: $table.timestamp,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<String> get stickerName => $composableBuilder(
-      column: $table.stickerName, builder: (column) => ColumnFilters(column));
+    column: $table.stickerName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get threadId => $composableBuilder(
+    column: $table.threadId,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$ChatMessagesTableOrderingComposer
@@ -2275,19 +2802,34 @@ class $$ChatMessagesTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get messageText => $composableBuilder(
-      column: $table.messageText, builder: (column) => ColumnOrderings(column));
+    column: $table.messageText,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<bool> get isUser => $composableBuilder(
-      column: $table.isUser, builder: (column) => ColumnOrderings(column));
+    column: $table.isUser,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get timestamp => $composableBuilder(
-      column: $table.timestamp, builder: (column) => ColumnOrderings(column));
+    column: $table.timestamp,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get stickerName => $composableBuilder(
-      column: $table.stickerName, builder: (column) => ColumnOrderings(column));
+    column: $table.stickerName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get threadId => $composableBuilder(
+    column: $table.threadId,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ChatMessagesTableAnnotationComposer
@@ -2303,7 +2845,9 @@ class $$ChatMessagesTableAnnotationComposer
       $composableBuilder(column: $table.id, builder: (column) => column);
 
   GeneratedColumn<String> get messageText => $composableBuilder(
-      column: $table.messageText, builder: (column) => column);
+    column: $table.messageText,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get isUser =>
       $composableBuilder(column: $table.isUser, builder: (column) => column);
@@ -2312,26 +2856,35 @@ class $$ChatMessagesTableAnnotationComposer
       $composableBuilder(column: $table.timestamp, builder: (column) => column);
 
   GeneratedColumn<String> get stickerName => $composableBuilder(
-      column: $table.stickerName, builder: (column) => column);
+    column: $table.stickerName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get threadId =>
+      $composableBuilder(column: $table.threadId, builder: (column) => column);
 }
 
-class $$ChatMessagesTableTableManager extends RootTableManager<
-    _$RiriDatabase,
-    $ChatMessagesTable,
-    ChatMessage,
-    $$ChatMessagesTableFilterComposer,
-    $$ChatMessagesTableOrderingComposer,
-    $$ChatMessagesTableAnnotationComposer,
-    $$ChatMessagesTableCreateCompanionBuilder,
-    $$ChatMessagesTableUpdateCompanionBuilder,
-    (
-      ChatMessage,
-      BaseReferences<_$RiriDatabase, $ChatMessagesTable, ChatMessage>
-    ),
-    ChatMessage,
-    PrefetchHooks Function()> {
+class $$ChatMessagesTableTableManager
+    extends
+        RootTableManager<
+          _$RiriDatabase,
+          $ChatMessagesTable,
+          ChatMessage,
+          $$ChatMessagesTableFilterComposer,
+          $$ChatMessagesTableOrderingComposer,
+          $$ChatMessagesTableAnnotationComposer,
+          $$ChatMessagesTableCreateCompanionBuilder,
+          $$ChatMessagesTableUpdateCompanionBuilder,
+          (
+            ChatMessage,
+            BaseReferences<_$RiriDatabase, $ChatMessagesTable, ChatMessage>,
+          ),
+          ChatMessage,
+          PrefetchHooks Function()
+        > {
   $$ChatMessagesTableTableManager(_$RiriDatabase db, $ChatMessagesTable table)
-      : super(TableManagerState(
+    : super(
+        TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -2340,84 +2893,93 @@ class $$ChatMessagesTableTableManager extends RootTableManager<
               $$ChatMessagesTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$ChatMessagesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> messageText = const Value.absent(),
-            Value<bool> isUser = const Value.absent(),
-            Value<DateTime> timestamp = const Value.absent(),
-            Value<String?> stickerName = const Value.absent(),
-          }) =>
-              ChatMessagesCompanion(
-            id: id,
-            messageText: messageText,
-            isUser: isUser,
-            timestamp: timestamp,
-            stickerName: stickerName,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String messageText,
-            required bool isUser,
-            required DateTime timestamp,
-            Value<String?> stickerName = const Value.absent(),
-          }) =>
-              ChatMessagesCompanion.insert(
-            id: id,
-            messageText: messageText,
-            isUser: isUser,
-            timestamp: timestamp,
-            stickerName: stickerName,
-          ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> messageText = const Value.absent(),
+                Value<bool> isUser = const Value.absent(),
+                Value<DateTime> timestamp = const Value.absent(),
+                Value<String?> stickerName = const Value.absent(),
+                Value<String?> threadId = const Value.absent(),
+              }) => ChatMessagesCompanion(
+                id: id,
+                messageText: messageText,
+                isUser: isUser,
+                timestamp: timestamp,
+                stickerName: stickerName,
+                threadId: threadId,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String messageText,
+                required bool isUser,
+                required DateTime timestamp,
+                Value<String?> stickerName = const Value.absent(),
+                Value<String?> threadId = const Value.absent(),
+              }) => ChatMessagesCompanion.insert(
+                id: id,
+                messageText: messageText,
+                isUser: isUser,
+                timestamp: timestamp,
+                stickerName: stickerName,
+                threadId: threadId,
+              ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
-        ));
+        ),
+      );
 }
 
-typedef $$ChatMessagesTableProcessedTableManager = ProcessedTableManager<
-    _$RiriDatabase,
-    $ChatMessagesTable,
-    ChatMessage,
-    $$ChatMessagesTableFilterComposer,
-    $$ChatMessagesTableOrderingComposer,
-    $$ChatMessagesTableAnnotationComposer,
-    $$ChatMessagesTableCreateCompanionBuilder,
-    $$ChatMessagesTableUpdateCompanionBuilder,
-    (
+typedef $$ChatMessagesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$RiriDatabase,
+      $ChatMessagesTable,
       ChatMessage,
-      BaseReferences<_$RiriDatabase, $ChatMessagesTable, ChatMessage>
-    ),
-    ChatMessage,
-    PrefetchHooks Function()>;
-typedef $$UserStatsTableCreateCompanionBuilder = UserStatsCompanion Function({
-  Value<DateTime> weekStartDate,
-  required DateTime weekEndDate,
-  required int totalSet,
-  required int totalCompleted,
-  required int totalIgnored,
-  required int totalRescheduled,
-  required int currentStreak,
-  required int longestStreak,
-  required String personalityTitle,
-  required double procrastinationScore,
-  Value<DateTime> lastCompletedDate,
-  required DateTime generatedAt,
-});
-typedef $$UserStatsTableUpdateCompanionBuilder = UserStatsCompanion Function({
-  Value<DateTime> weekStartDate,
-  Value<DateTime> weekEndDate,
-  Value<int> totalSet,
-  Value<int> totalCompleted,
-  Value<int> totalIgnored,
-  Value<int> totalRescheduled,
-  Value<int> currentStreak,
-  Value<int> longestStreak,
-  Value<String> personalityTitle,
-  Value<double> procrastinationScore,
-  Value<DateTime> lastCompletedDate,
-  Value<DateTime> generatedAt,
-});
+      $$ChatMessagesTableFilterComposer,
+      $$ChatMessagesTableOrderingComposer,
+      $$ChatMessagesTableAnnotationComposer,
+      $$ChatMessagesTableCreateCompanionBuilder,
+      $$ChatMessagesTableUpdateCompanionBuilder,
+      (
+        ChatMessage,
+        BaseReferences<_$RiriDatabase, $ChatMessagesTable, ChatMessage>,
+      ),
+      ChatMessage,
+      PrefetchHooks Function()
+    >;
+typedef $$UserStatsTableCreateCompanionBuilder =
+    UserStatsCompanion Function({
+      Value<DateTime> weekStartDate,
+      required DateTime weekEndDate,
+      required int totalSet,
+      required int totalCompleted,
+      required int totalIgnored,
+      required int totalRescheduled,
+      required int currentStreak,
+      required int longestStreak,
+      required String personalityTitle,
+      required double procrastinationScore,
+      Value<DateTime> lastCompletedDate,
+      required DateTime generatedAt,
+    });
+typedef $$UserStatsTableUpdateCompanionBuilder =
+    UserStatsCompanion Function({
+      Value<DateTime> weekStartDate,
+      Value<DateTime> weekEndDate,
+      Value<int> totalSet,
+      Value<int> totalCompleted,
+      Value<int> totalIgnored,
+      Value<int> totalRescheduled,
+      Value<int> currentStreak,
+      Value<int> longestStreak,
+      Value<String> personalityTitle,
+      Value<double> procrastinationScore,
+      Value<DateTime> lastCompletedDate,
+      Value<DateTime> generatedAt,
+    });
 
 class $$UserStatsTableFilterComposer
     extends Composer<_$RiriDatabase, $UserStatsTable> {
@@ -2430,51 +2992,67 @@ class $$UserStatsTableFilterComposer
   });
   ColumnWithTypeConverterFilters<DateTime, DateTime, int> get weekStartDate =>
       $composableBuilder(
-          column: $table.weekStartDate,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
+        column: $table.weekStartDate,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnWithTypeConverterFilters<DateTime, DateTime, int> get weekEndDate =>
       $composableBuilder(
-          column: $table.weekEndDate,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
+        column: $table.weekEndDate,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<int> get totalSet => $composableBuilder(
-      column: $table.totalSet, builder: (column) => ColumnFilters(column));
+    column: $table.totalSet,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<int> get totalCompleted => $composableBuilder(
-      column: $table.totalCompleted,
-      builder: (column) => ColumnFilters(column));
+    column: $table.totalCompleted,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<int> get totalIgnored => $composableBuilder(
-      column: $table.totalIgnored, builder: (column) => ColumnFilters(column));
+    column: $table.totalIgnored,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<int> get totalRescheduled => $composableBuilder(
-      column: $table.totalRescheduled,
-      builder: (column) => ColumnFilters(column));
+    column: $table.totalRescheduled,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<int> get currentStreak => $composableBuilder(
-      column: $table.currentStreak, builder: (column) => ColumnFilters(column));
+    column: $table.currentStreak,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<int> get longestStreak => $composableBuilder(
-      column: $table.longestStreak, builder: (column) => ColumnFilters(column));
+    column: $table.longestStreak,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get personalityTitle => $composableBuilder(
-      column: $table.personalityTitle,
-      builder: (column) => ColumnFilters(column));
+    column: $table.personalityTitle,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<double> get procrastinationScore => $composableBuilder(
-      column: $table.procrastinationScore,
-      builder: (column) => ColumnFilters(column));
+    column: $table.procrastinationScore,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnWithTypeConverterFilters<DateTime, DateTime, int>
-      get lastCompletedDate => $composableBuilder(
-          column: $table.lastCompletedDate,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
+  get lastCompletedDate => $composableBuilder(
+    column: $table.lastCompletedDate,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
 
   ColumnWithTypeConverterFilters<DateTime, DateTime, int> get generatedAt =>
       $composableBuilder(
-          column: $table.generatedAt,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
+        column: $table.generatedAt,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 }
 
 class $$UserStatsTableOrderingComposer
@@ -2487,49 +3065,64 @@ class $$UserStatsTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get weekStartDate => $composableBuilder(
-      column: $table.weekStartDate,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.weekStartDate,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get weekEndDate => $composableBuilder(
-      column: $table.weekEndDate, builder: (column) => ColumnOrderings(column));
+    column: $table.weekEndDate,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get totalSet => $composableBuilder(
-      column: $table.totalSet, builder: (column) => ColumnOrderings(column));
+    column: $table.totalSet,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get totalCompleted => $composableBuilder(
-      column: $table.totalCompleted,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.totalCompleted,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get totalIgnored => $composableBuilder(
-      column: $table.totalIgnored,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.totalIgnored,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get totalRescheduled => $composableBuilder(
-      column: $table.totalRescheduled,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.totalRescheduled,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get currentStreak => $composableBuilder(
-      column: $table.currentStreak,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.currentStreak,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get longestStreak => $composableBuilder(
-      column: $table.longestStreak,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.longestStreak,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get personalityTitle => $composableBuilder(
-      column: $table.personalityTitle,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.personalityTitle,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<double> get procrastinationScore => $composableBuilder(
-      column: $table.procrastinationScore,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.procrastinationScore,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get lastCompletedDate => $composableBuilder(
-      column: $table.lastCompletedDate,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.lastCompletedDate,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<int> get generatedAt => $composableBuilder(
-      column: $table.generatedAt, builder: (column) => ColumnOrderings(column));
+    column: $table.generatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UserStatsTableAnnotationComposer
@@ -2543,59 +3136,85 @@ class $$UserStatsTableAnnotationComposer
   });
   GeneratedColumnWithTypeConverter<DateTime, int> get weekStartDate =>
       $composableBuilder(
-          column: $table.weekStartDate, builder: (column) => column);
+        column: $table.weekStartDate,
+        builder: (column) => column,
+      );
 
   GeneratedColumnWithTypeConverter<DateTime, int> get weekEndDate =>
       $composableBuilder(
-          column: $table.weekEndDate, builder: (column) => column);
+        column: $table.weekEndDate,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<int> get totalSet =>
       $composableBuilder(column: $table.totalSet, builder: (column) => column);
 
   GeneratedColumn<int> get totalCompleted => $composableBuilder(
-      column: $table.totalCompleted, builder: (column) => column);
+    column: $table.totalCompleted,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get totalIgnored => $composableBuilder(
-      column: $table.totalIgnored, builder: (column) => column);
+    column: $table.totalIgnored,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get totalRescheduled => $composableBuilder(
-      column: $table.totalRescheduled, builder: (column) => column);
+    column: $table.totalRescheduled,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get currentStreak => $composableBuilder(
-      column: $table.currentStreak, builder: (column) => column);
+    column: $table.currentStreak,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get longestStreak => $composableBuilder(
-      column: $table.longestStreak, builder: (column) => column);
+    column: $table.longestStreak,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get personalityTitle => $composableBuilder(
-      column: $table.personalityTitle, builder: (column) => column);
+    column: $table.personalityTitle,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<double> get procrastinationScore => $composableBuilder(
-      column: $table.procrastinationScore, builder: (column) => column);
+    column: $table.procrastinationScore,
+    builder: (column) => column,
+  );
 
   GeneratedColumnWithTypeConverter<DateTime, int> get lastCompletedDate =>
       $composableBuilder(
-          column: $table.lastCompletedDate, builder: (column) => column);
+        column: $table.lastCompletedDate,
+        builder: (column) => column,
+      );
 
   GeneratedColumnWithTypeConverter<DateTime, int> get generatedAt =>
       $composableBuilder(
-          column: $table.generatedAt, builder: (column) => column);
+        column: $table.generatedAt,
+        builder: (column) => column,
+      );
 }
 
-class $$UserStatsTableTableManager extends RootTableManager<
-    _$RiriDatabase,
-    $UserStatsTable,
-    UserStat,
-    $$UserStatsTableFilterComposer,
-    $$UserStatsTableOrderingComposer,
-    $$UserStatsTableAnnotationComposer,
-    $$UserStatsTableCreateCompanionBuilder,
-    $$UserStatsTableUpdateCompanionBuilder,
-    (UserStat, BaseReferences<_$RiriDatabase, $UserStatsTable, UserStat>),
-    UserStat,
-    PrefetchHooks Function()> {
+class $$UserStatsTableTableManager
+    extends
+        RootTableManager<
+          _$RiriDatabase,
+          $UserStatsTable,
+          UserStat,
+          $$UserStatsTableFilterComposer,
+          $$UserStatsTableOrderingComposer,
+          $$UserStatsTableAnnotationComposer,
+          $$UserStatsTableCreateCompanionBuilder,
+          $$UserStatsTableUpdateCompanionBuilder,
+          (UserStat, BaseReferences<_$RiriDatabase, $UserStatsTable, UserStat>),
+          UserStat,
+          PrefetchHooks Function()
+        > {
   $$UserStatsTableTableManager(_$RiriDatabase db, $UserStatsTable table)
-      : super(TableManagerState(
+    : super(
+        TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -2604,81 +3223,84 @@ class $$UserStatsTableTableManager extends RootTableManager<
               $$UserStatsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$UserStatsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<DateTime> weekStartDate = const Value.absent(),
-            Value<DateTime> weekEndDate = const Value.absent(),
-            Value<int> totalSet = const Value.absent(),
-            Value<int> totalCompleted = const Value.absent(),
-            Value<int> totalIgnored = const Value.absent(),
-            Value<int> totalRescheduled = const Value.absent(),
-            Value<int> currentStreak = const Value.absent(),
-            Value<int> longestStreak = const Value.absent(),
-            Value<String> personalityTitle = const Value.absent(),
-            Value<double> procrastinationScore = const Value.absent(),
-            Value<DateTime> lastCompletedDate = const Value.absent(),
-            Value<DateTime> generatedAt = const Value.absent(),
-          }) =>
-              UserStatsCompanion(
-            weekStartDate: weekStartDate,
-            weekEndDate: weekEndDate,
-            totalSet: totalSet,
-            totalCompleted: totalCompleted,
-            totalIgnored: totalIgnored,
-            totalRescheduled: totalRescheduled,
-            currentStreak: currentStreak,
-            longestStreak: longestStreak,
-            personalityTitle: personalityTitle,
-            procrastinationScore: procrastinationScore,
-            lastCompletedDate: lastCompletedDate,
-            generatedAt: generatedAt,
-          ),
-          createCompanionCallback: ({
-            Value<DateTime> weekStartDate = const Value.absent(),
-            required DateTime weekEndDate,
-            required int totalSet,
-            required int totalCompleted,
-            required int totalIgnored,
-            required int totalRescheduled,
-            required int currentStreak,
-            required int longestStreak,
-            required String personalityTitle,
-            required double procrastinationScore,
-            Value<DateTime> lastCompletedDate = const Value.absent(),
-            required DateTime generatedAt,
-          }) =>
-              UserStatsCompanion.insert(
-            weekStartDate: weekStartDate,
-            weekEndDate: weekEndDate,
-            totalSet: totalSet,
-            totalCompleted: totalCompleted,
-            totalIgnored: totalIgnored,
-            totalRescheduled: totalRescheduled,
-            currentStreak: currentStreak,
-            longestStreak: longestStreak,
-            personalityTitle: personalityTitle,
-            procrastinationScore: procrastinationScore,
-            lastCompletedDate: lastCompletedDate,
-            generatedAt: generatedAt,
-          ),
+          updateCompanionCallback:
+              ({
+                Value<DateTime> weekStartDate = const Value.absent(),
+                Value<DateTime> weekEndDate = const Value.absent(),
+                Value<int> totalSet = const Value.absent(),
+                Value<int> totalCompleted = const Value.absent(),
+                Value<int> totalIgnored = const Value.absent(),
+                Value<int> totalRescheduled = const Value.absent(),
+                Value<int> currentStreak = const Value.absent(),
+                Value<int> longestStreak = const Value.absent(),
+                Value<String> personalityTitle = const Value.absent(),
+                Value<double> procrastinationScore = const Value.absent(),
+                Value<DateTime> lastCompletedDate = const Value.absent(),
+                Value<DateTime> generatedAt = const Value.absent(),
+              }) => UserStatsCompanion(
+                weekStartDate: weekStartDate,
+                weekEndDate: weekEndDate,
+                totalSet: totalSet,
+                totalCompleted: totalCompleted,
+                totalIgnored: totalIgnored,
+                totalRescheduled: totalRescheduled,
+                currentStreak: currentStreak,
+                longestStreak: longestStreak,
+                personalityTitle: personalityTitle,
+                procrastinationScore: procrastinationScore,
+                lastCompletedDate: lastCompletedDate,
+                generatedAt: generatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<DateTime> weekStartDate = const Value.absent(),
+                required DateTime weekEndDate,
+                required int totalSet,
+                required int totalCompleted,
+                required int totalIgnored,
+                required int totalRescheduled,
+                required int currentStreak,
+                required int longestStreak,
+                required String personalityTitle,
+                required double procrastinationScore,
+                Value<DateTime> lastCompletedDate = const Value.absent(),
+                required DateTime generatedAt,
+              }) => UserStatsCompanion.insert(
+                weekStartDate: weekStartDate,
+                weekEndDate: weekEndDate,
+                totalSet: totalSet,
+                totalCompleted: totalCompleted,
+                totalIgnored: totalIgnored,
+                totalRescheduled: totalRescheduled,
+                currentStreak: currentStreak,
+                longestStreak: longestStreak,
+                personalityTitle: personalityTitle,
+                procrastinationScore: procrastinationScore,
+                lastCompletedDate: lastCompletedDate,
+                generatedAt: generatedAt,
+              ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
-        ));
+        ),
+      );
 }
 
-typedef $$UserStatsTableProcessedTableManager = ProcessedTableManager<
-    _$RiriDatabase,
-    $UserStatsTable,
-    UserStat,
-    $$UserStatsTableFilterComposer,
-    $$UserStatsTableOrderingComposer,
-    $$UserStatsTableAnnotationComposer,
-    $$UserStatsTableCreateCompanionBuilder,
-    $$UserStatsTableUpdateCompanionBuilder,
-    (UserStat, BaseReferences<_$RiriDatabase, $UserStatsTable, UserStat>),
-    UserStat,
-    PrefetchHooks Function()>;
+typedef $$UserStatsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$RiriDatabase,
+      $UserStatsTable,
+      UserStat,
+      $$UserStatsTableFilterComposer,
+      $$UserStatsTableOrderingComposer,
+      $$UserStatsTableAnnotationComposer,
+      $$UserStatsTableCreateCompanionBuilder,
+      $$UserStatsTableUpdateCompanionBuilder,
+      (UserStat, BaseReferences<_$RiriDatabase, $UserStatsTable, UserStat>),
+      UserStat,
+      PrefetchHooks Function()
+    >;
 
 class $RiriDatabaseManager {
   final _$RiriDatabase _db;

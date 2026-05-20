@@ -159,7 +159,7 @@ void main() {
         personalityMode: PersonalityMode.tita,
       );
       expect(wakeUpResponse.text, contains('6:00'));
-      expect(wakeUpResponse.text, contains('anak'));
+      expect(wakeUpResponse.text, contains('puyat'));
     });
 
     test('Should trigger custom lifestyle chika for jokes, food, and sleep', () {

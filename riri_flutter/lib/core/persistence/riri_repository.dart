@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 import 'package:drift/drift.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../ai/ai_models.dart';
@@ -73,6 +75,30 @@ class RiriChatMessage {
   });
 }
 
+class RiriChatThread {
+  final String id;
+  final String title;
+  final DateTime createdAt;
+
+  RiriChatThread({
+    required this.id,
+    required this.title,
+    required this.createdAt,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'createdAt': createdAt.toIso8601String(),
+      };
+
+  factory RiriChatThread.fromJson(Map<String, dynamic> json) => RiriChatThread(
+        id: json['id'] as String,
+        title: json['title'] as String,
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      );
+}
+
 class RiriRepository {
   final RiriDatabase _db;
   final List<RiriChatMessage> _cachedChatHistory = [];
@@ -81,6 +107,13 @@ class RiriRepository {
       StreamController<List<RiriReminder>>.broadcast();
   StreamSubscription<List<Reminder>>? _dbSubscription;
   List<RiriReminder> _cachedReminders = [];
+
+  // Thread Management Fields
+  final List<RiriChatThread> _threads = [];
+  String _activeThreadId = 'default';
+
+  final StreamController<List<RiriChatThread>> _threadsController =
+      StreamController<List<RiriChatThread>>.broadcast();
 
   RiriRepository({required RiriDatabase database}) : _db = database {
     // 1. Subscribe to SQLite reactive stream to populate cache and stream updates
@@ -92,15 +125,14 @@ class RiriRepository {
     // 2. Perform DB Seeding if empty
     _seedDbIfEmpty();
 
-    // 3. Pre-load chat history asynchronously into our active cache
-    _db.getChatHistory().then((dbMsgs) {
-      _cachedChatHistory.addAll(dbMsgs.map((m) => _mapChatMessage(m)));
-    });
+    // 3. Pre-load threads and active chat history asynchronously
+    _initThreadsAsync();
   }
 
   void dispose() {
     _dbSubscription?.cancel();
     _remindersController.close();
+    _threadsController.close();
   }
 
   Future<void> _seedDbIfEmpty() async {
@@ -189,6 +221,123 @@ class RiriRepository {
     await _db.deleteReminder(id);
   }
 
+  // --- Chat Threads Management & Persistent Migration ---
+
+  static const String _prefThreadsKey = 'riri_chat_threads';
+  static const String _prefActiveThreadIdKey = 'riri_active_thread_id';
+
+  final _prefs = SharedPreferencesAsync();
+
+  List<RiriChatThread> get threads => List.unmodifiable(_threads);
+  String get activeThreadId => _activeThreadId;
+  Stream<List<RiriChatThread>> get threadsStream => _threadsController.stream;
+
+  Future<void> _initThreadsAsync() async {
+    try {
+      final threadsJson = await _prefs.getString(_prefThreadsKey);
+      final activeId = await _prefs.getString(_prefActiveThreadIdKey);
+
+      if (threadsJson != null && threadsJson.isNotEmpty) {
+        final decoded = json.decode(threadsJson) as List<dynamic>;
+        _threads.clear();
+        _threads.addAll(decoded.map((item) => RiriChatThread.fromJson(item as Map<String, dynamic>)));
+        _activeThreadId = activeId ?? _threads.first.id;
+      } else {
+        // Initial setup - default first thread
+        final defaultThread = RiriChatThread(
+          id: 'default',
+          title: 'New Thread',
+          createdAt: DateTime.now(),
+        );
+        _threads.add(defaultThread);
+        _activeThreadId = 'default';
+        await _saveThreadsToPrefs();
+      }
+
+      // Seed any existing SQLite messages (schema v < 3 migration helper)
+      await _db.seedNullThreadIds(_activeThreadId);
+
+      // Load active thread history
+      await _loadActiveThreadHistory();
+      _threadsController.add(List.unmodifiable(_threads));
+    } catch (e) {
+      if (_threads.isEmpty) {
+        _threads.add(RiriChatThread(id: 'default', title: 'New Thread', createdAt: DateTime.now()));
+        _activeThreadId = 'default';
+      }
+      await _loadActiveThreadHistory();
+      _threadsController.add(List.unmodifiable(_threads));
+    }
+  }
+
+  Future<void> _saveThreadsToPrefs() async {
+    final encoded = json.encode(_threads.map((t) => t.toJson()).toList());
+    await _prefs.setString(_prefThreadsKey, encoded);
+    await _prefs.setString(_prefActiveThreadIdKey, _activeThreadId);
+  }
+
+  Future<void> _loadActiveThreadHistory() async {
+    final dbMsgs = await _db.getChatHistoryByThread(_activeThreadId);
+    _cachedChatHistory.clear();
+    _cachedChatHistory.addAll(dbMsgs.map((m) => _mapChatMessage(m)));
+  }
+
+  Future<void> switchActiveThread(String threadId) async {
+    _activeThreadId = threadId;
+    await _prefs.setString(_prefActiveThreadIdKey, _activeThreadId);
+    await _loadActiveThreadHistory();
+    _threadsController.add(List.unmodifiable(_threads));
+  }
+
+  Future<void> createNewThread({required String id, required String title}) async {
+    final newThread = RiriChatThread(
+      id: id,
+      title: title,
+      createdAt: DateTime.now(),
+    );
+    _threads.insert(0, newThread); // Insert at beginning
+    _activeThreadId = id;
+    await _saveThreadsToPrefs();
+    await _loadActiveThreadHistory();
+    _threadsController.add(List.unmodifiable(_threads));
+  }
+
+  Future<void> deleteThread(String threadId) async {
+    _threads.removeWhere((t) => t.id == threadId);
+    await _db.deleteChatHistoryByThread(threadId);
+
+    if (_activeThreadId == threadId) {
+      if (_threads.isNotEmpty) {
+        _activeThreadId = _threads.first.id;
+      } else {
+        final defaultThread = RiriChatThread(
+          id: 'default',
+          title: 'New Thread',
+          createdAt: DateTime.now(),
+        );
+        _threads.add(defaultThread);
+        _activeThreadId = 'default';
+      }
+    }
+    await _saveThreadsToPrefs();
+    await _loadActiveThreadHistory();
+    _threadsController.add(List.unmodifiable(_threads));
+  }
+
+  Future<void> updateThreadTitle(String threadId, String title) async {
+    final idx = _threads.indexWhere((t) => t.id == threadId);
+    if (idx != -1) {
+      final old = _threads[idx];
+      _threads[idx] = RiriChatThread(
+        id: old.id,
+        title: title,
+        createdAt: old.createdAt,
+      );
+      await _saveThreadsToPrefs();
+      _threadsController.add(List.unmodifiable(_threads));
+    }
+  }
+
   List<RiriChatMessage> get chatHistory => List.unmodifiable(_cachedChatHistory);
 
   Future<void> addChatMessage({
@@ -209,13 +358,23 @@ class RiriRepository {
       stickerName: stickerName,
     );
 
+    final isNewTitleNeeded = isUser &&
+        _cachedChatHistory.isEmpty &&
+        _threads.any((t) => t.id == _activeThreadId && t.title == 'New Thread');
+
     _cachedChatHistory.add(message);
     await _db.insertChatMessage(ChatMessagesCompanion.insert(
       messageText: text,
       isUser: isUser,
       timestamp: now,
       stickerName: Value(stickerName),
+      threadId: Value(_activeThreadId),
     ));
+
+    if (isNewTitleNeeded) {
+      final newTitle = text.length > 25 ? '${text.substring(0, 25)}...' : text;
+      await updateThreadTitle(_activeThreadId, newTitle);
+    }
   }
 
   Future<void> updateChatMessageText(int id, String newText) async {
@@ -235,13 +394,11 @@ class RiriRepository {
 
   Future<void> clearChatHistory() async {
     _cachedChatHistory.clear();
-    await _db.clearChatHistory();
+    await _db.deleteChatHistoryByThread(_activeThreadId);
   }
 
   static const String _prefPersonalityKey = 'riri_personality_mode';
   static const String _prefNotificationsKey = 'riri_notifications_enabled';
-
-  final _prefs = SharedPreferencesAsync();
 
   Future<PersonalityMode> getPersonalityMode() async {
     final modeStr = await _prefs.getString(_prefPersonalityKey);

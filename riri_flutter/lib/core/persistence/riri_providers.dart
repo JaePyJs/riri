@@ -34,7 +34,7 @@ class TabIndexNotifier extends Notifier<int> {
   int build() => 0;
 
   void setTab(int index) {
-    assert(index >= 0 && index <= 3, 'Tab index must be between 0 and 3');
+    assert(index >= 0 && index <= 2, 'Tab index must be between 0 and 2');
     state = index;
   }
 }
