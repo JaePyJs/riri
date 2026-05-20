@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 import '../notifications/personality_copy.dart';
 import 'ai_models.dart';
@@ -80,10 +81,12 @@ class ChatResponseEngine {
       // Extract due date dynamically from natural language expressions!
       final dueDateTime = _parseDueDateTime(userInput);
 
-      final jsonPayload = '{"title":"${extractedTitle.replaceAll('"', '\\"')}",'
-          '"category":"${category.name}",'
-          '"dueDate":"${dueDateTime.toIso8601String()}",'
-          '"state":"pending"}';
+      final jsonPayload = json.encode({
+        'title': extractedTitle,
+        'category': category.name,
+        'dueDate': dueDateTime.toIso8601String(),
+        'state': 'pending',
+      });
 
       return ChatResponse(
         text: '[TASK_CARD]$jsonPayload',

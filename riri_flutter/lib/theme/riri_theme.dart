@@ -38,6 +38,7 @@ class RiriTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
+      fontFamily: GoogleFonts.nunito().fontFamily,
       scaffoldBackgroundColor: darkBg,
       primaryColor: primaryPurple,
       colorScheme: const ColorScheme.dark(
@@ -60,8 +61,9 @@ class RiriTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: const Color(0xFF14141F),
-        elevation: 2,
+        elevation: 0,
         surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
         indicatorColor: primaryPurple.withValues(alpha: 0.22),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {

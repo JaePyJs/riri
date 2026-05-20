@@ -198,7 +198,7 @@ class _AddReminderSheetState extends State<AddReminderSheet> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: RiriTheme.darkBg,
-                    foregroundColor: RiriTheme.secondaryAmber,
+                    foregroundColor: RiriTheme.primaryPurple,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: const BorderSide(color: Color(0xFF2F2F4A)),

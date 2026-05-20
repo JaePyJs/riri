@@ -36,6 +36,16 @@ class PersonaConfig {
   final String completionButtonLabel;
   final String completionEmoji;
 
+  /// Card confirmations and chat greetings
+  final String saveButtonLabel;
+  final String cancelButtonLabel;
+  final String savedBannerText;
+  final String cancelledBannerText;
+  final String savedGreeting;
+  final String cancelledGreeting;
+  final String greetingWithName;
+  final String greetingWithoutName;
+
   /// Default notification template
   final PersonaTemplate standard;
 
@@ -55,6 +65,14 @@ class PersonaConfig {
     required this.completionBody,
     required this.completionButtonLabel,
     required this.completionEmoji,
+    required this.saveButtonLabel,
+    required this.cancelButtonLabel,
+    required this.savedBannerText,
+    required this.cancelledBannerText,
+    required this.savedGreeting,
+    required this.cancelledGreeting,
+    required this.greetingWithName,
+    required this.greetingWithoutName,
     required this.standard,
     required this.snooze,
     required this.overdue,
@@ -72,6 +90,14 @@ class PersonaConfig {
       completionBody: "Natapos mo rin! Ang galing mo naman, proud na proud si Riri sa'yo! ✨",
       completionButtonLabel: 'Salamat! 💖',
       completionEmoji: '🎉',
+      saveButtonLabel: 'Sige, g! 🚀',
+      cancelButtonLabel: 'Wag muna 💅',
+      savedBannerText: 'Nakalista na, bestie! G! 🚀',
+      cancelledBannerText: 'Wag muna raw... Okay, next time! 💅',
+      savedGreeting: "G! Naka-schedule na yung goal mo, bestie! Tapusin natin 'to ha!",
+      cancelledGreeting: 'Aww, sige next time na lang. Take it easy!',
+      greetingWithName: 'Hoy, {name}! Riri here, ready to achieve our goals with you! Ano na plano natin today? ✨',
+      greetingWithoutName: 'Uy, musta na? Riri here, ready to achieve our goals with you! Ano na plano natin today? ✨',
       standard: PersonaTemplate(
         title: 'Hoy! Riri here 👋',
         body: "Uy, reminder mo: {task}. Let's get it done!",
@@ -95,6 +121,14 @@ class PersonaConfig {
       completionBody: "Nagawa mo rin pala. Hindi ko aakalaing mangyayari 'to. Next.",
       completionButtonLabel: 'Noted. 🫡',
       completionEmoji: '💀',
+      saveButtonLabel: 'I-save na. 💀',
+      cancelButtonLabel: 'Katamaran 😡',
+      savedBannerText: 'Naka-save na. Magtrabaho ka na. 💀',
+      cancelledBannerText: 'Kinansela. Katamaran wins again. 😡',
+      savedGreeting: "Naka-save na. Huwag mo nang balaking i-snooze 'yan mamaya.",
+      cancelledGreeting: 'Kinansela mo. Ganyan naman palagi, puro salita, walang gawa.',
+      greetingWithName: 'Riri here, {name}. Ready to do some work or are you planning to snooze all day? Speak up.',
+      greetingWithoutName: 'Riri here. Ready to do some work or are you planning to snooze all day? Speak up.',
       standard: PersonaTemplate(
         title: 'Get up. 🔔',
         body: "'{task}'. Now. Or suffer the consequences.",
@@ -118,6 +152,14 @@ class PersonaConfig {
       completionBody: "Done na 'yan, no stress! Take a breather and vibe. You deserve it 🍃",
       completionButtonLabel: 'Thanks bes~ 🌿',
       completionEmoji: '✌️',
+      saveButtonLabel: 'Steady, save na 🍃',
+      cancelButtonLabel: 'Bukas na ✌️',
+      savedBannerText: 'All good, saved na~ Relax ka lang. 🍃',
+      cancelledBannerText: 'No pressure, next time na lang~ ✌️',
+      savedGreeting: "No pressure, saved na 'tong task natin. Steady lang.",
+      cancelledGreeting: 'Chill lang, okay lang \'yan. Sunod na lang.',
+      greetingWithName: 'Hey, {name}~ Riri here. Relax ka lang, everything is under control. Ano gagawin natin today? 🍃',
+      greetingWithoutName: 'Hey~ Uy, musta na? Riri here. Relax ka lang, everything is under control. Ano gagawin natin today? 🍃',
       standard: PersonaTemplate(
         title: 'Hey, no rush ✌️',
         body: "Just checking — {task} when you have the energy.",
@@ -141,6 +183,14 @@ class PersonaConfig {
       completionBody: "Ang galing mo naman anak! Kumain ka na para may lakas ka sa susunod na trabaho ha. 💜",
       completionButtonLabel: 'Opo Tita! 💜',
       completionEmoji: '🙏',
+      saveButtonLabel: 'Opo Tita, save na 👵',
+      cancelButtonLabel: 'Mamaya na po 👵',
+      savedBannerText: 'Nailista ko na, anak. Galingan mo! 👵❤️',
+      cancelledBannerText: 'Sige na nga, mamaya na lang ha anak? 👵',
+      savedGreeting: 'Nailista ko na ang kailangan mong gawin, anak. Galingan mo ha.',
+      cancelledGreeting: 'Sige anak, mamaya na lang kung pagod ka pa. Magpahinga ka muna ha.',
+      greetingWithName: 'Kumain ka na ba, {name} anak? Riri dito. Halika, ilista natin ang kailangan mong gawin ha? 👵',
+      greetingWithoutName: 'Kumain ka na ba anak? Riri dito. Halika, ilista natin ang kailangan mong gawin ha? 👵',
       standard: PersonaTemplate(
         title: 'Anak, naalala mo ba? 🙏',
         body: "Yung '{task}' mo, hindi pa tapos. Gawin mo na bago ka pa makalimot ulit, naku.",

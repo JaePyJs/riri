@@ -22,7 +22,7 @@ class SettingsScreen extends ConsumerWidget {
             hintText: 'Ipasok ang bagong pangalan...',
             hintStyle: TextStyle(color: RiriTheme.textMuted),
             enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF2F2F4A))),
-            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: RiriTheme.secondaryAmber)),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: RiriTheme.primaryPurple)),
           ),
         ),
         actions: [
@@ -38,7 +38,7 @@ class SettingsScreen extends ConsumerWidget {
               }
               Navigator.pop(context);
             },
-            child: const Text('I-save 💾', style: TextStyle(color: RiriTheme.secondaryAmber)),
+            child: const Text('I-save 💾', style: TextStyle(color: RiriTheme.primaryPurple)),
           ),
         ],
       ),
@@ -192,7 +192,7 @@ class SettingsScreen extends ConsumerWidget {
                               : 'Kasalukuyan: $username. I-update para sa mas personal na chika.',
                           style: theme.textTheme.bodyMedium,
                         ),
-                        trailing: const Icon(Icons.edit, color: RiriTheme.secondaryAmber, size: 20),
+                        trailing: const Icon(Icons.edit, color: RiriTheme.primaryPurple, size: 20),
                       ),
                       const Divider(color: Color(0xFF2F2F4A), height: 1),
 
@@ -207,7 +207,7 @@ class SettingsScreen extends ConsumerWidget {
                           style: theme.textTheme.bodyMedium,
                         ),
                         value: notificationsEnabled,
-                        activeThumbColor: RiriTheme.secondaryAmber,
+                        activeThumbColor: RiriTheme.primaryPurple,
                         onChanged: (value) {
                           ref.read(notificationsEnabledProvider.notifier).setNotificationsEnabled(value);
                         },

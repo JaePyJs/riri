@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/ai/ai_models.dart';
@@ -49,29 +50,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final username = ref.read(usernameProvider);
     final hasName = username.trim().isNotEmpty;
 
-    String greeting;
-    switch (currentMode) {
-      case PersonalityMode.bestie:
-        greeting = hasName 
-            ? 'Hoy, $username! Riri here, ready to achieve our goals with you! Ano na plano natin today? ✨'
-            : 'Uy, musta na? Riri here, ready to achieve our goals with you! Ano na plano natin today? ✨';
-        break;
-      case PersonalityMode.malupit:
-        greeting = hasName
-            ? 'Riri here, $username. Ready to do some work or are you planning to snooze all day? Speak up.'
-            : 'Riri here. Ready to do some work or are you planning to snooze all day? Speak up.';
-        break;
-      case PersonalityMode.chill:
-        greeting = hasName
-            ? 'Hey, $username~ Riri here. Relax ka lang, everything is under control. Ano gagawin natin today? 🍃'
-            : 'Hey~ Uy, musta na? Riri here. Relax ka lang, everything is under control. Ano gagawin natin today? 🍃';
-        break;
-      case PersonalityMode.tita:
-        greeting = hasName
-            ? 'Kumain ka na ba, $username anak? Riri dito. Halika, ilista natin ang kailangan mong gawin ha? 👵'
-            : 'Kumain ka na ba anak? Riri dito. Halika, ilista natin ang kailangan mong gawin ha? 👵';
-        break;
-    }
+    final config = PersonaConfig.get(currentMode);
+    final greeting = hasName
+        ? config.greetingWithName.replaceAll('{name}', username)
+        : config.greetingWithoutName;
 
     repo.addChatMessage(
       text: greeting,
@@ -184,8 +166,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 Text(
                   '${PersonaConfig.get(personalityMode).name} Mode Active 💅',
-                  style: const TextStyle(
-                    color: RiriTheme.secondaryAmber,
+                  style: TextStyle(
+                    color: PersonaConfig.get(personalityMode).accentColor,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -532,8 +514,8 @@ class _ChatBubble extends ConsumerWidget {
                   state == 'pending'
                       ? greetingText
                       : (state == 'saved'
-                          ? _getSavedGreeting(personalityMode, title)
-                          : _getCancelledGreeting(personalityMode, title)),
+                          ? config.savedGreeting
+                          : config.cancelledGreeting),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
@@ -624,15 +606,17 @@ class _ChatBubble extends ConsumerWidget {
                                   category: category,
                                   dueDateTime: dueDateTime,
                                 );
-                                final jsonStr = '{"title":"${title.replaceAll('"', '\\"')}",'
-                                    '"category":"${category.name}",'
-                                    '"dueDate":"${dueDateTime.toIso8601String()}",'
-                                    '"state":"saved"}';
+                                final jsonStr = json.encode({
+                                  'title': title,
+                                  'category': category.name,
+                                  'dueDate': dueDateTime.toIso8601String(),
+                                  'state': 'saved',
+                                });
                                 await repo.updateChatMessageText(messageId, '[TASK_CARD]$jsonStr');
                                 onStateChanged?.call();
                               },
                               child: Text(
-                                _getSaveButtonText(personalityMode),
+                                config.saveButtonLabel,
                                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -673,15 +657,17 @@ class _ChatBubble extends ConsumerWidget {
                               ),
                               onPressed: () async {
                                 final repo = ref.read(repositoryProvider);
-                                final jsonStr = '{"title":"${title.replaceAll('"', '\\"')}",'
-                                    '"category":"${category.name}",'
-                                    '"dueDate":"${dueDateTime.toIso8601String()}",'
-                                    '"state":"cancelled"}';
+                                final jsonStr = json.encode({
+                                  'title': title,
+                                  'category': category.name,
+                                  'dueDate': dueDateTime.toIso8601String(),
+                                  'state': 'cancelled',
+                                });
                                 await repo.updateChatMessageText(messageId, '[TASK_CARD]$jsonStr');
                                 onStateChanged?.call();
                               },
                               child: Text(
-                                _getCancelButtonText(personalityMode),
+                                config.cancelButtonLabel,
                                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                               ),
                             ),
@@ -703,7 +689,7 @@ class _ChatBubble extends ConsumerWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                _getSavedBannerText(personalityMode),
+                                config.savedBannerText,
                                 style: const TextStyle(
                                   color: RiriTheme.successGreen,
                                   fontSize: 11,
@@ -729,7 +715,7 @@ class _ChatBubble extends ConsumerWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                _getCancelledBannerText(personalityMode),
+                                config.cancelledBannerText,
                                 style: const TextStyle(
                                   color: RiriTheme.textMuted,
                                   fontSize: 11,
@@ -811,83 +797,7 @@ class _ChatBubble extends ConsumerWidget {
     }
   }
 
-  String _getSavedGreeting(PersonalityMode mode, String task) {
-    switch (mode) {
-      case PersonalityMode.bestie:
-        return "G! Naka-schedule na yung goal mo, bestie! Tapusin natin 'to ha!";
-      case PersonalityMode.malupit:
-        return "Naka-save na. Huwag mo nang balaking i-snooze 'yan mamaya.";
-      case PersonalityMode.chill:
-        return "No pressure, saved na 'tong task natin. Steady lang.";
-      case PersonalityMode.tita:
-        return "Nailista ko na ang kailangan mong gawin, anak. Galingan mo ha.";
-    }
-  }
 
-  String _getCancelledGreeting(PersonalityMode mode, String task) {
-    switch (mode) {
-      case PersonalityMode.bestie:
-        return "Aww, sige next time na lang. Take it easy!";
-      case PersonalityMode.malupit:
-        return "Kinansela mo. Ganyan naman palagi, puro salita, walang gawa.";
-      case PersonalityMode.chill:
-        return "Chill lang, okay lang 'yan. Sunod na lang.";
-      case PersonalityMode.tita:
-        return "Sige anak, mamaya na lang kung pagod ka pa. Magpahinga ka muna ha.";
-    }
-  }
-
-  String _getSaveButtonText(PersonalityMode mode) {
-    switch (mode) {
-      case PersonalityMode.bestie:
-        return "Sige, g! 🚀";
-      case PersonalityMode.malupit:
-        return "I-save na. 💀";
-      case PersonalityMode.chill:
-        return "Steady, save na 🍃";
-      case PersonalityMode.tita:
-        return "Opo Tita, save na 👵";
-    }
-  }
-
-  String _getCancelButtonText(PersonalityMode mode) {
-    switch (mode) {
-      case PersonalityMode.bestie:
-        return "Wag muna 💅";
-      case PersonalityMode.malupit:
-        return "Katamaran 😡";
-      case PersonalityMode.chill:
-        return "Bukas na ✌️";
-      case PersonalityMode.tita:
-        return "Mamaya na po 👵";
-    }
-  }
-
-  String _getSavedBannerText(PersonalityMode mode) {
-    switch (mode) {
-      case PersonalityMode.bestie:
-        return "Nakalista na, bestie! G! 🚀";
-      case PersonalityMode.malupit:
-        return "Naka-save na. Magtrabaho ka na. 💀";
-      case PersonalityMode.chill:
-        return "All good, saved na~ Relax ka lang. 🍃";
-      case PersonalityMode.tita:
-        return "Nailista ko na, anak. Galingan mo! 👵❤️";
-    }
-  }
-
-  String _getCancelledBannerText(PersonalityMode mode) {
-    switch (mode) {
-      case PersonalityMode.bestie:
-        return "Wag muna raw... Okay, next time! 💅";
-      case PersonalityMode.malupit:
-        return "Kinansela. Katamaran wins again. 😡";
-      case PersonalityMode.chill:
-        return "No pressure, next time na lang~ ✌️";
-      case PersonalityMode.tita:
-        return "Sige na nga, mamaya na lang ha anak? 👵";
-    }
-  }
 
   void _showEditDialog(
     BuildContext context,
@@ -1145,10 +1055,12 @@ class _EditCardDialogState extends ConsumerState<_EditCardDialog> {
                 if (newTitle.isEmpty) return;
 
                 final repo = ref.read(repositoryProvider);
-                final jsonStr = '{"title":"${newTitle.replaceAll('"', '\\"')}",'
-                    '"category":"${_selectedCategory.name}",'
-                    '"dueDate":"${_selectedDueDate.toIso8601String()}",'
-                    '"state":"pending"}';
+                final jsonStr = json.encode({
+                  'title': newTitle,
+                  'category': _selectedCategory.name,
+                  'dueDate': _selectedDueDate.toIso8601String(),
+                  'state': 'pending',
+                });
                 await repo.updateChatMessageText(widget.messageId, '[TASK_CARD]$jsonStr');
                 widget.onStateChanged?.call();
                 if (!context.mounted) return;
@@ -1195,10 +1107,8 @@ class _TypingIndicatorState extends State<_TypingIndicator> with SingleTickerPro
         double progress = (_controller.value - delay) % 1.0;
         if (progress < 0) progress += 1.0;
 
-        // Apply easeInOut curve on the [0, 1] phase for organic bounce feel
-        final curved = Curves.easeInOut.transform(
-          progress < 0.5 ? progress * 2.0 : 1.0 - (progress - 0.5) * 2.0,
-        );
+        // Apply sine-wave active bounce and resting phase for organic bubble physics
+        final curved = progress < 0.5 ? sin(pi * (progress / 0.5)) : 0.0;
         final double offset = -curved * 7.0;
 
         return Transform.translate(

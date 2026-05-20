@@ -136,7 +136,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                           TextSpan(text: 'Welcome to '),
                           TextSpan(
                             text: 'Riri',
-                            style: TextStyle(color: RiriTheme.secondaryAmber),
+                            style: TextStyle(color: RiriTheme.hotPink),
                           ),
                         ],
                       ),

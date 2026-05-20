@@ -155,7 +155,7 @@ final streakProvider = Provider<int>((ref) {
 
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
-      final yesterday = today.subtract(const Duration(days: 1));
+      final yesterday = DateTime(today.year, today.month, today.day - 1);
 
       // If the latest completed date is neither today nor yesterday, the streak is broken (0)
       if (completedDates.first != today && completedDates.first != yesterday) {
@@ -168,7 +168,7 @@ final streakProvider = Provider<int>((ref) {
       for (var date in completedDates) {
         if (date == checkDate) {
           streak++;
-          checkDate = checkDate.subtract(const Duration(days: 1));
+          checkDate = DateTime(checkDate.year, checkDate.month, checkDate.day - 1);
         } else {
           break;
         }
