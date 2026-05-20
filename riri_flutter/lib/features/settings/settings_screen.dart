@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/persistence/riri_providers.dart';
-import '../../core/notifications/personality_copy.dart';
+import '../../core/notifications/personas.dart';
 import '../../theme/riri_theme.dart';
 
 class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   /// Shows premium edit nickname dialog
   void _showNicknameDialog(BuildContext context, WidgetRef ref, String currentName) {
@@ -68,7 +68,7 @@ class SettingsScreen extends ConsumerWidget {
               height: MediaQuery.of(context).size.height * 0.35,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [RiriTheme.primaryPurple.withValues(alpha: 0.15), Colors.transparent],
+                  colors: [RiriTheme.primaryPurple.withOpacity(0.15), Colors.transparent],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -90,57 +90,65 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
+                
+                // Stunning Redirect Banner Card
                 Container(
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: RiriTheme.cardBg,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    gradient: LinearGradient(
+                      colors: [RiriTheme.primaryPurple.withOpacity(0.4), RiriTheme.hotPink.withOpacity(0.4)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: RiriTheme.primaryPurple.withOpacity(0.6), width: 1.5),
                   ),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: PersonalityMode.values.length,
-                    separatorBuilder: (context, index) =>
-                        const Divider(color: Color(0xFF2F2F4A), height: 1),
-                    itemBuilder: (context, index) {
-                      final mode = PersonalityMode.values[index];
-                      final isSelected = currentMode == mode;
-
-                      return InkWell(
-                        onTap: () {
-                          ref.read(personalityModeProvider.notifier).setPersonalityMode(mode);
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  mode.displayLabel,
-                                  style: TextStyle(
-                                    color: isSelected ? Colors.white : RiriTheme.textSecondary,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                    fontSize: 14,
-                                  ),
-                                ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Riri Personas 🎭',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
                               ),
-                              if (isSelected)
-                                const Icon(Icons.check_circle, color: RiriTheme.secondaryAmber)
-                              else
-                                const Icon(Icons.circle_outlined, color: RiriTheme.textMuted),
-                            ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Kasalukuyang naka-set sa ${PersonaConfig.get(currentMode).name} mode. Tap to adjust your nags and tones!',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: RiriTheme.textSecondary,
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Route to Tab index 1
+                          ref.read(tabIndexProvider.notifier).setTab(1);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: RiriTheme.hotPink,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                      );
-                    },
+                        child: const Text(
+                          'View 🎭',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -162,7 +170,7 @@ class SettingsScreen extends ConsumerWidget {
                     border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withOpacity(0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),

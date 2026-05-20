@@ -9,6 +9,7 @@ import 'features/onboarding/onboarding_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/chat/chat_screen.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/settings/personas_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,65 +37,71 @@ void main() async {
 }
 
 class RiriApp extends ConsumerWidget {
-  const RiriApp({Key? key}) : super(key: key);
+  const RiriApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final onboardingCompleted = ref.watch(onboardingCompletedProvider);
 
-    Widget mainScreen = onboardingCompleted
+    final mainScreen = onboardingCompleted
         ? const RiriAppShell()
         : const OnboardingScreen();
-
-    // Wrap the app in a gorgeous centered smartphone frame if running on web browser!
-    if (kIsWeb) {
-      mainScreen = Container(
-        color: const Color(0xFF0C0B10), // Elegant deep OLED-grade backdrop
-        child: Center(
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-            constraints: const BoxConstraints(maxWidth: 430, maxHeight: 900),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(36),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.6),
-                  blurRadius: 30,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(36),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: const Color(0xFF22202C),
-                    width: 8,
-                    strokeAlign: BorderSide.strokeAlignOutside,
-                  ),
-                  borderRadius: BorderRadius.circular(36),
-                ),
-                child: mainScreen,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
 
     return MaterialApp(
       title: 'Riri',
       debugShowCheckedModeBanner: false,
       theme: RiriTheme.darkThemeData,
-      home: mainScreen,
+      home: kIsWeb ? _WebShell(child: mainScreen) : mainScreen,
+    );
+  }
+}
+
+class _WebShell extends StatelessWidget {
+  final Widget child;
+
+  const _WebShell({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFF0C0B10), // Elegant deep OLED-grade backdrop
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+          constraints: const BoxConstraints(maxWidth: 430, maxHeight: 900),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(36),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.6),
+                blurRadius: 30,
+                spreadRadius: 2,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(36),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: const Color(0xFF22202C),
+                  width: 8,
+                  strokeAlign: BorderSide.strokeAlignOutside,
+                ),
+                borderRadius: BorderRadius.circular(36),
+              ),
+              child: child,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
 
 class RiriAppShell extends ConsumerWidget {
-  const RiriAppShell({Key? key}) : super(key: key);
+  const RiriAppShell({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -105,36 +112,35 @@ class RiriAppShell extends ConsumerWidget {
         index: currentTabIndex,
         children: const [
           DashboardScreen(),
+          PersonaSelectorScreen(),
           ChatTab(),
           SettingsTab(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentTabIndex,
-        onTap: (index) {
-          // Trigger type-safe tab mutation method instead of direct state assignment
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: currentTabIndex,
+        onDestinationSelected: (index) {
           ref.read(tabIndexProvider.notifier).setTab(index);
         },
-        backgroundColor: RiriTheme.cardBg,
-        selectedItemColor: RiriTheme.secondaryAmber,
-        unselectedItemColor: RiriTheme.textSecondary,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-        unselectedLabelStyle: const TextStyle(fontSize: 11),
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month),
-            activeIcon: Icon(Icons.calendar_month, color: RiriTheme.secondaryAmber),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.calendar_month_outlined),
+            selectedIcon: Icon(Icons.calendar_month),
             label: 'Dashboard',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
+            icon: Icon(Icons.mood_outlined),
+            selectedIcon: Icon(Icons.mood),
+            label: 'Personas',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble, color: RiriTheme.secondaryAmber),
+            selectedIcon: Icon(Icons.chat_bubble),
             label: 'Riri Chat',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings, color: RiriTheme.secondaryAmber),
+            selectedIcon: Icon(Icons.settings),
             label: 'Settings',
           ),
         ],
@@ -144,7 +150,7 @@ class RiriAppShell extends ConsumerWidget {
 }
 
 class ChatTab extends ConsumerWidget {
-  const ChatTab({Key? key}) : super(key: key);
+  const ChatTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -153,7 +159,7 @@ class ChatTab extends ConsumerWidget {
 }
 
 class SettingsTab extends ConsumerWidget {
-  const SettingsTab({Key? key}) : super(key: key);
+  const SettingsTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -166,10 +172,10 @@ class AnimatedIndexedStack extends StatefulWidget {
   final List<Widget> children;
 
   const AnimatedIndexedStack({
-    Key? key,
+    super.key,
     required this.index,
     required this.children,
-  }) : super(key: key);
+  });
 
   @override
   State<AnimatedIndexedStack> createState() => _AnimatedIndexedStackState();

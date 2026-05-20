@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'personality_copy.dart';
 
 /// Represents a dynamic copy template row supporting variable interpolation.
@@ -28,6 +29,11 @@ class PersonaConfig {
   final PersonalityMode mode;
   final String name;
   final String description;
+  final Color accentColor;
+  final List<Color> confettiColors;
+  final String completionHeadline;
+  final String completionBody;
+  final String completionButtonLabel;
 
   /// Default notification template
   final PersonaTemplate standard;
@@ -42,6 +48,11 @@ class PersonaConfig {
     required this.mode,
     required this.name,
     required this.description,
+    required this.accentColor,
+    required this.confettiColors,
+    required this.completionHeadline,
+    required this.completionBody,
+    required this.completionButtonLabel,
     required this.standard,
     required this.snooze,
     required this.overdue,
@@ -53,6 +64,11 @@ class PersonaConfig {
       mode: PersonalityMode.bestie,
       name: 'Barkada',
       description: '✨ Warm, hype, and casual barkada-style support.',
+      accentColor: Color(0xFFC77DFF),
+      confettiColors: [Color(0xFFFF6EC7), Color(0xFFC77DFF), Color(0xFFFF007F)],
+      completionHeadline: 'Hala, Grabe! 🎉',
+      completionBody: "Natapos mo rin! Ang galing mo naman, proud na proud si Riri sa'yo! ✨",
+      completionButtonLabel: 'Salamat! 💖',
       standard: PersonaTemplate(
         title: 'Hoy! Riri here 👋',
         body: "Uy, reminder mo: {task}. Let's get it done!",
@@ -70,6 +86,11 @@ class PersonaConfig {
       mode: PersonalityMode.malupit,
       name: 'Malupit',
       description: '💀 Maximum roast, tough love, zero slacking tolerance.',
+      accentColor: Color(0xFFFF4D6D),
+      confettiColors: [Color(0xFFFF4D6D), Color(0xFF8B0000), Color(0xFFFF0000)],
+      completionHeadline: 'Finally. 💀',
+      completionBody: "Nagawa mo rin pala. Hindi ko aakalaing mangyayari 'to. Next.",
+      completionButtonLabel: 'Noted. 🫡',
       standard: PersonaTemplate(
         title: 'Get up. 🔔',
         body: "'{task}'. Now. Or suffer the consequences.",
@@ -87,6 +108,11 @@ class PersonaConfig {
       mode: PersonalityMode.chill,
       name: 'Chill',
       description: '🍃 Low-pressure, low stress, and relaxed vibrations.',
+      accentColor: Color(0xFF48CAE4),
+      confettiColors: [Color(0xFF6EFFD6), Color(0xFF48CAE4), Color(0xFF00F5D4)],
+      completionHeadline: 'Yay, nice one~ ✌️',
+      completionBody: "Done na 'yan, no stress! Take a breather and vibe. You deserve it 🍃",
+      completionButtonLabel: 'Thanks bes~ 🌿',
       standard: PersonaTemplate(
         title: 'Hey, no rush ✌️',
         body: "Just checking — {task} when you have the energy.",
@@ -104,6 +130,11 @@ class PersonaConfig {
       mode: PersonalityMode.tita,
       name: 'Tita',
       description: '👵 Maternal nagging, traditional wisdom, and genuine worry.',
+      accentColor: Color(0xFFF4A261),
+      confettiColors: [Color(0xFFFFD166), Color(0xFFF4A261), Color(0xFFE76F51)],
+      completionHeadline: 'Ay nako, tapos na! 🙏',
+      completionBody: "Ang galing mo naman anak! Kumain ka na para may lakas ka sa susunod na trabaho ha. 💜",
+      completionButtonLabel: 'Opo Tita! 💜',
       standard: PersonaTemplate(
         title: 'Anak, naalala mo ba? 🙏',
         body: "Yung '{task}' mo, hindi pa tapos. Gawin mo na bago ka pa makalimot ulit, naku.",

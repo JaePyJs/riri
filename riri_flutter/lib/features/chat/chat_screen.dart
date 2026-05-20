@@ -9,7 +9,7 @@ import '../../core/notifications/personas.dart';
 import '../../theme/riri_theme.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({Key? key}) : super(key: key);
+  const ChatScreen({super.key});
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -350,7 +350,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 class _ChatBubble extends StatelessWidget {
   final RiriChatMessage message;
 
-  const _ChatBubble({Key? key, required this.message}) : super(key: key);
+  const _ChatBubble({required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -423,7 +423,7 @@ class _ChatBubble extends StatelessWidget {
 }
 
 class _TypingIndicator extends StatefulWidget {
-  const _TypingIndicator({Key? key}) : super(key: key);
+  const _TypingIndicator();
 
   @override
   State<_TypingIndicator> createState() => _TypingIndicatorState();

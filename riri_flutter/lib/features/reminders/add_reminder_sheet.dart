@@ -10,7 +10,7 @@ class AddReminderSheet extends StatefulWidget {
     required DateTime dueDateTime,
   }) onSave;
 
-  const AddReminderSheet({Key? key, required this.onSave}) : super(key: key);
+  const AddReminderSheet({super.key, required this.onSave});
 
   @override
   _AddReminderSheetState createState() => _AddReminderSheetState();

@@ -1,6 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../notifications/personality_copy.dart';
+import '../../theme/riri_theme.dart';
+import '../../features/dashboard/riri_asset_mapper.dart';
 import 'riri_database.dart';
 import 'riri_repository.dart';
 
@@ -31,6 +34,7 @@ class TabIndexNotifier extends Notifier<int> {
   int build() => 0;
 
   void setTab(int index) {
+    assert(index >= 0 && index <= 3, 'Tab index must be between 0 and 3');
     state = index;
   }
 }
@@ -123,4 +127,122 @@ class NotificationsEnabledNotifier extends Notifier<bool> {
 }
 
 final notificationsEnabledProvider = NotifierProvider<NotificationsEnabledNotifier, bool>(() => NotificationsEnabledNotifier());
+
+class ProcrastinationIndexData {
+  final String label;      // "Proactive 👑", "Mild Slacker ☕", etc.
+  final Color color;       // matching RiriTheme color
+  final double avgSnooze;  // raw value for future use
+  const ProcrastinationIndexData({
+    required this.label,
+    required this.color,
+    required this.avgSnooze,
+  });
+}
+
+final streakProvider = Provider<int>((ref) {
+  final remindersAsync = ref.watch(remindersStreamProvider);
+  return remindersAsync.maybeWhen(
+    data: (reminders) {
+      final completedDates = reminders
+          .where((r) => r.isCompleted && r.completedAt != null)
+          .map((r) => DateTime(r.completedAt!.year, r.completedAt!.month, r.completedAt!.day))
+          .toSet()
+          .toList()
+        ..sort((a, b) => b.compareTo(a));
+
+      if (completedDates.isEmpty) return 0;
+
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+
+      // If the latest completed date is neither today nor yesterday, the streak is broken (0)
+      if (completedDates.first != today && completedDates.first != yesterday) {
+        return 0;
+      }
+
+      int streak = 0;
+      DateTime checkDate = completedDates.first;
+
+      for (var date in completedDates) {
+        if (date == checkDate) {
+          streak++;
+          checkDate = checkDate.subtract(const Duration(days: 1));
+        } else {
+          break;
+        }
+      }
+      return streak;
+    },
+    orElse: () => 0,
+  );
+});
+
+final procrastinationIndexProvider = Provider<ProcrastinationIndexData>((ref) {
+  final remindersAsync = ref.watch(remindersStreamProvider);
+  return remindersAsync.maybeWhen(
+    data: (reminders) {
+      if (reminders.isEmpty) {
+        return const ProcrastinationIndexData(
+          label: "Proactive 👑",
+          color: RiriTheme.successGreen,
+          avgSnooze: 0.0,
+        );
+      }
+      
+      final totalSnoozes = reminders.fold<int>(0, (sum, r) => sum + r.snoozeCount);
+      final avg = totalSnoozes / reminders.length;
+
+      String label;
+      Color color;
+
+      if (avg <= 0.5) {
+        label = "Proactive 👑";
+        color = RiriTheme.successGreen;
+      } else if (avg <= 1.5) {
+        label = "Mild Slacker ☕";
+        color = RiriTheme.secondaryAmber;
+      } else if (avg <= 3.0) {
+        label = "Snooze Master 😴";
+        color = RiriTheme.primaryPurple;
+      } else {
+        label = "Professional Slacker 💀";
+        color = RiriTheme.dangerRed;
+      }
+
+      return ProcrastinationIndexData(
+        label: label,
+        color: color,
+        avgSnooze: avg,
+      );
+    },
+    orElse: () => const ProcrastinationIndexData(
+      label: "Proactive 👑",
+      color: RiriTheme.successGreen,
+      avgSnooze: 0.0,
+    ),
+  );
+});
+
+final characterStateProvider = Provider<DashboardState>((ref) {
+  final remindersAsync = ref.watch(remindersStreamProvider);
+  return remindersAsync.maybeWhen(
+    data: (reminders) {
+      final active = reminders.where((t) => !t.isCompleted).toList();
+      if (reminders.isEmpty) return DashboardState.empty;
+      if (active.isEmpty) return DashboardState.success;
+
+      final now = DateTime.now();
+      final overdueCount = active.where((t) => t.dueDateTime.isBefore(now)).length;
+
+      if (overdueCount > 0) return DashboardState.overdue;
+
+      final workingCount = active.where((t) => t.dueDateTime.difference(now).inHours <= 4).length;
+      if (workingCount > 0) return DashboardState.working;
+
+      return DashboardState.ready;
+    },
+    orElse: () => DashboardState.ready,
+  );
+});
 

@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class RiriTheme {
-  // Brand Color Palettes (Rich HSL tailored dark theme)
-  static const Color darkBg = Color(0xFF1A1A2E);
-  static const Color cardBg = Color(0xFF252538);
-  static const Color primaryPurple = Color(0xFF7C5CBF);
-  static const Color secondaryAmber = Color(0xFFF5A623);
+  // Brand Color Palettes (Modern OLED tailored dark theme)
+  static const Color darkBg = Color(0xFF0C0C0E); // Deep OLED carbon black
+  static const Color cardBg = Color(0xFF161622); // Sleek card backdrop
+  static const Color primaryPurple = Color(0xFF9D4EDD); // Vibrant neon violet
+  static const Color secondaryAmber = Color(0xFFF5A623); // Used contextually for Tita
   static const Color offWhite = Color(0xFFF0F0F0);
   static const Color textSecondary = Color(0xFFB0B0C5);
   static const Color textMuted = Color(0xFF707085);
-  static const Color hotPink = Color(0xFFFF6B9D);
+  static const Color hotPink = Color(0xFFFF6B9D); // Premium brand pink
   static const Color dangerRed = Color(0xFFFF4D4D);
-  static const Color successGreen = Color(0xFF2ECC71);
+  static const Color successGreen = Color(0xFF00F5D4); // Vibrant neon mint green
 
   // Brand Gradients
   static const LinearGradient brandGradient = LinearGradient(
@@ -27,12 +28,12 @@ class RiriTheme {
   );
 
   static const LinearGradient cardGradient = LinearGradient(
-    colors: [Color(0xFF24243A), Color(0xFF1A1A2E)],
+    colors: [Color(0xFF1E1E2F), Color(0xFF0C0C0E)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
-  // Modern Gen Z Typography using Outfit & Inter
+  // Modern Gen Z Typography using Nunito
   static ThemeData get darkThemeData {
     return ThemeData(
       useMaterial3: true,
@@ -41,7 +42,7 @@ class RiriTheme {
       primaryColor: primaryPurple,
       colorScheme: const ColorScheme.dark(
         primary: primaryPurple,
-        secondary: secondaryAmber,
+        secondary: hotPink, // Pink as secondary to avoid clashing amber
         surface: cardBg,
         error: dangerRed,
       ),
@@ -57,40 +58,77 @@ class RiriTheme {
           color: offWhite,
         ),
       ),
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: cardBg,
+        elevation: 2,
+        indicatorColor: primaryPurple.withValues(alpha: 0.2),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: hotPink);
+          }
+          return const IconThemeData(color: textSecondary);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: hotPink,
+            );
+          }
+          return const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: textSecondary,
+          );
+        }),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryPurple,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
+          elevation: 4,
+        ),
+      ),
+      textTheme: GoogleFonts.nunitoTextTheme(
+        ThemeData.dark().textTheme,
+      ).copyWith(
+        displayLarge: GoogleFonts.nunito(
           fontSize: 32,
           fontWeight: FontWeight.w800,
           color: offWhite,
           letterSpacing: -0.5,
         ),
-        displayMedium: TextStyle(
+        displayMedium: GoogleFonts.nunito(
           fontSize: 24,
           fontWeight: FontWeight.w700,
           color: offWhite,
           letterSpacing: -0.2,
         ),
-        titleLarge: TextStyle(
+        titleLarge: GoogleFonts.nunito(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: offWhite,
         ),
-        titleMedium: TextStyle(
+        titleMedium: GoogleFonts.nunito(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: offWhite,
         ),
-        bodyLarge: TextStyle(
+        bodyLarge: GoogleFonts.nunito(
           fontSize: 16,
           fontWeight: FontWeight.w400,
           color: offWhite,
         ),
-        bodyMedium: TextStyle(
+        bodyMedium: GoogleFonts.nunito(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: textSecondary,
         ),
-        labelSmall: TextStyle(
+        labelSmall: GoogleFonts.nunito(
           fontSize: 11,
           fontWeight: FontWeight.w500,
           color: textMuted,
@@ -126,10 +164,6 @@ class RiriTheme {
         backgroundColor: Colors.transparent,
         elevation: 0,
         highlightElevation: 0,
-      ),
-      buttonTheme: const ButtonThemeData(
-        buttonColor: primaryPurple,
-        textTheme: ButtonTextTheme.primary,
       ),
     );
   }
