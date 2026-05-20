@@ -218,6 +218,21 @@ class RiriRepository {
     ));
   }
 
+  Future<void> updateChatMessageText(int id, String newText) async {
+    final index = _cachedChatHistory.indexWhere((m) => m.id == id);
+    if (index != -1) {
+      final old = _cachedChatHistory[index];
+      _cachedChatHistory[index] = RiriChatMessage(
+        id: old.id,
+        text: newText,
+        isUser: old.isUser,
+        timestamp: old.timestamp,
+        stickerName: old.stickerName,
+      );
+    }
+    await _db.updateChatMessageText(id, newText);
+  }
+
   Future<void> clearChatHistory() async {
     _cachedChatHistory.clear();
     await _db.clearChatHistory();

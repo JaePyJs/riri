@@ -41,7 +41,7 @@ void main() {
 
       expect(response.extractedTitle, 'thesis');
       expect(response.extractedCategory, ReminderCategory.school);
-      expect(response.text, "Uy, reminder mo: thesis. Let's get it done!");
+      expect(response.text, startsWith('[TASK_CARD]'));
       expect(response.extractedDueDate, isNotNull);
       
       final tomorrow = DateTime.now().add(const Duration(days: 1));
@@ -281,6 +281,28 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 50));
       
       expect(repository.chatHistory.isEmpty, isTrue);
+    });
+
+    test('Should update chat message text for [TASK_CARD] confirmations', () async {
+      await repository.addChatMessage(
+        text: '[TASK_CARD]{"title":"water","category":"health","dueDate":"2026-05-21T09:00:00.000","state":"pending"}',
+        isUser: false,
+        stickerName: 'Smile',
+      );
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      final messages = repository.chatHistory;
+      expect(messages.length, 1);
+      expect(messages.first.text, startsWith('[TASK_CARD]'));
+      final id = messages.first.id;
+
+      await repository.updateChatMessageText(
+        id,
+        '[TASK_CARD]{"title":"water","category":"health","dueDate":"2026-05-21T09:00:00.000","state":"saved"}',
+      );
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      expect(repository.chatHistory.first.text, contains('"state":"saved"'));
     });
   });
 }

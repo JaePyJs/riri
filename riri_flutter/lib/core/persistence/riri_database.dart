@@ -110,6 +110,8 @@ class RiriDatabase extends _$RiriDatabase {
   // ChatMessages DAOs/Queries
   Future<List<ChatMessage>> getChatHistory() => select(chatMessages).get();
   Future<int> insertChatMessage(ChatMessagesCompanion companion) => into(chatMessages).insert(companion);
+  Future<int> updateChatMessageText(int id, String text) =>
+      (update(chatMessages)..where((t) => t.id.equals(id))).write(ChatMessagesCompanion(messageText: Value(text)));
   Future<void> clearChatHistory() => delete(chatMessages).go();
 
   // UserStats DAOs/Queries

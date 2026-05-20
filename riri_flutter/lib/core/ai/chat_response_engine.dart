@@ -1,6 +1,5 @@
 import 'dart:math';
 import '../notifications/personality_copy.dart';
-import '../notifications/personas.dart';
 import 'ai_models.dart';
 import 'keyword_classifier.dart';
 
@@ -81,14 +80,13 @@ class ChatResponseEngine {
       // Extract due date dynamically from natural language expressions!
       final dueDateTime = _parseDueDateTime(userInput);
 
-      // Render standard template dynamically from the Persona Registry!
-      final String confirmationText = _renderTaskCreationConfirmation(
-        personalityMode: personalityMode,
-        taskTitle: extractedTitle,
-      );
+      final jsonPayload = '{"title":"${extractedTitle.replaceAll('"', '\\"')}",'
+          '"category":"${category.name}",'
+          '"dueDate":"${dueDateTime.toIso8601String()}",'
+          '"state":"pending"}';
 
       return ChatResponse(
-        text: confirmationText,
+        text: '[TASK_CARD]$jsonPayload',
         stickerName: 'Confident_Suggestion',
         extractedTitle: extractedTitle,
         extractedCategory: category,
@@ -622,16 +620,7 @@ class ChatResponseEngine {
     return now.add(const Duration(hours: 4));
   }
 
-  /// Renders standard confirmation text leveraging the registered templates.
-  String _renderTaskCreationConfirmation({
-    required PersonalityMode personalityMode,
-    required String taskTitle,
-  }) {
-    final persona = PersonaConfig.get(personalityMode);
 
-    // Render the standard persona layout to keep copy fully data-driven as the primary response!
-    return persona.standard.renderBody({'task': taskTitle});
-  }
 
   /// Cleans the user input to extract a clean task title.
   String _cleanExtractedTitle(String input) {

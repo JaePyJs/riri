@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/ai/ai_models.dart';
 import '../../core/ai/chat_response_engine.dart';
 import '../../core/persistence/riri_repository.dart';
 import '../../core/persistence/riri_providers.dart';
@@ -117,18 +119,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         newlyLearnedName: newlyExtractedName,
       );
 
-      // 2. Perform task creation if intent is detected
-      if (response.extractedTitle != null &&
-          response.extractedCategory != null &&
-          response.extractedDueDate != null) {
-        await repo.addReminder(
-          title: response.extractedTitle!,
-          category: response.extractedCategory!,
-          dueDateTime: response.extractedDueDate!,
-        );
-      }
-
-      // 3. Save Riri chat response message cleanly in repository
+      // 2. Save Riri chat response message cleanly in repository (which may contain [TASK_CARD] JSON)
       await repo.addChatMessage(
         text: response.text,
         isUser: false,
@@ -260,6 +251,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   separatorBuilder: (context, index) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
                     final msg = _messages[index];
+                    final repo = ref.read(repositoryProvider);
                     // Only animate messages that arrived after initial history load
                     if (index >= _lastAnimatedCount) {
                       return TweenAnimationBuilder<double>(
@@ -273,10 +265,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             child: child,
                           ),
                         ),
-                        child: _ChatBubble(message: msg),
+                        child: _ChatBubble(
+                          message: msg,
+                          onStateChanged: () {
+                            setState(() {
+                              _messages = repo.chatHistory;
+                            });
+                          },
+                        ),
                       );
                     }
-                    return _ChatBubble(message: msg);
+                    return _ChatBubble(
+                      message: msg,
+                      onStateChanged: () {
+                        setState(() {
+                          _messages = repo.chatHistory;
+                        });
+                      },
+                    );
                   },
                 ),
               ),
@@ -347,13 +353,51 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 }
 
-class _ChatBubble extends StatelessWidget {
+class _ChatBubble extends ConsumerWidget {
   final RiriChatMessage message;
+  final VoidCallback? onStateChanged;
 
-  const _ChatBubble({required this.message});
+  const _ChatBubble({required this.message, this.onStateChanged});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isTaskCard = !message.isUser && message.text.startsWith('[TASK_CARD]');
+    final personalityMode = ref.watch(personalityModeProvider);
+
+    if (isTaskCard) {
+      try {
+        final jsonStr = message.text.substring('[TASK_CARD]'.length);
+        final data = json.decode(jsonStr) as Map<String, dynamic>;
+        final title = data['title'] as String;
+        final categoryStr = data['category'] as String;
+        final dueDateStr = data['dueDate'] as String;
+        final stateStr = data['state'] as String;
+
+        final category = ReminderCategory.values.firstWhere(
+          (e) => e.name == categoryStr,
+          orElse: () => ReminderCategory.personal,
+        );
+        final dueDateTime = DateTime.parse(dueDateStr);
+
+        return _buildTaskCardBubble(
+          context: context,
+          ref: ref,
+          personalityMode: personalityMode,
+          messageId: message.id,
+          title: title,
+          category: category,
+          dueDateTime: dueDateTime,
+          state: stateStr,
+        );
+      } catch (e) {
+        return _buildNormalBubble(context, 'Maling format ng paalala card... 🥺');
+      }
+    }
+
+    return _buildNormalBubble(context, message.text);
+  }
+
+  Widget _buildNormalBubble(BuildContext context, String text) {
     return Row(
       mainAxisAlignment:
           message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -408,7 +452,7 @@ class _ChatBubble extends StatelessWidget {
                   : null,
             ),
             child: Text(
-              message.text,
+              text,
               style: TextStyle(
                 color: message.isUser ? RiriTheme.offWhite : Colors.white,
                 fontSize: 14,
@@ -419,6 +463,701 @@ class _ChatBubble extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget _buildTaskCardBubble({
+    required BuildContext context,
+    required WidgetRef ref,
+    required PersonalityMode personalityMode,
+    required int messageId,
+    required String title,
+    required ReminderCategory category,
+    required DateTime dueDateTime,
+    required String state,
+  }) {
+    final config = PersonaConfig.get(personalityMode);
+    final greetingText = config.standard.renderBody({'task': title});
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (!message.isUser) ...[
+          if (message.stickerName != null) ...[
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.elasticOut,
+              builder: (context, value, child) => Transform.scale(
+                scale: value,
+                child: child,
+              ),
+              child: Image.asset(
+                'assets/stickers/${message.stickerName}.webp',
+                width: 44,
+                height: 44,
+                errorBuilder: (context, error, stackTrace) {
+                  return CircleAvatar(
+                    radius: 20,
+                    backgroundColor: RiriTheme.primaryPurple.withValues(alpha: 0.2),
+                    child: const Icon(Icons.face, color: RiriTheme.primaryPurple, size: 20),
+                  );
+                },
+              ),
+            ),
+          ] else ...[
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: RiriTheme.primaryPurple.withValues(alpha: 0.2),
+              child: const Icon(Icons.face, color: RiriTheme.primaryPurple, size: 20),
+            ),
+          ],
+          const SizedBox(width: 8),
+        ],
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: const BoxDecoration(
+                  gradient: RiriTheme.brandGradient,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                ),
+                child: Text(
+                  state == 'pending'
+                      ? greetingText
+                      : (state == 'saved'
+                          ? _getSavedGreeting(personalityMode, title)
+                          : _getCancelledGreeting(personalityMode, title)),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    height: 1.3,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E1E2F).withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: state == 'saved'
+                        ? RiriTheme.successGreen.withValues(alpha: 0.6)
+                        : (state == 'cancelled'
+                            ? RiriTheme.textMuted.withValues(alpha: 0.3)
+                            : config.accentColor.withValues(alpha: 0.5)),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (state == 'saved'
+                          ? RiriTheme.successGreen
+                          : (state == 'cancelled'
+                              ? Colors.transparent
+                              : config.accentColor)).withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildCategoryChip(category),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        const Icon(Icons.calendar_today, size: 12, color: RiriTheme.textSecondary),
+                        const SizedBox(width: 6),
+                        Text(
+                          _formatDueDateTime(dueDateTime),
+                          style: const TextStyle(
+                            color: RiriTheme.textSecondary,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    if (state == 'pending') ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: config.accentColor,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () async {
+                                final repo = ref.read(repositoryProvider);
+                                await repo.addReminder(
+                                  title: title,
+                                  category: category,
+                                  dueDateTime: dueDateTime,
+                                );
+                                final jsonStr = '{"title":"${title.replaceAll('"', '\\"')}",'
+                                    '"category":"${category.name}",'
+                                    '"dueDate":"${dueDateTime.toIso8601String()}",'
+                                    '"state":"saved"}';
+                                await repo.updateChatMessageText(messageId, '[TASK_CARD]$jsonStr');
+                                onStateChanged?.call();
+                              },
+                              child: Text(
+                                _getSaveButtonText(personalityMode),
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          IconButton(
+                            style: IconButton.styleFrom(
+                              backgroundColor: const Color(0xFF2C2C3E),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: const BorderSide(color: Color(0xFF3F3F5C)),
+                              ),
+                              padding: const EdgeInsets.all(8),
+                            ),
+                            icon: const Icon(Icons.edit, color: Colors.white, size: 16),
+                            onPressed: () {
+                              _showEditDialog(
+                                context,
+                                ref,
+                                messageId,
+                                title,
+                                category,
+                                dueDateTime,
+                                onStateChanged,
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: RiriTheme.textMuted,
+                                side: const BorderSide(color: Color(0xFF3F3F5C)),
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () async {
+                                final repo = ref.read(repositoryProvider);
+                                final jsonStr = '{"title":"${title.replaceAll('"', '\\"')}",'
+                                    '"category":"${category.name}",'
+                                    '"dueDate":"${dueDateTime.toIso8601String()}",'
+                                    '"state":"cancelled"}';
+                                await repo.updateChatMessageText(messageId, '[TASK_CARD]$jsonStr');
+                                onStateChanged?.call();
+                              },
+                              child: Text(
+                                _getCancelButtonText(personalityMode),
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ] else if (state == 'saved') ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: RiriTheme.successGreen.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: RiriTheme.successGreen.withValues(alpha: 0.25)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: RiriTheme.successGreen, size: 14),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _getSavedBannerText(personalityMode),
+                                style: const TextStyle(
+                                  color: RiriTheme.successGreen,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else if (state == 'cancelled') ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.04),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.cancel, color: RiriTheme.textMuted, size: 14),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _getCancelledBannerText(personalityMode),
+                                style: const TextStyle(
+                                  color: RiriTheme.textMuted,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryChip(ReminderCategory category) {
+    Color chipColor;
+    switch (category) {
+      case ReminderCategory.school:
+        chipColor = Colors.blue;
+        break;
+      case ReminderCategory.work:
+        chipColor = Colors.orange;
+        break;
+      case ReminderCategory.health:
+        chipColor = RiriTheme.successGreen;
+        break;
+      case ReminderCategory.social:
+        chipColor = RiriTheme.primaryPurple;
+        break;
+      case ReminderCategory.errands:
+        chipColor = Colors.teal;
+        break;
+      case ReminderCategory.personal:
+        chipColor = RiriTheme.secondaryAmber;
+        break;
+      case ReminderCategory.bahalaNa:
+        chipColor = RiriTheme.dangerRed;
+        break;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: chipColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: chipColor.withValues(alpha: 0.4), width: 1),
+      ),
+      child: Text(
+        category.taglishLabel,
+        style: TextStyle(
+          color: chipColor,
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  String _formatDueDateTime(DateTime dt) {
+    final now = DateTime.now();
+    final isToday = dt.year == now.year && dt.month == now.month && dt.day == now.day;
+    final isTomorrow = dt.year == now.year && dt.month == now.month && dt.day == now.add(const Duration(days: 1)).day;
+    
+    final timeStr = "${dt.hour % 12 == 0 ? 12 : dt.hour % 12}:${dt.minute.toString().padLeft(2, '0')} ${dt.hour >= 12 ? 'PM' : 'AM'}";
+    
+    if (isToday) {
+      return "Today, $timeStr";
+    } else if (isTomorrow) {
+      return "Tomorrow, $timeStr";
+    } else {
+      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return "${months[dt.month - 1]} ${dt.day}, $timeStr";
+    }
+  }
+
+  String _getSavedGreeting(PersonalityMode mode, String task) {
+    switch (mode) {
+      case PersonalityMode.bestie:
+        return "G! Naka-schedule na yung goal mo, bestie! Tapusin natin 'to ha!";
+      case PersonalityMode.malupit:
+        return "Naka-save na. Huwag mo nang balaking i-snooze 'yan mamaya.";
+      case PersonalityMode.chill:
+        return "No pressure, saved na 'tong task natin. Steady lang.";
+      case PersonalityMode.tita:
+        return "Nailista ko na ang kailangan mong gawin, anak. Galingan mo ha.";
+    }
+  }
+
+  String _getCancelledGreeting(PersonalityMode mode, String task) {
+    switch (mode) {
+      case PersonalityMode.bestie:
+        return "Aww, sige next time na lang. Take it easy!";
+      case PersonalityMode.malupit:
+        return "Kinansela mo. Ganyan naman palagi, puro salita, walang gawa.";
+      case PersonalityMode.chill:
+        return "Chill lang, okay lang 'yan. Sunod na lang.";
+      case PersonalityMode.tita:
+        return "Sige anak, mamaya na lang kung pagod ka pa. Magpahinga ka muna ha.";
+    }
+  }
+
+  String _getSaveButtonText(PersonalityMode mode) {
+    switch (mode) {
+      case PersonalityMode.bestie:
+        return "Sige, g! 🚀";
+      case PersonalityMode.malupit:
+        return "I-save na. 💀";
+      case PersonalityMode.chill:
+        return "Steady, save na 🍃";
+      case PersonalityMode.tita:
+        return "Opo Tita, save na 👵";
+    }
+  }
+
+  String _getCancelButtonText(PersonalityMode mode) {
+    switch (mode) {
+      case PersonalityMode.bestie:
+        return "Wag muna 💅";
+      case PersonalityMode.malupit:
+        return "Katamaran 😡";
+      case PersonalityMode.chill:
+        return "Bukas na ✌️";
+      case PersonalityMode.tita:
+        return "Mamaya na po 👵";
+    }
+  }
+
+  String _getSavedBannerText(PersonalityMode mode) {
+    switch (mode) {
+      case PersonalityMode.bestie:
+        return "Nakalista na, bestie! G! 🚀";
+      case PersonalityMode.malupit:
+        return "Naka-save na. Magtrabaho ka na. 💀";
+      case PersonalityMode.chill:
+        return "All good, saved na~ Relax ka lang. 🍃";
+      case PersonalityMode.tita:
+        return "Nailista ko na, anak. Galingan mo! 👵❤️";
+    }
+  }
+
+  String _getCancelledBannerText(PersonalityMode mode) {
+    switch (mode) {
+      case PersonalityMode.bestie:
+        return "Wag muna raw... Okay, next time! 💅";
+      case PersonalityMode.malupit:
+        return "Kinansela. Katamaran wins again. 😡";
+      case PersonalityMode.chill:
+        return "No pressure, next time na lang~ ✌️";
+      case PersonalityMode.tita:
+        return "Sige na nga, mamaya na lang ha anak? 👵";
+    }
+  }
+
+  void _showEditDialog(
+    BuildContext context,
+    WidgetRef ref,
+    int messageId,
+    String initialTitle,
+    ReminderCategory initialCategory,
+    DateTime initialDueDate,
+    VoidCallback? onStateChanged,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return _EditCardDialog(
+          messageId: messageId,
+          initialTitle: initialTitle,
+          initialCategory: initialCategory,
+          initialDueDate: initialDueDate,
+          onStateChanged: onStateChanged,
+        );
+      },
+    );
+  }
+}
+
+class _EditCardDialog extends ConsumerStatefulWidget {
+  final int messageId;
+  final String initialTitle;
+  final ReminderCategory initialCategory;
+  final DateTime initialDueDate;
+  final VoidCallback? onStateChanged;
+
+  const _EditCardDialog({
+    required this.messageId,
+    required this.initialTitle,
+    required this.initialCategory,
+    required this.initialDueDate,
+    this.onStateChanged,
+  });
+
+  @override
+  ConsumerState<_EditCardDialog> createState() => _EditCardDialogState();
+}
+
+class _EditCardDialogState extends ConsumerState<_EditCardDialog> {
+  late final TextEditingController _titleController;
+  late ReminderCategory _selectedCategory;
+  late DateTime _selectedDueDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.initialTitle);
+    _selectedCategory = widget.initialCategory;
+    _selectedDueDate = widget.initialDueDate;
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  String _formatDueDate(DateTime dt) {
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final timeStr = "${dt.hour % 12 == 0 ? 12 : dt.hour % 12}:${dt.minute.toString().padLeft(2, '0')} ${dt.hour >= 12 ? 'PM' : 'AM'}";
+    return "${months[dt.month - 1]} ${dt.day}, ${dt.year} at $timeStr";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: RiriTheme.cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: Color(0xFF2F2F4A), width: 1.5),
+          ),
+          title: Row(
+            children: const [
+              Icon(Icons.edit_note, color: RiriTheme.primaryPurple, size: 28),
+              SizedBox(width: 8),
+              Text(
+                'Ayusin ang Paalala',
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'ANO ANG GAGAWIN?',
+                  style: TextStyle(color: RiriTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _titleController,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: RiriTheme.darkBg,
+                    hintText: 'e.g. Uminom ng tubig',
+                    hintStyle: const TextStyle(color: RiriTheme.textMuted),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFF2F2F4A)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: RiriTheme.primaryPurple),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'KATEGORYA',
+                  style: TextStyle(color: RiriTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: ReminderCategory.values.map((cat) {
+                    final isSelected = _selectedCategory == cat;
+                    return ChoiceChip(
+                      label: Text(
+                        cat.taglishLabel,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : RiriTheme.textSecondary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      selected: isSelected,
+                      selectedColor: RiriTheme.primaryPurple,
+                      backgroundColor: RiriTheme.darkBg,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(
+                          color: isSelected ? RiriTheme.primaryPurple : const Color(0xFF2F2F4A),
+                        ),
+                      ),
+                      onSelected: (selected) {
+                        if (selected) {
+                          setState(() {
+                            _selectedCategory = cat;
+                          });
+                        }
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'KAILAN DAPAT GAWIN?',
+                  style: TextStyle(color: RiriTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 6),
+                InkWell(
+                  onTap: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDueDate,
+                      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                      lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.dark(
+                              primary: RiriTheme.primaryPurple,
+                              onPrimary: Colors.white,
+                              surface: RiriTheme.cardBg,
+                              onSurface: Colors.white,
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (date != null) {
+                      if (!context.mounted) return;
+                      final time = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.fromDateTime(_selectedDueDate),
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: const ColorScheme.dark(
+                                primary: RiriTheme.primaryPurple,
+                                onPrimary: Colors.white,
+                                surface: RiriTheme.cardBg,
+                                onSurface: Colors.white,
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+                      if (time != null) {
+                        setState(() {
+                          _selectedDueDate = DateTime(
+                            date.year,
+                            date.month,
+                            date.day,
+                            time.hour,
+                            time.minute,
+                          );
+                        });
+                      }
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: RiriTheme.darkBg,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFF2F2F4A)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_today, color: RiriTheme.primaryPurple, size: 16),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _formatDueDate(_selectedDueDate),
+                            style: const TextStyle(color: Colors.white, fontSize: 13),
+                          ),
+                        ),
+                        const Icon(Icons.arrow_drop_down, color: RiriTheme.textSecondary),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('I-cancel', style: TextStyle(color: RiriTheme.textMuted)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: RiriTheme.primaryPurple,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () async {
+                final newTitle = _titleController.text.trim();
+                if (newTitle.isEmpty) return;
+
+                final repo = ref.read(repositoryProvider);
+                final jsonStr = '{"title":"${newTitle.replaceAll('"', '\\"')}",'
+                    '"category":"${_selectedCategory.name}",'
+                    '"dueDate":"${_selectedDueDate.toIso8601String()}",'
+                    '"state":"pending"}';
+                await repo.updateChatMessageText(widget.messageId, '[TASK_CARD]$jsonStr');
+                widget.onStateChanged?.call();
+                if (!context.mounted) return;
+                Navigator.pop(context);
+              },
+              child: const Text('I-save Changes'),
+            ),
+          ],
+        );
   }
 }
 
