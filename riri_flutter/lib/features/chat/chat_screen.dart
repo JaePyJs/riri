@@ -52,8 +52,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     final config = PersonaConfig.get(currentMode);
     final greeting = hasName
-        ? config.greetingWithName.replaceAll('{name}', username)
-        : config.greetingWithoutName;
+        ? config.copy.greetingWithName.replaceAll('{name}', username)
+        : config.copy.greetingWithoutName;
 
     repo.addChatMessage(
       text: greeting,
@@ -514,8 +514,8 @@ class _ChatBubble extends ConsumerWidget {
                   state == 'pending'
                       ? greetingText
                       : (state == 'saved'
-                          ? config.savedGreeting
-                          : config.cancelledGreeting),
+                          ? config.copy.savedGreeting
+                          : config.copy.cancelledGreeting),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
@@ -616,7 +616,7 @@ class _ChatBubble extends ConsumerWidget {
                                 onStateChanged?.call();
                               },
                               child: Text(
-                                config.saveButtonLabel,
+                                config.copy.saveButtonLabel,
                                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -667,7 +667,7 @@ class _ChatBubble extends ConsumerWidget {
                                 onStateChanged?.call();
                               },
                               child: Text(
-                                config.cancelButtonLabel,
+                                config.copy.cancelButtonLabel,
                                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                               ),
                             ),
@@ -689,7 +689,7 @@ class _ChatBubble extends ConsumerWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                config.savedBannerText,
+                                config.copy.savedBannerText,
                                 style: const TextStyle(
                                   color: RiriTheme.successGreen,
                                   fontSize: 11,
@@ -715,7 +715,7 @@ class _ChatBubble extends ConsumerWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                config.cancelledBannerText,
+                                config.copy.cancelledBannerText,
                                 style: const TextStyle(
                                   color: RiriTheme.textMuted,
                                   fontSize: 11,

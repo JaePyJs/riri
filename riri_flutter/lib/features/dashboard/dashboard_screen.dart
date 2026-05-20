@@ -129,14 +129,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      persona.completionEmoji,
+                      persona.copy.completionEmoji,
                       style: const TextStyle(
                         fontSize: 84,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      persona.completionHeadline,
+                      persona.copy.completionHeadline,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: persona.accentColor,
@@ -146,7 +146,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      persona.completionBody,
+                      persona.copy.completionBody,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Colors.white,
@@ -168,7 +168,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                           ),
                         ),
                         child: Text(
-                          persona.completionButtonLabel,
+                          persona.copy.completionButtonLabel,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -192,6 +192,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
     final remindersAsync = ref.watch(remindersStreamProvider);
     final reminders = remindersAsync.value ?? repository.currentReminders;
     final username = ref.watch(usernameProvider);
+    final isLoading = remindersAsync.isLoading && (remindersAsync.value == null || remindersAsync.value!.isEmpty);
 
     // Dynamic reactive state calculations from Riverpod providers
     final streak = ref.watch(streakProvider);
@@ -336,19 +337,25 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                         ),
                         const SizedBox(height: 12),
                         Expanded(
-                          child: reminders.isEmpty
-                              ? const Center(
-                                  child: Text(
-                                    'Clean as a whistle! 💅\nWala kang pending tasks.',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: RiriTheme.textMuted,
-                                      fontSize: 16,
-                                      height: 1.4,
-                                    ),
-                                  ),
+                          child: isLoading
+                              ? ListView.separated(
+                                  itemCount: 3,
+                                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                                  itemBuilder: (context, index) => _buildSkeletonCard(),
                                 )
-                              : ListView.separated(
+                              : reminders.isEmpty
+                                  ? const Center(
+                                      child: Text(
+                                        'Clean as a whistle! 💅\nWala kang pending tasks.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: RiriTheme.textMuted,
+                                          fontSize: 16,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    )
+                                  : ListView.separated(
                                   itemCount: reminders.length,
                                   separatorBuilder: (context, index) => const SizedBox(height: 12),
                                   itemBuilder: (context, index) {
@@ -474,6 +481,82 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
         ],
       ),
     );
+  }
+
+  Widget _buildSkeletonCard() {
+    return Container(
+      height: 80,
+      decoration: BoxDecoration(
+        color: RiriTheme.cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF2F2F4A), width: 1.0),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 5,
+            color: const Color(0xFF2F2F4A),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFF2F2F4A),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 140,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2F2F4A),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2F2F4A),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 80,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2F2F4A),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+     .fade(begin: 0.3, end: 0.6, duration: 800.ms);
   }
 }
 
