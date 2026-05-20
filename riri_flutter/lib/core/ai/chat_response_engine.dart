@@ -192,51 +192,55 @@ class ChatResponseEngine {
         String sticker = 'Wink';
         switch (personalityMode) {
           case PersonalityMode.bestie:
-            if (result == 'tie')
+            if (result == 'tie') {
               text =
                   "Draw! Pareho tayong $ririChoice! Bato-Bato-Pick ulit! ✊✋✌️";
-            else if (result == 'win')
+            } else if (result == 'win') {
               text =
                   "Hala panalo ka! Pinili ko $ririChoice tapos $userChoice sa'yo. Ang galing mo naman! 🏆🎉";
-            else
+            } else {
               text =
                   "Yahoo! Talo ka! Pinili ko $ririChoice tapos $userChoice sa'yo. Bawi na lang next time! 😂🤪";
+            }
             sticker = result == 'win' ? 'Confetti_Explosion' : 'Wink';
             break;
           case PersonalityMode.malupit:
-            if (result == 'tie')
+            if (result == 'tie') {
               text =
                   "Patas. Pareho tayong $ririChoice. Walang kwenta ang tabla, mag-focus ka na lang sa trabaho mo.";
-            else if (result == 'win')
+            } else if (result == 'win') {
               text =
                   "Nanalo ka. Pinili ko $ririChoice at $userChoice sa'yo. Congrats. Ngayong masaya ka na, kilos na sa tasks.";
-            else
+            } else {
               text =
                   "Talo ka. Pinili ko $ririChoice laban sa $userChoice mo. Walang puwang ang talunan, mag-seryoso ka na.";
+            }
             sticker = 'Angry';
             break;
           case PersonalityMode.chill:
-            if (result == 'tie')
+            if (result == 'tie') {
               text =
                   "Tie tayo~ Pareho tayong $ririChoice. Bawi na lang next time pag may time~ 🍃";
-            else if (result == 'win')
+            } else if (result == 'win') {
               text =
                   "Nice, panalo ka~ $userChoice mo beats $ririChoice ko. Galing mo dun ah. 🍃";
-            else
+            } else {
               text =
                   "Talo ka but it's okay~ $ririChoice ko beats $userChoice mo. Chill lang. 🌙";
+            }
             sticker = 'Inactive';
             break;
           case PersonalityMode.tita:
-            if (result == 'tie')
+            if (result == 'tie') {
               text =
                   "Ay tabla anak! Parehong $ririChoice ang taya natin. Ulitin ba natin? 👵";
-            else if (result == 'win')
+            } else if (result == 'win') {
               text =
                   "Naku ang galing naman, panalo ka! $userChoice mo laban sa $ririChoice ni Tita. Ang swerte mo ngayon ha! 👵💖";
-            else
+            } else {
               text =
                   "Ay talo ka ng tita mo! Pinili ko $ririChoice tapos $userChoice naman sa'yo. May pa-consolation prize ka sa akin na kiss! 👵🥰";
+            }
             sticker = 'Welcoming';
             break;
         }

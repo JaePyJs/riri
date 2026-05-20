@@ -13,7 +13,7 @@ class AddReminderSheet extends StatefulWidget {
   const AddReminderSheet({super.key, required this.onSave});
 
   @override
-  _AddReminderSheetState createState() => _AddReminderSheetState();
+  State<AddReminderSheet> createState() => _AddReminderSheetState();
 }
 
 class _AddReminderSheetState extends State<AddReminderSheet> {
@@ -39,6 +39,7 @@ class _AddReminderSheetState extends State<AddReminderSheet> {
     );
 
     if (pickedDate != null) {
+      if (!mounted) return;
       final pickedTime = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(_selectedDate),

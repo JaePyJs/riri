@@ -224,7 +224,7 @@ class _PersonaSelectorScreenState extends ConsumerState<PersonaSelectorScreen> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
