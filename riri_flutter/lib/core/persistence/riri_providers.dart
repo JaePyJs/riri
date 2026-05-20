@@ -145,7 +145,8 @@ final streakProvider = Provider<int>((ref) {
     data: (reminders) {
       final completedDates = reminders
           .where((r) => r.isCompleted && r.completedAt != null)
-          .map((r) => DateTime(r.completedAt!.year, r.completedAt!.month, r.completedAt!.day))
+          .map((r) => r.completedAt!.toLocal())
+          .map((d) => DateTime(d.year, d.month, d.day))
           .toSet()
           .toList()
         ..sort((a, b) => b.compareTo(a));

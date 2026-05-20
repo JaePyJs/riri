@@ -34,6 +34,7 @@ class PersonaConfig {
   final String completionHeadline;
   final String completionBody;
   final String completionButtonLabel;
+  final String completionEmoji;
 
   /// Default notification template
   final PersonaTemplate standard;
@@ -53,6 +54,7 @@ class PersonaConfig {
     required this.completionHeadline,
     required this.completionBody,
     required this.completionButtonLabel,
+    required this.completionEmoji,
     required this.standard,
     required this.snooze,
     required this.overdue,
@@ -69,6 +71,7 @@ class PersonaConfig {
       completionHeadline: 'Hala, Grabe! 🎉',
       completionBody: "Natapos mo rin! Ang galing mo naman, proud na proud si Riri sa'yo! ✨",
       completionButtonLabel: 'Salamat! 💖',
+      completionEmoji: '🎉',
       standard: PersonaTemplate(
         title: 'Hoy! Riri here 👋',
         body: "Uy, reminder mo: {task}. Let's get it done!",
@@ -91,6 +94,7 @@ class PersonaConfig {
       completionHeadline: 'Finally. 💀',
       completionBody: "Nagawa mo rin pala. Hindi ko aakalaing mangyayari 'to. Next.",
       completionButtonLabel: 'Noted. 🫡',
+      completionEmoji: '💀',
       standard: PersonaTemplate(
         title: 'Get up. 🔔',
         body: "'{task}'. Now. Or suffer the consequences.",
@@ -113,6 +117,7 @@ class PersonaConfig {
       completionHeadline: 'Yay, nice one~ ✌️',
       completionBody: "Done na 'yan, no stress! Take a breather and vibe. You deserve it 🍃",
       completionButtonLabel: 'Thanks bes~ 🌿',
+      completionEmoji: '✌️',
       standard: PersonaTemplate(
         title: 'Hey, no rush ✌️',
         body: "Just checking — {task} when you have the energy.",
@@ -135,6 +140,7 @@ class PersonaConfig {
       completionHeadline: 'Ay nako, tapos na! 🙏',
       completionBody: "Ang galing mo naman anak! Kumain ka na para may lakas ka sa susunod na trabaho ha. 💜",
       completionButtonLabel: 'Opo Tita! 💜',
+      completionEmoji: '🙏',
       standard: PersonaTemplate(
         title: 'Anak, naalala mo ba? 🙏',
         body: "Yung '{task}' mo, hindi pa tapos. Gawin mo na bago ka pa makalimot ulit, naku.",

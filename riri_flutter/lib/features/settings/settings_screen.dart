@@ -68,7 +68,7 @@ class SettingsScreen extends ConsumerWidget {
               height: MediaQuery.of(context).size.height * 0.35,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [RiriTheme.primaryPurple.withOpacity(0.15), Colors.transparent],
+                  colors: [RiriTheme.primaryPurple.withValues(alpha: 0.15), Colors.transparent],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -96,12 +96,12 @@ class SettingsScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [RiriTheme.primaryPurple.withOpacity(0.4), RiriTheme.hotPink.withOpacity(0.4)],
+                      colors: [RiriTheme.primaryPurple.withValues(alpha: 0.4), RiriTheme.hotPink.withValues(alpha: 0.4)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: RiriTheme.primaryPurple.withOpacity(0.6), width: 1.5),
+                    border: Border.all(color: RiriTheme.primaryPurple.withValues(alpha: 0.6), width: 1.5),
                   ),
                   child: Row(
                     children: [
@@ -170,7 +170,7 @@ class SettingsScreen extends ConsumerWidget {
                     border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),

@@ -93,12 +93,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Confetti',
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withValues(alpha: 0.7),
       transitionDuration: const Duration(milliseconds: 350),
       pageBuilder: (dialogContext, anim1, anim2) {
         // Auto-dismiss after 2.5s so repeated completions don't force manual taps
         Future.delayed(const Duration(milliseconds: 2500), () {
-          if (Navigator.of(dialogContext).canPop()) {
+          if (dialogContext.mounted && Navigator.of(dialogContext).canPop()) {
             Navigator.of(dialogContext).pop();
           }
         });
@@ -116,10 +116,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                 decoration: BoxDecoration(
                   color: const Color(0xFF252538),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: persona.accentColor.withOpacity(0.5), width: 2),
+                  border: Border.all(color: persona.accentColor.withValues(alpha: 0.5), width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: persona.accentColor.withOpacity(0.25),
+                      color: persona.accentColor.withValues(alpha: 0.25),
                       blurRadius: 20,
                       spreadRadius: 2,
                     ),
@@ -128,13 +128,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(
-                      'assets/stickers/Confetti_Explosion.png',
-                      width: 140,
-                      height: 140,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(Icons.celebration, size: 80, color: persona.accentColor);
-                      },
+                    Text(
+                      persona.completionEmoji,
+                      style: const TextStyle(
+                        fontSize: 84,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -226,7 +224,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
               height: MediaQuery.of(context).size.height * 0.35,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [activePersona.accentColor.withOpacity(0.2), Colors.transparent],
+                  colors: [activePersona.accentColor.withValues(alpha: 0.2), Colors.transparent],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -266,7 +264,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                           border: Border.all(color: const Color(0xFF2F2F4A), width: 1.2),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -362,7 +360,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                                         alignment: Alignment.centerRight,
                                         padding: const EdgeInsets.only(right: 20),
                                         decoration: BoxDecoration(
-                                          color: Colors.redAccent.withOpacity(0.8),
+                                          color: Colors.redAccent.withValues(alpha: 0.8),
                                           borderRadius: BorderRadius.circular(16),
                                         ),
                                         child: const Icon(Icons.delete, color: Colors.white),
@@ -540,7 +538,7 @@ class _ReminderCard extends StatelessWidget {
                               width: 2.0,
                             ),
                             color: reminder.isCompleted
-                                ? RiriTheme.successGreen.withOpacity(0.2)
+                                ? RiriTheme.successGreen.withValues(alpha: 0.2)
                                 : Colors.transparent,
                           ),
                           child: reminder.isCompleted
@@ -578,7 +576,7 @@ class _ReminderCard extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: RiriTheme.primaryPurple.withOpacity(0.15),
+                                    color: RiriTheme.primaryPurple.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(

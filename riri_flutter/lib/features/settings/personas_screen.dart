@@ -58,7 +58,7 @@ class _PersonaSelectorScreenState extends ConsumerState<PersonaSelectorScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: RiriTheme.primaryPurple.withOpacity(0.3),
+                    color: RiriTheme.primaryPurple.withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   )
@@ -84,7 +84,7 @@ class _PersonaSelectorScreenState extends ConsumerState<PersonaSelectorScreen> {
                   Text(
                     'Customize the personality and Nagging level of your Taglish assistant. Bawat galaw mo, may reaksyon si Riri.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           height: 1.4,
                         ),
                   ),
@@ -143,9 +143,9 @@ class _PersonaSelectorScreenState extends ConsumerState<PersonaSelectorScreen> {
                                 height: 72,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: config.accentColor.withOpacity(0.1),
+                                  color: config.accentColor.withValues(alpha: 0.1),
                                   border: Border.all(
-                                    color: config.accentColor.withOpacity(0.3),
+                                    color: config.accentColor.withValues(alpha: 0.3),
                                     width: 1.5,
                                   ),
                                 ),
@@ -286,10 +286,10 @@ class _PersonaSelectorScreenState extends ConsumerState<PersonaSelectorScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: isSelected ? config.accentColor.withOpacity(0.15) : Colors.transparent,
+                        color: isSelected ? config.accentColor.withValues(alpha: 0.15) : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: isSelected ? config.accentColor.withOpacity(0.3) : Colors.transparent,
+                          color: isSelected ? config.accentColor.withValues(alpha: 0.3) : Colors.transparent,
                         ),
                       ),
                       child: Text(
@@ -331,7 +331,7 @@ class _PersonaSelectorScreenState extends ConsumerState<PersonaSelectorScreen> {
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: config.accentColor.withOpacity(0.2),
+                          color: config.accentColor.withValues(alpha: 0.2),
                         ),
                         child: Icon(
                           Icons.notifications_active,
@@ -401,9 +401,9 @@ class _PersonaSelectorScreenState extends ConsumerState<PersonaSelectorScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.2), width: 1.0),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1.0),
       ),
       child: Text(
         label,

@@ -46,22 +46,23 @@ class RiriTheme {
         surface: cardBg,
         error: dangerRed,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: cardBg,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        iconTheme: IconThemeData(color: offWhite),
-        titleTextStyle: TextStyle(
+        iconTheme: const IconThemeData(color: offWhite),
+        titleTextStyle: GoogleFonts.nunito(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: offWhite,
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: cardBg,
+        backgroundColor: const Color(0xFF14141F),
         elevation: 2,
-        indicatorColor: primaryPurple.withValues(alpha: 0.2),
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: primaryPurple.withValues(alpha: 0.22),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: hotPink);
@@ -70,13 +71,13 @@ class RiriTheme {
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
+            return GoogleFonts.nunito(
               fontSize: 11,
               fontWeight: FontWeight.bold,
               color: hotPink,
             );
           }
-          return const TextStyle(
+          return GoogleFonts.nunito(
             fontSize: 11,
             fontWeight: FontWeight.w600,
             color: textSecondary,
@@ -145,7 +146,7 @@ class RiriTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: darkBg,
-        hintStyle: const TextStyle(color: textMuted, fontSize: 14),
+        hintStyle: GoogleFonts.nunito(color: textMuted, fontSize: 14),
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
