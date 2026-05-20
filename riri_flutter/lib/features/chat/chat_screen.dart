@@ -5,6 +5,7 @@ import '../../core/ai/chat_response_engine.dart';
 import '../../core/persistence/riri_repository.dart';
 import '../../core/persistence/riri_providers.dart';
 import '../../core/notifications/personality_copy.dart';
+import '../../core/notifications/personas.dart';
 import '../../theme/riri_theme.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -20,6 +21,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ChatResponseEngine _responseEngine = ChatResponseEngine();
   List<RiriChatMessage> _messages = [];
   bool _isTyping = false;
+  int _lastAnimatedCount = 0; // Messages at or below this index skip entrance animation
 
   @override
   void initState() {
@@ -31,6 +33,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final repo = ref.read(repositoryProvider);
     setState(() {
       _messages = repo.chatHistory;
+      _lastAnimatedCount = _messages.length; // History loads without animation
     });
 
     if (_messages.isEmpty) {
@@ -41,19 +44,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void _sendRiriGreeting() {
     final repo = ref.read(repositoryProvider);
     final currentMode = ref.read(personalityModeProvider);
+    final username = ref.read(usernameProvider);
+    final hasName = username.trim().isNotEmpty;
+
     String greeting;
     switch (currentMode) {
       case PersonalityMode.bestie:
-        greeting = 'Hoy bestie! Riri here, ready to slay the day with you! Ano na plano natin today? ✨';
+        greeting = hasName 
+            ? 'Hoy, $username! Riri here, ready to achieve our goals with you! Ano na plano natin today? ✨'
+            : 'Uy, musta na? Riri here, ready to achieve our goals with you! Ano na plano natin today? ✨';
         break;
       case PersonalityMode.malupit:
-        greeting = 'Riri here. Ready to do some work or are you planning to snooze all day? Speak up.';
+        greeting = hasName
+            ? 'Riri here, $username. Ready to do some work or are you planning to snooze all day? Speak up.'
+            : 'Riri here. Ready to do some work or are you planning to snooze all day? Speak up.';
         break;
       case PersonalityMode.chill:
-        greeting = 'Hey bestie~ Riri here. Relax ka lang, everything is under control. Ano gagawin natin today? 🍃';
+        greeting = hasName
+            ? 'Hey, $username~ Riri here. Relax ka lang, everything is under control. Ano gagawin natin today? 🍃'
+            : 'Hey~ Uy, musta na? Riri here. Relax ka lang, everything is under control. Ano gagawin natin today? 🍃';
         break;
       case PersonalityMode.tita:
-        greeting = 'Kumain ka na ba anak? Riri dito. Halika, ilista natin ang kailangan mong gawin ha? 👵';
+        greeting = hasName
+            ? 'Kumain ka na ba, $username anak? Riri dito. Halika, ilista natin ang kailangan mong gawin ha? 👵'
+            : 'Kumain ka na ba anak? Riri dito. Halika, ilista natin ang kailangan mong gawin ha? 👵';
         break;
     }
 
@@ -89,10 +103,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     Timer(const Duration(milliseconds: 1000), () async {
       final currentMode = ref.read(personalityModeProvider);
+      
+      // Learn user name dynamically from the conversation!
+      final newlyExtractedName = _responseEngine.tryExtractName(text);
+      if (newlyExtractedName != null && newlyExtractedName.isNotEmpty) {
+        await ref.read(usernameProvider.notifier).setUsername(newlyExtractedName);
+      }
+
       // 1. Generate standard persona response using ChatResponseEngine
       final response = _responseEngine.generateResponse(
         userInput: text,
         personalityMode: currentMode,
+        newlyLearnedName: newlyExtractedName,
       );
 
       // 2. Perform task creation if intent is detected
@@ -170,7 +192,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                 ),
                 Text(
-                  personalityMode.displayLabel.split(' ')[1] + ' Mode Active 💅',
+                  '${PersonaConfig.get(personalityMode).name} Mode Active 💅',
                   style: const TextStyle(
                     color: RiriTheme.secondaryAmber,
                     fontSize: 11,
@@ -190,7 +212,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 builder: (context) => AlertDialog(
                   backgroundColor: RiriTheme.cardBg,
                   title: const Text('Clear Chat?'),
-                  content: const Text('Gusto mo ba burahin yung memories natin bestie? 🥺'),
+                  content: const Text('Gusto mo ba burahin yung memories natin? 🥺'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
@@ -238,6 +260,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   separatorBuilder: (context, index) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
                     final msg = _messages[index];
+                    // Only animate messages that arrived after initial history load
+                    if (index >= _lastAnimatedCount) {
+                      return TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                        builder: (context, value, child) => Opacity(
+                          opacity: value,
+                          child: Transform.translate(
+                            offset: Offset(0, (1 - value) * 14),
+                            child: child,
+                          ),
+                        ),
+                        child: _ChatBubble(message: msg),
+                      );
+                    }
                     return _ChatBubble(message: msg);
                   },
                 ),
@@ -274,7 +312,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           controller: _messageController,
                           style: const TextStyle(color: Colors.white),
                           decoration: const InputDecoration(
-                            hintText: 'Chika ka lang dito bestie...',
+                            hintText: 'Chika ka lang dito...',
                             hintStyle: TextStyle(color: RiriTheme.textMuted, fontSize: 14),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -323,17 +361,26 @@ class _ChatBubble extends StatelessWidget {
       children: [
         if (!message.isUser) ...[
           if (message.stickerName != null) ...[
-            Image.asset(
-              'assets/stickers/${message.stickerName}.png',
-              width: 44,
-              height: 44,
-              errorBuilder: (context, error, stackTrace) {
-                return CircleAvatar(
-                  radius: 20,
-                  backgroundColor: RiriTheme.primaryPurple.withValues(alpha: 0.2),
-                  child: const Icon(Icons.face, color: RiriTheme.primaryPurple, size: 20),
-                );
-              },
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.elasticOut,
+              builder: (context, value, child) => Transform.scale(
+                scale: value,
+                child: child,
+              ),
+              child: Image.asset(
+                'assets/stickers/${message.stickerName}.png',
+                width: 44,
+                height: 44,
+                errorBuilder: (context, error, stackTrace) {
+                  return CircleAvatar(
+                    radius: 20,
+                    backgroundColor: RiriTheme.primaryPurple.withValues(alpha: 0.2),
+                    child: const Icon(Icons.face, color: RiriTheme.primaryPurple, size: 20),
+                  );
+                },
+              ),
             ),
           ] else ...[
             CircleAvatar(

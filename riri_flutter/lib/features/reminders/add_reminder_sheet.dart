@@ -105,7 +105,7 @@ class _AddReminderSheetState extends State<AddReminderSheet> {
               onChanged: (val) => setState(() {}),
               style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
-                hintText: 'Ano ang gagawin natin bestie? (Title)',
+                hintText: 'Ano ang gagawin natin? (Title)',
                 prefixIcon: Icon(Icons.title, color: RiriTheme.textMuted),
               ),
             ),

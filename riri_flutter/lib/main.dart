@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'theme/riri_theme.dart';
 import 'core/persistence/riri_database.dart';
 import 'core/persistence/riri_providers.dart';
@@ -26,7 +27,7 @@ void main() async {
           return database;
         }),
         onboardingCompletedProvider.overrideWith(() {
-          return OnboardingCompletedNotifier()..setCompleted(onboardingCompleted);
+          return OnboardingCompletedNotifier(onboardingCompleted);
         }),
       ],
       child: const RiriApp(),
@@ -41,13 +42,53 @@ class RiriApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final onboardingCompleted = ref.watch(onboardingCompletedProvider);
 
+    Widget mainScreen = onboardingCompleted
+        ? const RiriAppShell()
+        : const OnboardingScreen();
+
+    // Wrap the app in a gorgeous centered smartphone frame if running on web browser!
+    if (kIsWeb) {
+      mainScreen = Container(
+        color: const Color(0xFF0C0B10), // Elegant deep OLED-grade backdrop
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            constraints: const BoxConstraints(maxWidth: 430, maxHeight: 900),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(36),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.6),
+                  blurRadius: 30,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(36),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: const Color(0xFF22202C),
+                    width: 8,
+                    strokeAlign: BorderSide.strokeAlignOutside,
+                  ),
+                  borderRadius: BorderRadius.circular(36),
+                ),
+                child: mainScreen,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return MaterialApp(
       title: 'Riri',
       debugShowCheckedModeBanner: false,
       theme: RiriTheme.darkThemeData,
-      home: onboardingCompleted
-          ? const RiriAppShell()
-          : const OnboardingScreen(),
+      home: mainScreen,
     );
   }
 }

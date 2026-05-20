@@ -48,13 +48,13 @@ enum ProcrastinationLevel {
   String get taglishWarning {
     switch (this) {
       case ProcrastinationLevel.none:
-        return 'Good job bestie, solid discipline!';
+        return 'Good job, solid discipline!';
       case ProcrastinationLevel.medium:
         return 'Huy, gumalaw ka na konti, baka ma-late tayo.';
       case ProcrastinationLevel.high:
         return 'Grabe ka na makapag-snooze ah, anong plano?';
       case ProcrastinationLevel.bahalaNa:
-        return 'Sige na nga, bahala ka na sa buhay mo bestie! 🫡';
+        return 'Sige na nga, bahala ka na sa buhay mo! 🫡';
     }
   }
 }

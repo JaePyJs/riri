@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/native.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:riri_flutter/core/ai/ai_models.dart';
 import 'package:riri_flutter/core/ai/chat_response_engine.dart';
 import 'package:riri_flutter/core/persistence/riri_database.dart';
@@ -69,7 +71,12 @@ void main() {
         personalityMode: PersonalityMode.bestie,
       );
 
-      expect(response.text, contains('Hoy din bestie'));
+      final validReplies = [
+        'Hoy! Handang-handa na ako rito. Kumusta ang araw natin? ✨',
+        'Hello! Kape muna tapos checklist completed na ba? Ready to achieve our goals today? ☕',
+        'Yow! Ano’ng ganap natin today? May ipapaalala ka ba? 📣',
+      ];
+      expect(validReplies, contains(response.text));
       expect(response.stickerName, 'Welcoming');
     });
 
@@ -80,8 +87,112 @@ void main() {
         personalityMode: PersonalityMode.malupit,
       );
 
-      expect(response.text, contains('Bakit ka bumabati'));
+      final validReplies = [
+        'Bakit ka bumabati? May natapos ka na bang task? Focus.',
+        'Walang hi-hi dito. Trabaho muna. Sayang ang oras.',
+        'Kumusta? Heto, naiistress sa kabagalan mo. Galaw-galaw!',
+      ];
+      expect(validReplies, contains(response.text));
       expect(response.stickerName, 'Angry');
+    });
+
+    test('Should extract name from conversation and generate customized responses', () {
+      // Test the extraction patterns
+      expect(engine.tryExtractName('ako si Joshua'), 'Joshua');
+      expect(engine.tryExtractName('ako nga pala si Maria'), 'Maria');
+      expect(engine.tryExtractName('tawagin mo akong Joshua'), 'Joshua');
+      expect(engine.tryExtractName('my name is Clara'), 'Clara');
+      expect(engine.tryExtractName("i'm Joshua"), 'Joshua');
+
+      // Test response generation with learned name
+      final responseBestie = engine.generateResponse(
+        userInput: 'ako si Joshua',
+        personalityMode: PersonalityMode.bestie,
+        newlyLearnedName: 'Joshua',
+      );
+      expect(responseBestie.text, contains('Joshua'));
+      expect(responseBestie.text, contains('tatandaan ko'));
+      expect(responseBestie.stickerName, 'Welcoming');
+
+      final responseMalupit = engine.generateResponse(
+        userInput: 'ako si Joshua',
+        personalityMode: PersonalityMode.malupit,
+        newlyLearnedName: 'Joshua',
+      );
+      expect(responseMalupit.text, contains('Joshua'));
+      expect(responseMalupit.text, contains('huwag kang tamad'));
+      expect(responseMalupit.stickerName, 'Angry');
+    });
+
+    test('Should handle interactive Rock-Paper-Scissors game', () {
+      // 1. Initial laro game request
+      final gameResponse = engine.generateResponse(
+        userInput: 'maglaro tayo ng game',
+        personalityMode: PersonalityMode.bestie,
+      );
+      expect(gameResponse.text, contains('Bato-Bato-Pick'));
+
+      // 2. Play with a choice
+      final playResponse = engine.generateResponse(
+        userInput: 'pili ko ay Bato',
+        personalityMode: PersonalityMode.bestie,
+      );
+      expect(playResponse.text, anyOf([
+        contains('Draw'),
+        contains('panalo'),
+        contains('Talo'),
+      ]));
+    });
+
+    test('Should parse alarm triggers and time patterns correctly', () {
+      // 1. Set alarm command
+      final alarmResponse = engine.generateResponse(
+        userInput: 'set alarm at 8:30 AM',
+        personalityMode: PersonalityMode.bestie,
+      );
+      expect(alarmResponse.text, contains('8:30 AM'));
+      expect(alarmResponse.text, contains('alarm'));
+
+      // 2. Wake up request
+      final wakeUpResponse = engine.generateResponse(
+        userInput: 'gisingin mo ako ng 6:00',
+        personalityMode: PersonalityMode.tita,
+      );
+      expect(wakeUpResponse.text, contains('6:00'));
+      expect(wakeUpResponse.text, contains('anak'));
+    });
+
+    test('Should trigger custom lifestyle chika for jokes, food, and sleep', () {
+      // 1. Joke/Chika
+      final jokeResponse = engine.generateResponse(
+        userInput: 'kwento naman ng chika o joke',
+        personalityMode: PersonalityMode.bestie,
+      );
+      expect(jokeResponse.text, anyOf([
+        contains('budots'),
+        contains('kalendaryo'),
+        contains('multo'),
+      ]));
+
+      // 2. Hungry
+      final foodResponse = engine.generateResponse(
+        userInput: 'gutom na ako kain na tayo',
+        personalityMode: PersonalityMode.tita,
+      );
+      expect(foodResponse.text, anyOf([
+        contains('sinigang'),
+        contains('tanghalian'),
+      ]));
+
+      // 3. Sleep
+      final sleepResponse = engine.generateResponse(
+        userInput: 'antok na ako tulog na ako',
+        personalityMode: PersonalityMode.chill,
+      );
+      expect(sleepResponse.text, anyOf([
+        contains('Higa'),
+        contains('Goodnight'),
+      ]));
     });
   });
 
@@ -89,13 +200,17 @@ void main() {
     late RiriDatabase database;
     late RiriRepository repository;
 
-    setUp(() {
+    setUp(() async {
+      SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.withData({});
       // Initialize a clean, high-performance in-memory SQLite Drift database for testing
       database = RiriDatabase(NativeDatabase.memory());
       repository = RiriRepository(database: database);
+      // Allow async seeding to complete
+      await Future.delayed(const Duration(milliseconds: 50));
     });
 
     tearDown(() async {
+      repository.dispose();
       await database.close();
     });
 
@@ -106,6 +221,8 @@ void main() {
         category: ReminderCategory.school,
         dueDateTime: now.add(const Duration(hours: 2)),
       );
+      // Allow the reactive stream event to update cachedReminders
+      await Future.delayed(const Duration(milliseconds: 50));
 
       final reminders = repository.currentReminders;
       // Note: Seed tasks might exist, verify added task is present in list
@@ -123,15 +240,23 @@ void main() {
         category: ReminderCategory.errands,
         dueDateTime: now.add(const Duration(hours: 1)),
       );
+      // Allow reactive stream to update cachedReminders
+      await Future.delayed(const Duration(milliseconds: 50));
 
       final matchingBefore = repository.currentReminders.firstWhere((r) => r.title == 'Bumili ng gatas 🥛');
       final id = matchingBefore.id;
 
       await repository.toggleReminderCompletion(id);
+      // Allow reactive stream to update
+      await Future.delayed(const Duration(milliseconds: 50));
+      
       final listAfterToggle = repository.currentReminders;
       expect(listAfterToggle.firstWhere((r) => r.id == id).isCompleted, isTrue);
 
       await repository.deleteReminder(id);
+      // Allow reactive stream to update
+      await Future.delayed(const Duration(milliseconds: 50));
+      
       final listAfterDelete = repository.currentReminders;
       expect(listAfterDelete.any((r) => r.id == id), isFalse);
     });
@@ -142,6 +267,8 @@ void main() {
         isUser: true,
         stickerName: 'Wink',
       );
+      // Allow async pre-load or updates to complete
+      await Future.delayed(const Duration(milliseconds: 50));
 
       final messages = repository.chatHistory;
       expect(messages.length, 1);
@@ -150,6 +277,9 @@ void main() {
       expect(messages.first.isUser, isTrue);
 
       await repository.clearChatHistory();
+      // Allow async clear to complete
+      await Future.delayed(const Duration(milliseconds: 50));
+      
       expect(repository.chatHistory.isEmpty, isTrue);
     });
   });

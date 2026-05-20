@@ -39,8 +39,11 @@ final tabIndexProvider = NotifierProvider<TabIndexNotifier, int>(() => TabIndexN
 
 /// Modern Riverpod 2.x Notifier for Onboarding Completed state.
 class OnboardingCompletedNotifier extends Notifier<bool> {
+  final bool? initialValue;
+  OnboardingCompletedNotifier([this.initialValue]);
+
   @override
-  bool build() => false;
+  bool build() => initialValue ?? false;
 
   void complete() {
     state = true;
@@ -56,7 +59,7 @@ final onboardingCompletedProvider = NotifierProvider<OnboardingCompletedNotifier
 /// Modern Riverpod 2.x Notifier for Username management.
 class UsernameNotifier extends Notifier<String> {
   @override
-  String build() => 'Bestie';
+  String build() => '';
 
   Future<void> loadUsername() async {
     final prefs = SharedPreferencesAsync();

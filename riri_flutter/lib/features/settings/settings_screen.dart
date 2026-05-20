@@ -179,7 +179,9 @@ class SettingsScreen extends ConsumerWidget {
                           style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
-                          'Kasalukuyan: $username. I-update para sa mas personal na chika.',
+                          username.trim().isEmpty 
+                              ? 'Kasalukuyan: Walang pangalan. I-update para sa mas personal na chika.'
+                              : 'Kasalukuyan: $username. I-update para sa mas personal na chika.',
                           style: theme.textTheme.bodyMedium,
                         ),
                         trailing: const Icon(Icons.edit, color: RiriTheme.secondaryAmber, size: 20),

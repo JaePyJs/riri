@@ -109,7 +109,7 @@ class RiriRepository {
       final now = DateTime.now();
       await _db.insertReminder(RemindersCompanion.insert(
         title: 'Simulan ang first productivity task mo! 📝',
-        description: const Value('Welcome to Riri! Kaya natin to, bestie! Tap the circle when done.'),
+        description: const Value('Welcome to Riri! Kaya natin to! Tap the circle when done.'),
         category: ReminderCategory.personal,
         dueDateTime: now.add(const Duration(hours: 3)),
         createdAt: now,

@@ -64,7 +64,7 @@ class RiriAssetMapper {
       case DashboardState.ready:
         return 'Game na! Ano gagawin natin today? 🚀';
       case DashboardState.working:
-        return 'Focus lang, bestie. Wag muna mag-scroll sa TikTok. 📱';
+        return 'Focus lang tayo. Wag muna mag-scroll sa TikTok. 📱';
       case DashboardState.success:
         return 'Slay! Tapos na yung task. Deserve ang iced coffee! 💅';
       case DashboardState.overdue:

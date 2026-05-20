@@ -107,9 +107,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
 
     switch (mode) {
       case PersonalityMode.bestie:
-        headline = 'OMG Bestie! 🎉';
-        body = "Natapos mo rin! Ang galing mo naman, proud na proud si Riri sa'yo! 💅✨";
-        buttonLabel = 'Salamat, Bestie! 💖';
+        headline = 'Hala, Grabe! 🎉';
+        body = "Natapos mo rin! Ang galing mo naman, proud na proud si Riri sa'yo! ✨";
+        buttonLabel = 'Salamat! 💖';
         break;
       case PersonalityMode.malupit:
         headline = 'Finally. 💀';
@@ -275,7 +275,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Hi, $username! 👋',
+                        username.trim().isEmpty ? 'Hi! 👋' : 'Hi, $username! 👋',
                         style: theme.textTheme.displayMedium,
                       ),
                       const SizedBox(height: 2),

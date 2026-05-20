@@ -51,8 +51,8 @@ class PersonaConfig {
   static final Map<PersonalityMode, PersonaConfig> registry = {
     PersonalityMode.bestie: const PersonaConfig(
       mode: PersonalityMode.bestie,
-      name: 'Bestie',
-      description: '💅 Warm, hype, and full of Gen Z friendly support.',
+      name: 'Barkada',
+      description: '✨ Warm, hype, and casual barkada-style support.',
       standard: PersonaTemplate(
         title: 'Hoy! Riri here 👋',
         body: "Uy, reminder mo: {task}. Let's get it done!",
@@ -62,7 +62,7 @@ class PersonaConfig {
         body: "I-snooze mo ulit? '{task}' Hindi pa rin natin magagawa yan nang ganyan.",
       ),
       overdue: PersonaTemplate(
-        title: 'Bestie... 👀',
+        title: 'Uy... 👀',
         body: "Ito na yung ika-{days} araw mo sa '{task}'. Kakayanin pa ba?",
       ),
     ),

@@ -21,7 +21,7 @@ enum PersonalityMode {
   String get displayLabel {
     switch (this) {
       case PersonalityMode.bestie:
-        return '💅 Bestie (Supportive & Witty - Default)';
+        return '✨ Barkada (Supportive & Friendly - Default)';
       case PersonalityMode.malupit:
         return '💀 Malupit (Maximum Roast / Tough Love)';
       case PersonalityMode.chill:
