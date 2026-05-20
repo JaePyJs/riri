@@ -153,7 +153,7 @@ class _PersonaSelectorScreenState extends ConsumerState<PersonaSelectorScreen> {
                                   child: Image.asset(
                                     _getStickerForPersona(mode),
                                     fit: BoxFit.contain,
-                                    errorBuilder: (context, _, __) => Icon(
+                                    errorBuilder: (context, _, _) => Icon(
                                       Icons.face,
                                       size: 40,
                                       color: config.accentColor,
