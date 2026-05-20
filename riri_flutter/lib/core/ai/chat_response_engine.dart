@@ -29,29 +29,29 @@ class ChatResponseEngine {
     required PersonalityMode personalityMode,
     String? newlyLearnedName,
   }) {
-    // Acknowledge learned name immediately with customized, persona-aligned responses!
+    // Acknowledge learned name immediately with customized, persona-aligned responses
     if (newlyLearnedName != null && newlyLearnedName.isNotEmpty) {
       String responseText = '';
       String stickerName = 'Wink';
       switch (personalityMode) {
         case PersonalityMode.bestie:
           responseText =
-              "Hala! So $newlyLearnedName pala pangalan mo! Ang ganda naman! Sige, tatandaan ko 'yan para special ang chika natin! 😉✨";
+              "Oh nice, $newlyLearnedName! Love the name. I'll remember that — our chika just got more personal!";
           stickerName = 'Welcoming';
           break;
         case PersonalityMode.malupit:
           responseText =
-              "So, ikaw pala si $newlyLearnedName. Mabuti naman at nagpakilala ka. Ngayon, magtrabaho ka na at huwag kang tamad.";
+              "So you're $newlyLearnedName. Good. Now that that's settled — anong natapos mo ngayon? Speak up.";
           stickerName = 'Angry';
           break;
         case PersonalityMode.chill:
           responseText =
-              "Oh, hello $newlyLearnedName~ Nice name. Relax lang tayo ha, no stress. 🍃";
+              "Hey $newlyLearnedName, nice to meet you. We'll keep things easy around here, no pressure.";
           stickerName = 'Inactive';
           break;
         case PersonalityMode.tita:
           responseText =
-              "Napakagandang pangalan naman, $newlyLearnedName! Sige, tatandaan ni Tita Riri 'yan para gabayan kita nang mabuti. Kumain ka na ba? 👵";
+              "What a lovely name, $newlyLearnedName! I'll keep that in mind. Kumain ka na ba today? Let's make sure you're taken care of.";
           stickerName = 'Welcoming';
           break;
       }
@@ -71,14 +71,14 @@ class ChatResponseEngine {
         lower.contains('ilista')) {
       String extractedTitle = _cleanExtractedTitle(userInput);
 
-      // Parse reminder category dynamically using the TaglishKeywordClassifier!
+      // Parse reminder category dynamically using the TaglishKeywordClassifier
       final parsedResult = _classifier.parse(extractedTitle);
       final category = parsedResult.category == ReminderCategory.personal &&
               parsedResult.confidence < 0.6
           ? ReminderCategory.personal
           : parsedResult.category;
 
-      // Extract due date dynamically from natural language expressions!
+      // Extract due date dynamically from natural language expressions
       final dueDateTime = _parseDueDateTime(userInput);
 
       final jsonPayload = json.encode({
@@ -116,26 +116,26 @@ class ChatResponseEngine {
       switch (personalityMode) {
         case PersonalityMode.bestie:
           text = parsedTime != null
-              ? "Hala sige! Naka-set na alarm mo ng $parsedTime. Babulabugin kita para di ka late, gising talaga kung gising! ⏰🔔"
-              : "Sure! Ano'ng oras kita gigisingin? Sabihin mo lang sa akin yung time (e.g. 'alarm 7 AM') tapos ako na bahala! ⏰";
+              ? "Got it! Alarm set for $parsedTime. I'll make sure you're up and ready — walang late today!"
+              : "Sure! What time do you want me to wake you up? Just say something like 'alarm 7 AM' and I'll handle the rest.";
           sticker = parsedTime != null ? 'Confident_Suggestion' : 'Wink';
           break;
         case PersonalityMode.malupit:
           text = parsedTime != null
-              ? "Naka-set na ang alarm sa $parsedTime. Kapag natulog ka pa pagkatapos nyan, ewan ko na lang sa'yo. Gising agad!"
-              : "Magset ka ng alarm. Anong oras? Isulat mo ang eksaktong oras (e.g. 'alarm 6:00 AM') para magising ka.";
+              ? "Alarm set for $parsedTime. When it goes off — you get up. No snoozing. Wala akong pakialam sa excuses."
+              : "Set your alarm. What time? Give me the exact time (e.g. 'alarm 6:00 AM') and we'll go from there.";
           sticker = 'Angry';
           break;
         case PersonalityMode.chill:
           text = parsedTime != null
-              ? "Sige~ alarm is set sa $parsedTime. Dahan-dahan lang ang gising ha, walang pressure. 🍃⏰"
-              : "Sige, gisingin kita. Anong oras mo ba gusto? Sabihin mo lang (e.g. 'alarm 8 AM')~ 🍃";
+              ? "Alarm is set for $parsedTime. Take your time waking up — dahan-dahan lang, no rush."
+              : "Sure, I can help with an alarm. What time works for you? Just tell me (e.g. 'alarm 8 AM') whenever you're ready.";
           sticker = 'Inactive';
           break;
         case PersonalityMode.tita:
           text = parsedTime != null
-              ? "Naku, opo. Gisingin kita ng $parsedTime ha? Mag-alarm ka rin sa tabi mo para sigurado. Wag magpuyat! 👵⏰"
-              : "Anong oras kita gigisingin? Sabihin mo kay Tita Riri yung oras para ma-set natin. 👵";
+              ? "Okay, I'll wake you at $parsedTime. Don't forget to sleep early tonight — wag magpuyat ha."
+              : "What time do you need to wake up? Tell me and I'll set it for you. Make sure you get enough rest too.";
           sticker = 'Welcoming';
           break;
       }
@@ -157,19 +157,19 @@ class ChatResponseEngine {
         switch (personalityMode) {
           case PersonalityMode.bestie:
             text =
-                "Ay gayan! Bato-Bato-Pick tayo! Dali, pumili ka: Bato, Papel, or Gunting? Taya na! ✊✋✌️";
+                "Okay, let's play! Bato-Bato-Pick — pick one: Rock, Paper, or Scissors? Go!";
             break;
           case PersonalityMode.malupit:
             text =
-                "Laro? Sige, Bato-Bato-Pick. Pumili ka ngayon din: Bato, Papel, o Gunting. Pagkatapos nito, balik trabaho.";
+                "Fine. Bato-Bato-Pick. Pick now: Rock, Paper, or Scissors. Then we get back to work after.";
             break;
           case PersonalityMode.chill:
             text =
-                "G~ laro tayo ng Bato-Bato-Pick. Ano taya mo: Bato, Papel, o Gunting? Relax lang~ 🍃";
+                "Sure, why not. Bato-Bato-Pick — what's your pick: Rock, Paper, or Scissors? Take your time.";
             break;
           case PersonalityMode.tita:
             text =
-                "Ay gusto mo maglaro? Sige, Bato-Bato-Pick tayo! Ano ang taya mo: Bato, Papel, o Gunting? 👵";
+                "Oh, you want to play? Okay, Bato-Bato-Pick! Pick one: Rock, Paper, or Scissors?";
             break;
         }
         return ChatResponse(text: text, stickerName: 'Wink');
@@ -195,52 +195,52 @@ class ChatResponseEngine {
           case PersonalityMode.bestie:
             if (result == 'tie') {
               text =
-                  "Draw! Pareho tayong $ririChoice! Bato-Bato-Pick ulit! ✊✋✌️";
+                  "Draw! We both picked $ririChoice. Want to go again?";
             } else if (result == 'win') {
               text =
-                  "Hala panalo ka! Pinili ko $ririChoice tapos $userChoice sa'yo. Ang galing mo naman! 🏆🎉";
+                  "You win! Your $userChoice beats my $ririChoice. Nice one!";
             } else {
               text =
-                  "Yahoo! Talo ka! Pinili ko $ririChoice tapos $userChoice sa'yo. Bawi na lang next time! 😂🤪";
+                  "Ha! I win this round. My $ririChoice beats your $userChoice. Bawi ka next time!";
             }
             sticker = result == 'win' ? 'Confetti_Explosion' : 'Wink';
             break;
           case PersonalityMode.malupit:
             if (result == 'tie') {
               text =
-                  "Patas. Pareho tayong $ririChoice. Walang kwenta ang tabla, mag-focus ka na lang sa trabaho mo.";
+                  "Draw. We both picked $ririChoice. Walang nanalo. Now get back to your tasks.";
             } else if (result == 'win') {
               text =
-                  "Nanalo ka. Pinili ko $ririChoice at $userChoice sa'yo. Congrats. Ngayong masaya ka na, kilos na sa tasks.";
+                  "You win. $userChoice beats $ririChoice. Happy now? Good. Back to work.";
             } else {
               text =
-                  "Talo ka. Pinili ko $ririChoice laban sa $userChoice mo. Walang puwang ang talunan, mag-seryoso ka na.";
+                  "You lose. My $ririChoice beats your $userChoice. Focus on winning at your tasks instead.";
             }
             sticker = 'Angry';
             break;
           case PersonalityMode.chill:
             if (result == 'tie') {
               text =
-                  "Tie tayo~ Pareho tayong $ririChoice. Bawi na lang next time pag may time~ 🍃";
+                  "Tie — we both went $ririChoice. No stress, play again whenever.";
             } else if (result == 'win') {
               text =
-                  "Nice, panalo ka~ $userChoice mo beats $ririChoice ko. Galing mo dun ah. 🍃";
+                  "Nice, you got it. $userChoice beats $ririChoice. Good call.";
             } else {
               text =
-                  "Talo ka but it's okay~ $ririChoice ko beats $userChoice mo. Chill lang. 🌙";
+                  "I got this one — $ririChoice beats $userChoice. Chill lang, no big deal.";
             }
             sticker = 'Inactive';
             break;
           case PersonalityMode.tita:
             if (result == 'tie') {
               text =
-                  "Ay tabla! Parehong $ririChoice ang taya natin. Ulitin ba natin? 👵";
+                  "Ay, we're tied! We both picked $ririChoice. Want to try again?";
             } else if (result == 'win') {
               text =
-                  "Naku ang galing naman, panalo ka! $userChoice mo laban sa $ririChoice ni Tita. Ang swerte mo ngayon ha! 👵💖";
+                  "You won! Your $userChoice beats my $ririChoice. Ang swerte mo today!";
             } else {
               text =
-                  "Ay talo ka ng tita mo! Pinili ko $ririChoice tapos $userChoice naman sa'yo. May pa-consolation prize ka sa akin na kiss! 👵🥰";
+                  "I win this one! My $ririChoice beats your $userChoice. Don't be sad — may I treat you pa rin!";
             }
             sticker = 'Welcoming';
             break;
@@ -256,17 +256,17 @@ class ChatResponseEngine {
         lower.contains('joke') ||
         lower.contains('tawa')) {
       final bestieJokes = [
-        "Chika ba? Alam mo ba yung kapitbahay natin na laging nagpapatugtog ng budots ng 5 AM? Ayun, nireklamo sa barangay kagabi! Chika ulit mamaya pag tapos ka na ha! 🤫🤐",
-        "Joke time! Bakit malungkot ang kalendaryo? Kasi marami siyang dates pero lahat lumilipas lang. Aruy! Haha! 😂",
-        "May kwento ako! Yung aso namin nakatitig sa pader kaninang madaling araw. Feeling ko may kausap na multo. Kaya ikaw, wag ka papabuyo sa procrastination baka multuhin ka! 👻"
+        "Okay here's some chika — our neighbor has been playing loud music at 5 AM and someone finally reported it to the barangay last night. About time! Anyway, what's up with you?",
+        "Quick joke: why was the calendar always sad? Because all its dates kept passing it by. Haha, okay that was bad. But still!",
+        "True story — my friend stared at the ceiling for 2 hours last night 'thinking'. Pretty sure he was just avoiding his checklist. Sound familiar?"
       ];
       final chillJokes = [
-        "Kwento ba? Solid nung nakaraang gabi, nakatitig lang ako sa kisame habang nakikinig sa lo-fi. Peaceful lang. Sali ka next time~ 🍃",
-        "Joke tayo. Anong tawag sa saging na nakasuot ng wig? Eh di... Ba-na-na-wig. Relax lang, tawa ka na please~ 🌙"
+        "Story time: last night I just sat back, lo-fi on, ceiling staring. Honestly, peaceful. You should try it sometime — after your tasks, though.",
+        "Okay here's a joke: what do you call a banana wearing a wig? Ba-na-na-wig. I know, I know. But it made you smile a little, right?"
       ];
       final titaJokes = [
-        "Naku, may tsismis si Tita sa'yo. Alam mo ba si Mareng Susan, bumili ng bagong air fryer tapos nasunog yung lumpia nya kahapon! Sayang talaga. 👵",
-        "Joke ba? Anong isda ang laging nabubulunan? Eh di... Salmon! Kasi sal-mon ng sal-mon ng pagkain! Haha, kain ka na ha? 👵🥰"
+        "Oh, you want tsismis? Okay — my neighbor bought an air fryer and then burnt her lumpia on the first try. Sayang talaga. Classic. Anyway, have you eaten?",
+        "Here's one: what fish always gets choked? Salmon — because it keeps trying to salmon more food. Ha! Okay, kumain ka na ha."
       ];
 
       String text = '';
@@ -278,8 +278,8 @@ class ChatResponseEngine {
           break;
         case PersonalityMode.malupit:
           text = random.nextBool()
-              ? "Chika? Wala akong time sa tsismis. Mas interesado akong marinig kung kailan mo matatapos yang mga nakatambak mong gagawin."
-              : "Gusto mo ng joke? Ang pinakamalaking joke rito ay yung sinabi mong gagawin mo na tasks mo pero heto ka pa rin, nakikipagdaldalan sa akin. Magtrabaho ka.";
+              ? "I don't do chika. What I am interested in is hearing which of your tasks you actually finished today. Talk to me about that."
+              : "You want a joke? Here's one: you said you'd get your tasks done, and yet here we are — chatting. Classic. Get to work.";
           sticker = 'Angry';
           break;
         case PersonalityMode.chill:
@@ -308,26 +308,26 @@ class ChatResponseEngine {
       switch (personalityMode) {
         case PersonalityMode.bestie:
           text = random.nextBool()
-              ? "Hala gutom ka na? Kain na dali! Wag mo tipirin ang sarili mo sa Grab ha. Samahan mo na rin ng milk tea! 🧋🍔"
-              : "Kain na! Mahirap mag-focus kapag walang laman ang tyan. Sabay tayo next time pag natapos na tasks natin! 🍕🍟";
+              ? "Gutom ka na? Go eat! Don't hold back — your brain needs fuel to finish those tasks. Grab something good."
+              : "Kain muna, then we come back to the checklist. Can't do anything properly on an empty stomach.";
           sticker = 'Confetti_Explosion';
           break;
         case PersonalityMode.malupit:
           text = random.nextBool()
-              ? "Gutom ka na naman? Puro ka kain, wala ka pa ngang natatapos na task. Sige, kumain ka pero mag-focus ka pagkatapos!"
-              : "Kain na kung kakain, pero wag kang tatambay pagkatapos. Kain para may lakas mag-check ng checklist. Bawal tamad!";
+              ? "Fine, go eat. But come right back after — walang tatambay. Food is fuel for getting things done, not an excuse to disappear."
+              : "Gutom ka? Okay. Eat fast. You still have tasks pending and the deadline isn't moving.";
           sticker = 'Angry';
           break;
         case PersonalityMode.chill:
           text = random.nextBool()
-              ? "Kain na tayo~ Safe lagyan ng snacks ang table para high energy. Kape or tea? Steady lang. 🍃🍔"
-              : "Snack break muna, deserved mo yan. Relax ka lang habang kumakain tapos g ulit mamaya. 🌙🍜";
+              ? "Snack break sounds good. Recharge first, then we'll get back to things when you're ready. No rush."
+              : "Go eat something — you've earned the break. We'll pick up where we left off after, steady lang.";
           sticker = 'Inactive';
           break;
         case PersonalityMode.tita:
           text = random.nextBool()
-              ? "Kumain ka na ba? Naku, wag na wag mong lilipasan ang gutom mo ha! Ipagluluto kita ng masarap na sinigang kung malapit lang ako. Kain na dali! 👵🍲"
-              : "Kumain ka na ng tanghalian/hapunan ha? Masama sa tyan ang magpalipas ng gutom. Iwan muna ang ginagawa at kumain na ng masustansya! 👵🍚";
+              ? "Have you eaten already? Don't skip meals, ha — it's not good for you. Eat something proper before getting back to your tasks."
+              : "Naku, kumain ka na ba? You can't work properly on an empty stomach. Put the phone down and eat first. I mean it.";
           sticker = 'Welcoming';
           break;
       }
@@ -344,26 +344,26 @@ class ChatResponseEngine {
       switch (personalityMode) {
         case PersonalityMode.bestie:
           text = random.nextBool()
-              ? "Antok ka na? Sige higa na! Bukas na natin habulin yung iba. Goodnight at matulog ng mahimbing! 🛌💤"
-              : "Sleep well! I-charge mo na rin phone mo at matulog ng maaga para fresh bukas! Dream of your success! 🌙😴";
+              ? "Antok ka na? Get some rest! We'll pick up what's left tomorrow. Sleep well and dream of a finished checklist."
+              : "Go to bed, charge your phone, and actually rest. Fresh mind tomorrow means better work — trust the process.";
           sticker = 'Inactive';
           break;
         case PersonalityMode.malupit:
           text = random.nextBool()
-              ? "Matutulog ka na naman? Siguraduhin mong nagawa mo lahat ng nakalista ngayon ha. Kung hindi, konsensya mo na lang yan. Sige, tulog na."
-              : "Antok? Ganyan talaga kapag tamad. Sige na, matulog ka na pero bukas bawal ang babagal-bagal. Kilos agad paggising!";
+              ? "Going to sleep? Make sure you actually did something useful today first. If not, that's on you. Tulog na."
+              : "Antok? Of course you are. Anyway — tomorrow, walang babagal-bagal. Be ready to move when you wake up.";
           sticker = 'Angry';
           break;
         case PersonalityMode.chill:
           text = random.nextBool()
-              ? "Higa na, take a break~ Napagod ka din today. Dream peaceful dreams, see you tomorrow. 🍃💤"
-              : "Goodnight~ turn off the lights, relax and rest. Everything is handled. 🌙😴";
+              ? "Get some rest, you've done enough for today. We'll sort the rest out tomorrow — tulog na."
+              : "Goodnight. Switch off, relax, let everything settle. Everything will still be here mañana.";
           sticker = 'Inactive';
           break;
         case PersonalityMode.tita:
           text = random.nextBool()
-              ? "Naku, matulog ka na ha? Bawal magpuyat at masama yan sa kalusugan mo. Inom ka muna ng maligamgam na tubig bago matulog. Goodnight! 👵💤"
-              : "Higa na at magpahinga. Napaka-hardworking mo naman today. Sleep well at gigisingin kita bukas ha? 👵😴";
+              ? "Sleep early, ha? Wag magpuyat — it's bad for your health. Drink some water first, then get some proper rest."
+              : "You worked hard today. Higa na and sleep well. I'll check in with you tomorrow morning, ha.";
           sticker = 'Inactive';
           break;
       }
@@ -381,9 +381,9 @@ class ChatResponseEngine {
             lower.contains('kamusta') ||
             lower.contains('kumusta')) {
           final replies = [
-            'Hoy! Handang-handa na ako rito. Kumusta ang araw natin? ✨',
-            'Hello! Kape muna tapos checklist completed na ba? Ready to achieve our goals today? ☕',
-            'Yow! Ano’ng ganap natin today? May ipapaalala ka ba? 📣',
+            'Hey! Ready when you are. How is your day going?',
+            'Hello! Hope things are going well. Anything on your mind or any tasks we need to set up?',
+            'Oh hey! Musta na? What are we working on today?',
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Welcoming';
@@ -391,9 +391,9 @@ class ChatResponseEngine {
             lower.contains('thanks') ||
             lower.contains('thank you')) {
           final replies = [
-            'Walang anuman! Basta para sa\'yo, easy lang yan. Kape tayo next! ☕',
-            'Luh, maliit na bagay! Proud of you! 💖',
-            'Basta para sa\'yo, anytime! Kayang-kaya natin \'to! 🎉',
+            "Walang anuman! Glad I could help. What else do you need?",
+            "Of course! Always here for you. Now let's get those tasks moving.",
+            "Happy to help. You're doing great — keep that momentum going.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Confetti_Explosion';
@@ -403,9 +403,9 @@ class ChatResponseEngine {
             lower.contains('sad') ||
             lower.contains('stress')) {
           final replies = [
-            'Aww, felt! Okay lang mapagod, pero bawal sumuko! Pahinga ka muna tapos game ulit! 💕',
-            'Huy, okay lang yan! Mahirap talaga minsan, pero laban lang. Break muna sandali tapos simulan natin ulit. ☕',
-            'Naku, sino ba nagpapastress sa\'yo? Char! Pahinga ka muna sandali para refresh. 🥰',
+            "Hey, that's okay. Pagod is normal — take a proper break before pushing through. You don't have to do everything at once.",
+            "It's alright to slow down. Rest first, then we take it one step at a time. No pressure.",
+            "Stressed ka? Deep breath muna. Let's figure out what's actually urgent and let the rest wait.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Inactive';
@@ -413,16 +413,16 @@ class ChatResponseEngine {
             lower.contains('mahal') ||
             lower.contains('cute')) {
           final replies = [
-            'Omsim! Salamat sa support! Let\'s get these goals! 💪',
-            'Yieee, thank you! Let\'s get this done na para masaya! 🎉',
+            "Appreciate it! Now let's channel that energy into crushing those tasks.",
+            "Thanks for the love! Let's make today a productive one.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Wink';
         } else {
           final replies = [
-            'Narinig kita! Solid nyan, pero focus din tayo sa reminders natin ha? 💪',
-            'Oyyy totoo ba? Grabe talaga! Sige na, tapusin na natin \'tong tasks para chill na later! 🚀',
-            'Kuwentuhan tayo mamaya pagkatapos, subukan muna natin tapusin yung tasks natin today! 👍',
+            "Got it! Sounds like a lot going on. Want to add any of that to your task list?",
+            "Interesting! Anyway, whenever you're ready — I'm here to help you stay on track.",
+            "I hear you. Let's make sure the important things actually get done today.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Wink';
@@ -436,9 +436,9 @@ class ChatResponseEngine {
             lower.contains('kamusta') ||
             lower.contains('kumusta')) {
           final replies = [
-            'Bakit ka bumabati? May natapos ka na bang task? Focus.',
-            'Walang hi-hi dito. Trabaho muna. Sayang ang oras.',
-            'Kumusta? Heto, naiistress sa kabagalan mo. Galaw-galaw!',
+            "You're saying hi but have you checked your task list today? Focus.",
+            "No small talk. What have you actually finished today?",
+            "Kumusta? I'm stressed watching you waste time. Let's go.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Angry';
@@ -446,8 +446,8 @@ class ChatResponseEngine {
             lower.contains('thanks') ||
             lower.contains('thank you')) {
           final replies = [
-            'No need for thanks. Just finish your work and don\'t snooze.',
-            'Pasalamat ka kapag natapos mo na lahat. Sa ngayon, upo at mag-focus.',
+            "Save the thanks. Just finish what's on your list and don't snooze.",
+            "You can thank me by actually completing your tasks. Now move.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Angry';
@@ -457,9 +457,9 @@ class ChatResponseEngine {
             lower.contains('sad') ||
             lower.contains('stress')) {
           final replies = [
-            'Pagod? Everyone is. Get up and get to work. No excuses.',
-            'Drama mo. Ang tunay na malakas, walang time mapagod. Tapusin mo na yan.',
-            'Stressed? Dahil sa procrasti-nation mo yan. Gumawa ka kasi agad!',
+            "Everyone's tired. That's not a reason to stop. Keep going.",
+            "Drama. You're stressed because you procrastinated. Fix it — start with the first task.",
+            "Pagod? Rest for 10 minutes, then back to work. No extended breaks.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Angry';
@@ -467,16 +467,16 @@ class ChatResponseEngine {
             lower.contains('mahal') ||
             lower.contains('cute')) {
           final replies = [
-            'Huwag mo akong daanin sa matatamis na salita. Magtrabaho ka.',
-            'Love? Mas mahal ko kapag tapos ang tasks mo. Kaya gumalaw ka.',
+            "I'll believe that when your task list is empty. Work first.",
+            "Words are cheap. Show me progress, not compliments.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Angry';
         } else {
           final replies = [
-            'Stop chatting and check your dashboard. Time is ticking.',
-            'Kung ganyan karami ang nasasabi mo, sana ganyan din kabilis matapos tasks mo. Kilos!',
-            'Wag puro daldal. Ang deadline malapit na, ikaw tambay pa rin.',
+            "Stop chatting and check your dashboard. The clock is ticking.",
+            "If you spent half as much time on your tasks as you do talking, you'd be done by now. Kilos.",
+            "The deadline doesn't care about your conversation. Let's go.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Angry';
@@ -490,8 +490,8 @@ class ChatResponseEngine {
             lower.contains('kamusta') ||
             lower.contains('kumusta')) {
           final replies = [
-            'Hey~ Chill lang tayo today, no pressure. Kumusta? 🍃',
-            'Low-key day ngayon. Relax ka lang, dahan-dahan nating simulan. 🌙',
+            "Hey. All good here. Kumusta ka? No rush — whenever you're ready to start.",
+            "Low-key today is fine. Just checking in — anything you need to get sorted?",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Inactive';
@@ -499,8 +499,8 @@ class ChatResponseEngine {
             lower.contains('thanks') ||
             lower.contains('thank you')) {
           final replies = [
-            'No worries~ take your time, everything is fine. 🌙',
-            'Chill lang, easy as it goes. Glad I could help. 🍃',
+            "No worries at all. We'll get through things at your own pace.",
+            "Easy — that's what I'm here for. Steady lang.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Inactive';
@@ -510,8 +510,8 @@ class ChatResponseEngine {
             lower.contains('sad') ||
             lower.contains('stress')) {
           final replies = [
-            'Pahinga ka muna bes, deserved mo yan. Bukas na natin isipin ang iba. 🍃',
-            'Okay lang mag-slow down. Breath in, breath out. We\'ve got time. 🌙',
+            "Take a real break — pagod is a signal to slow down, not push harder. Rest muna.",
+            "That's okay. Breathe. You don't have to figure it all out right now.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Inactive';
@@ -519,12 +519,12 @@ class ChatResponseEngine {
             lower.contains('mahal') ||
             lower.contains('cute')) {
           responseText =
-              'Thanks, simple happiness right here. Keep enjoying your day. 🍃';
+              "Good vibes only. Appreciate it — enjoy the rest of your day.";
           stickerName = 'Wink';
         } else {
           final replies = [
-            'Ganyan talaga ang life. Relax ka lang, magagawa din natin yan. 🌙',
-            'Take a deep breath. No rush, steady lang ang pacing natin today. 🍃',
+            "That sounds like a lot. Take it one thing at a time — steady lang.",
+            "No rush. When you're ready, let's figure out what to tackle first.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Wink';
@@ -538,8 +538,8 @@ class ChatResponseEngine {
             lower.contains('kamusta') ||
             lower.contains('kumusta')) {
           final replies = [
-            'Hello! Kumain ka na ba? Wag kang magpapakapagod masyado ha? 👵',
-            'Naku, kumusta naman ang araw mo? May kailangan ka ba? 🍲',
+            "Hello! Kumain ka na ba? Don't skip meals — what can I help you with today?",
+            "Kumusta? Hope you're doing well. Let me know if there's anything on your mind or your list.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Welcoming';
@@ -547,8 +547,8 @@ class ChatResponseEngine {
             lower.contains('thanks') ||
             lower.contains('thank you')) {
           final replies = [
-            'Walang anuman, basta mag-aral kang mabuti ha. Proud ako sayo! ✨',
-            'Siyempre naman, laging nandito si Tita para gabayan ka. ✨',
+            "Walang anuman — I'm always here to help you out. Keep it up, ha.",
+            "Of course! That's what I'm here for. Take care of yourself, ha.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Confetti_Explosion';
@@ -558,8 +558,8 @@ class ChatResponseEngine {
             lower.contains('sad') ||
             lower.contains('stress')) {
           final replies = [
-            'Hala, uminom ka ba ng maraming tubig? Matulog ka nang maaga ha, huwag magpuyat. 👵',
-            'Naku, stress? Ipagluluto kita ng sopas o kaya champorado. Higa ka muna sandali. 🍲',
+            "Naku, have you been sleeping properly? Drink some water and rest muna — your health comes first.",
+            "I hear you. Stressed is not a good place to be. Take a proper break, then we'll tackle what's left together.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Inactive';
@@ -567,12 +567,12 @@ class ChatResponseEngine {
             lower.contains('mahal') ||
             lower.contains('cute')) {
           responseText =
-              'Mahal din kita! Laging mag-iingat sa pagtawid ha. 👵';
+              "Ay, mahal din kita! Look after yourself, ha — and don't forget to check your reminders.";
           stickerName = 'Wink';
         } else {
           final replies = [
-            'Naku, ganun ba? Basta palaging magdadasal at mag-iingat ha. ✨',
-            'Ilista natin yan para hindi mo malimutan, mahirap na makalimot katulad ni Tita. 👵',
+            "I see. Let's make a note of that so nothing gets forgotten, ha.",
+            "Okay, okay. Tell me more — I'll help you figure out what to handle first.",
           ];
           responseText = replies[random.nextInt(replies.length)];
           stickerName = 'Wink';
@@ -689,7 +689,7 @@ class ChatResponseEngine {
     title = title.replaceAll(RegExp(r'\s+'), ' ').trim();
 
     if (title.isEmpty) {
-      title = 'Special Task ✨';
+      title = 'New Task';
     }
 
     return title;
