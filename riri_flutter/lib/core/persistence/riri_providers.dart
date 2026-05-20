@@ -128,6 +128,39 @@ class NotificationsEnabledNotifier extends Notifier<bool> {
 
 final notificationsEnabledProvider = NotifierProvider<NotificationsEnabledNotifier, bool>(() => NotificationsEnabledNotifier());
 
+/// Modern Riverpod 2.x Notifier for Gemini API Key management.
+class GeminiApiKeyNotifier extends Notifier<String> {
+  @override
+  String build() {
+    loadApiKey();
+    return '';
+  }
+
+  Future<void> loadApiKey() async {
+    final prefs = SharedPreferencesAsync();
+    final key = await prefs.getString('riri_gemini_api_key');
+    if (key != null) {
+      state = key;
+    }
+  }
+
+  Future<void> setApiKey(String key) async {
+    final prefs = SharedPreferencesAsync();
+    await prefs.setString('riri_gemini_api_key', key);
+    state = key;
+  }
+}
+
+final geminiApiKeyProvider = NotifierProvider<GeminiApiKeyNotifier, String>(() => GeminiApiKeyNotifier());
+
+/// Dynamic provider representing the active AI brain engine state.
+final activeAIEngineProvider = Provider<String>((ref) {
+  final apiKey = ref.watch(geminiApiKeyProvider);
+  return apiKey.trim().isEmpty 
+      ? 'Lite AI Mode (Taglish Heuristics)' 
+      : 'Premium AI (Gemini 1.5 Flash)';
+});
+
 class ProcrastinationIndexData {
   final String label;      // "Proactive 👑", "Mild Slacker ☕", etc.
   final Color color;       // matching RiriTheme color

@@ -417,4 +417,105 @@ class RiriRepository {
   Future<void> setNotificationsEnabled(bool enabled) async {
     await _prefs.setBool(_prefNotificationsKey, enabled);
   }
+
+  /// Exports all chat threads, messages, and reminders into a single backup JSON string.
+  Future<String> exportDataAsJson() async {
+    final reminders = await _db.getAllReminders();
+    final chatMessages = await _db.getChatHistory();
+    
+    final remindersList = reminders.map((r) => {
+      'title': r.title,
+      'description': r.description,
+      'category': r.category.name,
+      'dueDateTime': r.dueDateTime.toIso8601String(),
+      'isCompleted': r.isCompleted,
+      'snoozeCount': r.snoozeCount,
+      'rescheduleCount': r.rescheduleCount,
+      'createdAt': r.createdAt.toIso8601String(),
+      'completedAt': r.completedAt?.toIso8601String(),
+    }).toList();
+
+    final chatMessagesList = chatMessages.map((m) => {
+      'messageText': m.messageText,
+      'isUser': m.isUser,
+      'timestamp': m.timestamp.toIso8601String(),
+      'stickerName': m.stickerName,
+      'threadId': m.threadId,
+    }).toList();
+
+    final threadsList = _threads.map((t) => t.toJson()).toList();
+
+    final backupData = {
+      'version': 1,
+      'reminders': remindersList,
+      'chatMessages': chatMessagesList,
+      'threads': threadsList,
+      'activeThreadId': _activeThreadId,
+    };
+
+    return jsonEncode(backupData);
+  }
+
+  /// Restores all chat threads, messages, and reminders from a backup JSON string.
+  Future<bool> importDataFromJson(String jsonString) async {
+    try {
+      final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
+      if (decoded['version'] != 1) return false;
+
+      // 1. Purge database
+      await _db.purgeDatabase();
+
+      // 2. Import Reminders
+      final remindersList = decoded['reminders'] as List<dynamic>;
+      for (final r in remindersList) {
+        final map = r as Map<String, dynamic>;
+        await _db.insertReminder(RemindersCompanion.insert(
+          title: map['title'] as String,
+          description: map['description'] != null ? Value(map['description'] as String) : const Value.absent(),
+          category: ReminderCategory.fromDbValue(map['category'] as String),
+          dueDateTime: DateTime.parse(map['dueDateTime'] as String),
+          isCompleted: Value(map['isCompleted'] as bool),
+          snoozeCount: Value(map['snoozeCount'] as int),
+          rescheduleCount: Value(map['rescheduleCount'] as int),
+          createdAt: DateTime.parse(map['createdAt'] as String),
+          completedAt: map['completedAt'] != null ? Value(DateTime.parse(map['completedAt'] as String)) : const Value.absent(),
+        ));
+      }
+
+      // 3. Import Chat Messages
+      final chatMessagesList = decoded['chatMessages'] as List<dynamic>;
+      for (final m in chatMessagesList) {
+        final map = m as Map<String, dynamic>;
+        await _db.insertChatMessage(ChatMessagesCompanion.insert(
+          messageText: map['messageText'] as String,
+          isUser: map['isUser'] as bool,
+          timestamp: DateTime.parse(map['timestamp'] as String),
+          stickerName: map['stickerName'] != null ? Value(map['stickerName'] as String) : const Value.absent(),
+          threadId: map['threadId'] != null ? Value(map['threadId'] as String) : const Value.absent(),
+        ));
+      }
+
+      // 4. Import Threads metadata
+      final threadsList = decoded['threads'] as List<dynamic>;
+      _threads.clear();
+      for (final t in threadsList) {
+        _threads.add(RiriChatThread.fromJson(t as Map<String, dynamic>));
+      }
+
+      _activeThreadId = decoded['activeThreadId'] as String? ?? 'default';
+      
+      // Save threads metadata back to SharedPreferences
+      await _saveThreadsToPrefs();
+      
+      // Trigger local memory cache refresh
+      await switchActiveThread(_activeThreadId);
+      
+      // Broadcast threads update
+      _threadsController.add(List.unmodifiable(_threads));
+
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 }

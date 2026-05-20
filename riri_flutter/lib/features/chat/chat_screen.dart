@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/ai/ai_models.dart';
 import '../../core/ai/chat_response_engine.dart';
+import '../../core/ai/gemini_service.dart';
 import '../../core/persistence/riri_repository.dart';
 import '../../core/persistence/riri_providers.dart';
 import '../../core/notifications/personality_copy.dart';
@@ -23,6 +24,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ChatResponseEngine _responseEngine = ChatResponseEngine();
+  final GeminiService _geminiService = GeminiService();
   List<RiriChatMessage> _messages = [];
   bool _isTyping = false;
   bool _showVoiceOverlay = false;
@@ -87,8 +89,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     _scrollToBottom();
 
-    Timer(const Duration(milliseconds: 1000), () async {
+    // Trigger async AI logic
+    Future.microtask(() async {
       final currentMode = ref.read(personalityModeProvider);
+      final username = ref.read(usernameProvider);
+      final apiKey = ref.read(geminiApiKeyProvider);
       
       // Learn user name dynamically from the conversation!
       final newlyExtractedName = _responseEngine.tryExtractName(text);
@@ -96,18 +101,63 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         await ref.read(usernameProvider.notifier).setUsername(newlyExtractedName);
       }
 
-      // 1. Generate standard persona response using ChatResponseEngine
-      final response = _responseEngine.generateResponse(
-        userInput: text,
-        personalityMode: currentMode,
-        newlyLearnedName: newlyExtractedName,
-      );
+      String responseText = '';
+      String stickerName = 'Welcoming';
 
-      // 2. Save Riri chat response message cleanly in repository (which may contain [TASK_CARD] JSON)
+      // 1. Attempt Gemini response first if API key is active
+      if (apiKey.trim().isNotEmpty) {
+        try {
+          // Convert RiriChatMessage list to a simple serializable format for history context
+          final historyList = _messages.map((m) => {
+            'text': m.text,
+            'isUser': m.isUser,
+          }).toList();
+
+          final geminiResult = await _geminiService.generateResponse(
+            apiKey: apiKey,
+            userInput: text,
+            personalityMode: currentMode,
+            userName: newlyExtractedName ?? username,
+            history: historyList,
+          );
+
+          if (geminiResult != null) {
+            final String? parsedText = geminiResult['text'];
+            final String? parsedSticker = geminiResult['sticker'];
+            final Map<String, dynamic>? parsedTask = geminiResult['taskCard'];
+
+            if (parsedText != null && parsedText.isNotEmpty) {
+              responseText = parsedText;
+              stickerName = parsedSticker ?? 'Welcoming';
+
+              // If a task card is detected, append the [TASK_CARD] structured prefix and raw JSON!
+              if (parsedTask != null && parsedTask.isNotEmpty) {
+                final taskJson = jsonEncode(parsedTask);
+                responseText = '$responseText\n\n[TASK_CARD]$taskJson';
+              }
+            }
+          }
+        } catch (_) {
+          // Fall back gracefully below
+        }
+      }
+
+      // 2. Fall back to local synchronous ChatResponseEngine heuristics if Gemini was skipped or failed
+      if (responseText.isEmpty) {
+        final response = _responseEngine.generateResponse(
+          userInput: text,
+          personalityMode: currentMode,
+          newlyLearnedName: newlyExtractedName,
+        );
+        responseText = response.text;
+        stickerName = response.stickerName;
+      }
+
+      // 3. Save Riri chat response message cleanly in repository
       await repo.addChatMessage(
-        text: response.text,
+        text: responseText,
         isUser: false,
-        stickerName: response.stickerName,
+        stickerName: stickerName,
       );
 
       if (mounted) {

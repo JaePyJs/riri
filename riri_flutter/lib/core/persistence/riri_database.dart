@@ -127,6 +127,14 @@ class RiriDatabase extends _$RiriDatabase {
   // UserStats DAOs/Queries
   Future<UserStat?> getLatestStats() => (select(userStats)..orderBy([(t) => OrderingTerm.desc(t.generatedAt)])).getSingleOrNull();
   Future<int> insertOrUpdateStats(UserStatsCompanion companion) => into(userStats).insertOnConflictUpdate(companion);
+
+  /// Transaction-safe database reset for Restore workflows
+  Future<void> purgeDatabase() async {
+    await transaction(() async {
+      await delete(reminders).go();
+      await delete(chatMessages).go();
+    });
+  }
 }
 
 QueryExecutor _openConnection() {

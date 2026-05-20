@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/persistence/riri_providers.dart';
 import '../../core/notifications/personas.dart';
@@ -46,12 +47,129 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
+  /// Shows premium secure Gemini API key config dialog
+  void _showApiKeyDialog(BuildContext context, WidgetRef ref, String currentKey) {
+    final controller = TextEditingController(text: currentKey);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: RiriTheme.cardBg,
+        title: const Text('Gemini API Key 🔑', style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Ipasok ang iyong Gemini API key para ma-activate ang premium AI companion at dynamic Taglish chika. Mag-fallback sa local heuristics kapag walang key.',
+              style: TextStyle(color: RiriTheme.textMuted, fontSize: 12),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              obscureText: true,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                hintText: 'I-paste ang AIzaSy key...',
+                hintStyle: TextStyle(color: RiriTheme.textMuted),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF2F2F4A))),
+                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: RiriTheme.primaryPurple)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Bansalan', style: TextStyle(color: RiriTheme.textMuted)),
+          ),
+          TextButton(
+            onPressed: () {
+              final newKey = controller.text.trim();
+              ref.read(geminiApiKeyProvider.notifier).setApiKey(newKey);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(newKey.isEmpty 
+                      ? 'Naka-set na sa Lite AI fallback engine.' 
+                      : 'Premium Gemini AI brain activated! 🧠⚡'),
+                  backgroundColor: RiriTheme.primaryPurple,
+                ),
+              );
+            },
+            child: const Text('I-save 💾', style: TextStyle(color: RiriTheme.primaryPurple)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Shows database restoration paste text dialog
+  void _showRestoreDialog(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: RiriTheme.cardBg,
+        title: const Text('I-restore ang Data? 📥', style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'I-paste ang iyong JSON backup string sa ibaba. MAG-INGAT: Mapapalitan ang lahat ng kasalukuyang tasks at chat history!',
+              style: TextStyle(color: RiriTheme.textMuted, fontSize: 12),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              maxLines: 4,
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+              decoration: const InputDecoration(
+                hintText: 'I-paste ang backup JSON dito...',
+                hintStyle: TextStyle(color: RiriTheme.textMuted),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF2F2F4A))),
+                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: RiriTheme.primaryPurple)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Bansalan', style: TextStyle(color: RiriTheme.textMuted)),
+          ),
+          TextButton(
+            onPressed: () async {
+              final jsonStr = controller.text.trim();
+              if (jsonStr.isEmpty) return;
+              
+              final success = await ref.read(repositoryProvider).importDataFromJson(jsonStr);
+              Navigator.pop(context);
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(success 
+                      ? 'Matagumpay na na-restore ang iyong data! 📥🎉' 
+                      : 'Error: Invalid backup JSON pattern. ❌'),
+                  backgroundColor: success ? Colors.green : Colors.red,
+                ),
+              );
+            },
+            child: const Text('I-restore 📥', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final currentMode = ref.watch(personalityModeProvider);
     final notificationsEnabled = ref.watch(notificationsEnabledProvider);
     final username = ref.watch(usernameProvider);
+    final geminiApiKey = ref.watch(geminiApiKeyProvider);
+    final activeEngine = ref.watch(activeAIEngineProvider);
 
     return Scaffold(
       backgroundColor: RiriTheme.darkBg,
@@ -159,6 +277,76 @@ class SettingsScreen extends ConsumerWidget {
                           ref.read(notificationsEnabledProvider.notifier).setNotificationsEnabled(value);
                         },
                         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      ),
+                      const Divider(color: Color(0xFF2F2F4A), height: 1),
+
+                      // Gemini API Key Config Tile
+                      ListTile(
+                        onTap: () => _showApiKeyDialog(context, ref, geminiApiKey),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        title: const Text(
+                          'Gemini API Key 🔑',
+                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          'Brain: $activeEngine\n${geminiApiKey.isEmpty ? "Hindi naka-set. Naka-enable ang fallback AI heuristics." : "Naka-securely save ang API key sa device."}',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                        trailing: const Icon(Icons.vpn_key, color: RiriTheme.primaryPurple, size: 20),
+                      ),
+                      const Divider(color: Color(0xFF2F2F4A), height: 1),
+
+                      // Backup Data (Clipboard)
+                      ListTile(
+                        onTap: () async {
+                          try {
+                            final backupJson = await ref.read(repositoryProvider).exportDataAsJson();
+                            await Clipboard.setData(ClipboardData(text: backupJson));
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Naka-copy na sa clipboard ang backup! 📋💾'),
+                                  backgroundColor: RiriTheme.primaryPurple,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error sa backup: $e ❌'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        title: const Text(
+                          'Backup Data (Copy) 📋',
+                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          'Kopyahin ang lahat ng task at chat logs sa iyong clipboard bilang backup JSON.',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                        trailing: const Icon(Icons.copy, color: RiriTheme.primaryPurple, size: 20),
+                      ),
+                      const Divider(color: Color(0xFF2F2F4A), height: 1),
+
+                      // Restore Data (Paste)
+                      ListTile(
+                        onTap: () => _showRestoreDialog(context, ref),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        title: const Text(
+                          'Restore Data (Paste) 📥',
+                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          'I-import at i-restore ang task at chat history mula sa isang valid backup.',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                        trailing: const Icon(Icons.settings_backup_restore, color: RiriTheme.primaryPurple, size: 20),
                       ),
                     ],
                   ),
