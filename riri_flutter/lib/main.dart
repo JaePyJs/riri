@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'theme/riri_theme.dart';
 import 'core/persistence/riri_database.dart';
@@ -9,15 +8,12 @@ import 'features/onboarding/onboarding_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/chat/chat_screen.dart';
 import 'features/settings/settings_screen.dart';
-import 'features/settings/personas_screen.dart';
+import 'features/splash/splash_screen.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Pre-load preference state dynamically to override Provider state on boot
   final database = RiriDatabase();
-  final prefs = SharedPreferencesAsync();
-  final onboardingCompleted = await prefs.getBool('riri_onboarding_completed') ?? false;
 
   runApp(
     ProviderScope(
@@ -26,9 +22,6 @@ void main() async {
         databaseProvider.overrideWith((ref) {
           ref.onDispose(() => database.close());
           return database;
-        }),
-        onboardingCompletedProvider.overrideWith(() {
-          return OnboardingCompletedNotifier(onboardingCompleted);
         }),
       ],
       child: const RiriApp(),
@@ -41,11 +34,17 @@ class RiriApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final onboardingCompleted = ref.watch(onboardingCompletedProvider);
+    final onboardingFuture = ref.watch(onboardingCompletedFutureProvider);
 
-    final mainScreen = onboardingCompleted
-        ? const RiriAppShell()
-        : const OnboardingScreen();
+    final mainScreen = onboardingFuture.when(
+      data: (completed) {
+        // Fallback to the provider if we've completed onboarding during session
+        final isActuallyCompleted = completed || ref.watch(onboardingCompletedProvider);
+        return isActuallyCompleted ? const RiriAppShell() : const OnboardingScreen();
+      },
+      loading: () => const SplashScreen(),
+      error: (error, _) => const OnboardingScreen(),
+    );
 
     return MaterialApp(
       title: 'Riri',
@@ -108,12 +107,12 @@ class RiriAppShell extends ConsumerWidget {
     final currentTabIndex = ref.watch(tabIndexProvider);
 
     return Scaffold(
-      body: AnimatedIndexedStack(
+      body: _FadeIndexedStack(
         index: currentTabIndex,
-        children: const [
-          DashboardScreen(),
-          ChatTab(),
-          SettingsTab(),
+        children: [
+          TickerMode(enabled: currentTabIndex == 0, child: const DashboardScreen()),
+          TickerMode(enabled: currentTabIndex == 1, child: const ChatTab()),
+          TickerMode(enabled: currentTabIndex == 2, child: const SettingsTab()),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -161,21 +160,20 @@ class SettingsTab extends ConsumerWidget {
   }
 }
 
-class AnimatedIndexedStack extends StatefulWidget {
+class _FadeIndexedStack extends StatefulWidget {
   final int index;
   final List<Widget> children;
 
-  const AnimatedIndexedStack({
-    super.key,
+  const _FadeIndexedStack({
     required this.index,
     required this.children,
   });
 
   @override
-  State<AnimatedIndexedStack> createState() => _AnimatedIndexedStackState();
+  State<_FadeIndexedStack> createState() => _FadeIndexedStackState();
 }
 
-class _AnimatedIndexedStackState extends State<AnimatedIndexedStack> with SingleTickerProviderStateMixin {
+class _FadeIndexedStackState extends State<_FadeIndexedStack> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
@@ -183,13 +181,13 @@ class _AnimatedIndexedStackState extends State<AnimatedIndexedStack> with Single
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 150),
     );
     _controller.forward();
   }
 
   @override
-  void didUpdateWidget(covariant AnimatedIndexedStack oldWidget) {
+  void didUpdateWidget(covariant _FadeIndexedStack oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.index != widget.index) {
       _controller.reset();
@@ -207,15 +205,11 @@ class _AnimatedIndexedStackState extends State<AnimatedIndexedStack> with Single
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _controller,
-      child: ScaleTransition(
-        scale: Tween<double>(begin: 0.98, end: 1.0).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-        ),
-        child: IndexedStack(
-          index: widget.index,
-          children: widget.children,
-        ),
+      child: IndexedStack(
+        index: widget.index,
+        children: widget.children,
       ),
     );
   }
 }
+

@@ -17,16 +17,20 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _nameController = TextEditingController();
   final PageController _pageController = PageController();
+  final ValueNotifier<bool> _isNameEmptyNotifier = ValueNotifier<bool>(true);
   
   late final AnimationController _mascotController;
   late final Animation<Offset> _mascotAnimation;
   
-  int _currentPage = 0;
   PersonalityMode _selectedMode = PersonalityMode.bestie;
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
+    _nameController.addListener(() {
+      _isNameEmptyNotifier.value = _nameController.text.trim().isEmpty;
+    });
     _mascotController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -44,32 +48,46 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
   void dispose() {
     _nameController.dispose();
     _pageController.dispose();
+    _isNameEmptyNotifier.dispose();
     _mascotController.dispose();
     super.dispose();
   }
 
   Future<void> _saveNameAndProceed() async {
+    if (_isSaving) return;
     final name = _nameController.text.trim();
     if (name.isNotEmpty) {
-      // 1. Write username cleanly through username provider which persists and emits
-      await ref.read(usernameProvider.notifier).setUsername(name);
+      setState(() {
+        _isSaving = true;
+      });
+      try {
+        // 1. Write username cleanly through username provider which persists and emits
+        await ref.read(usernameProvider.notifier).setUsername(name);
 
-      // 2. Write active persona configuration
-      await ref.read(personalityModeProvider.notifier).setPersonalityMode(_selectedMode);
+        // 2. Write active persona configuration
+        await ref.read(personalityModeProvider.notifier).setPersonalityMode(_selectedMode);
 
-      // 3. Persist onboarding status
-      final prefs = SharedPreferencesAsync();
-      await prefs.setBool('riri_onboarding_completed', true);
+        // 3. Persist onboarding status
+        final prefs = SharedPreferencesAsync();
+        await prefs.setBool('riri_onboarding_completed', true);
 
-      // 4. Mark completed to trigger reactive router update instantly
-      ref.read(onboardingCompletedProvider.notifier).complete();
+        // 4. Mark completed to trigger reactive router update instantly
+        ref.read(onboardingCompletedProvider.notifier).complete();
+      } catch (_) {
+        // Safe fallback in case of errors
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isSaving = false;
+          });
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isNameEmpty = _nameController.text.trim().isEmpty;
 
     return Scaffold(
       backgroundColor: RiriTheme.darkBg,
@@ -96,11 +114,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
             child: PageView(
               controller: _pageController,
               physics: const NeverScrollableScrollPhysics(), // Only navigate via buttons
-              onPageChanged: (page) {
-                setState(() {
-                  _currentPage = page;
-                });
-              },
               children: [
                 // Step 1: Nickname Input
                 Center(
@@ -186,7 +199,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                           ),
                           child: TextField(
                             controller: _nameController,
-                            onChanged: (text) => setState(() {}),
                             textAlign: TextAlign.left,
                             style: const TextStyle(color: Colors.white),
                             decoration: const InputDecoration(
@@ -200,38 +212,43 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                         ),
                         const SizedBox(height: 32),
 
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: isNameEmpty
-                                ? null
-                                : () {
-                                    FocusScope.of(context).unfocus();
-                                    _pageController.nextPage(
-                                      duration: const Duration(milliseconds: 300),
-                                      curve: Curves.easeInOut,
-                                    );
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: RiriTheme.primaryPurple,
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: RiriTheme.cardBg.withValues(alpha: 0.5),
-                              disabledForegroundColor: RiriTheme.textMuted,
-                              elevation: 8,
-                              shadowColor: RiriTheme.primaryPurple.withValues(alpha: 0.3),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(28),
+                        ValueListenableBuilder<bool>(
+                          valueListenable: _isNameEmptyNotifier,
+                          builder: (context, isEmpty, _) {
+                            return SizedBox(
+                              width: double.infinity,
+                              height: 56,
+                              child: ElevatedButton(
+                                onPressed: isEmpty
+                                    ? null
+                                    : () {
+                                        FocusScope.of(context).unfocus();
+                                        _pageController.nextPage(
+                                          duration: const Duration(milliseconds: 300),
+                                          curve: Curves.easeInOut,
+                                        );
+                                      },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: RiriTheme.primaryPurple,
+                                  foregroundColor: Colors.white,
+                                  disabledBackgroundColor: RiriTheme.cardBg.withValues(alpha: 0.5),
+                                  disabledForegroundColor: RiriTheme.textMuted,
+                                  elevation: 8,
+                                  shadowColor: RiriTheme.primaryPurple.withValues(alpha: 0.3),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(28),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Piliin ang Persona ➡️',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
-                            ),
-                            child: const Text(
-                              'Piliin ang Persona ➡️',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -284,23 +301,34 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                         width: double.infinity,
                         height: 56,
                         child: ElevatedButton(
-                          onPressed: _saveNameAndProceed,
+                          onPressed: _isSaving ? null : _saveNameAndProceed,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: RiriTheme.primaryPurple,
                             foregroundColor: Colors.white,
+                            disabledBackgroundColor: RiriTheme.cardBg.withValues(alpha: 0.5),
+                            disabledForegroundColor: RiriTheme.textMuted,
                             elevation: 8,
                             shadowColor: RiriTheme.primaryPurple.withValues(alpha: 0.3),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(28),
                             ),
                           ),
-                          child: const Text(
-                            'Mag-start na tayo! 🚀',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          child: _isSaving
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : const Text(
+                                  'Mag-start na tayo! 🚀',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
                       ),
                     ],

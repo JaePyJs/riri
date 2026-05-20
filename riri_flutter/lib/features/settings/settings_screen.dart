@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/persistence/riri_providers.dart';
-import '../../core/notifications/personas.dart';
 import '../../theme/riri_theme.dart';
 import 'persona_card_selector.dart';
 
@@ -108,7 +107,7 @@ class SettingsScreen extends ConsumerWidget {
     final controller = TextEditingController();
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: RiriTheme.cardBg,
         title: const Text('I-restore ang Data? 📥', style: TextStyle(color: Colors.white)),
         content: Column(
@@ -135,7 +134,7 @@ class SettingsScreen extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Bansalan', style: TextStyle(color: RiriTheme.textMuted)),
           ),
           TextButton(
@@ -144,8 +143,10 @@ class SettingsScreen extends ConsumerWidget {
               if (jsonStr.isEmpty) return;
               
               final success = await ref.read(repositoryProvider).importDataFromJson(jsonStr);
-              Navigator.pop(context);
+              if (!dialogContext.mounted) return;
+              Navigator.pop(dialogContext);
               
+              if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(success 

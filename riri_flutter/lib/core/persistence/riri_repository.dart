@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 import 'package:drift/drift.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../ai/ai_models.dart';
@@ -103,8 +102,9 @@ class RiriRepository {
   final RiriDatabase _db;
   final List<RiriChatMessage> _cachedChatHistory = [];
   
-  final StreamController<List<RiriReminder>> _remindersController =
-      StreamController<List<RiriReminder>>.broadcast();
+  final StreamController<List<RiriChatMessage>> _chatHistoryController =
+      StreamController<List<RiriChatMessage>>.broadcast();
+
   StreamSubscription<List<Reminder>>? _dbSubscription;
   List<RiriReminder> _cachedReminders = [];
 
@@ -119,7 +119,6 @@ class RiriRepository {
     // 1. Subscribe to SQLite reactive stream to populate cache and stream updates
     _dbSubscription = _db.watchAllReminders().listen((dbList) {
       _cachedReminders = dbList.map((r) => _mapReminder(r)).toList();
-      _remindersController.add(List.unmodifiable(_cachedReminders));
     });
 
     // 2. Perform DB Seeding if empty
@@ -131,8 +130,8 @@ class RiriRepository {
 
   void dispose() {
     _dbSubscription?.cancel();
-    _remindersController.close();
     _threadsController.close();
+    _chatHistoryController.close();
   }
 
   Future<void> _seedDbIfEmpty() async {
@@ -188,7 +187,10 @@ class RiriRepository {
     );
   }
 
-  Stream<List<RiriReminder>> get remindersStream => _remindersController.stream;
+  Stream<List<RiriReminder>> get remindersStream =>
+      _db.watchAllReminders().map((list) => list.map(_mapReminder).toList());
+
+  Stream<List<RiriChatMessage>> get chatHistoryStream => _chatHistoryController.stream;
 
   List<RiriReminder> get currentReminders => List.unmodifiable(_cachedReminders);
 
@@ -280,6 +282,7 @@ class RiriRepository {
     final dbMsgs = await _db.getChatHistoryByThread(_activeThreadId);
     _cachedChatHistory.clear();
     _cachedChatHistory.addAll(dbMsgs.map((m) => _mapChatMessage(m)));
+    _chatHistoryController.add(List.unmodifiable(_cachedChatHistory));
   }
 
   Future<void> switchActiveThread(String threadId) async {
@@ -375,6 +378,7 @@ class RiriRepository {
       final newTitle = text.length > 25 ? '${text.substring(0, 25)}...' : text;
       await updateThreadTitle(_activeThreadId, newTitle);
     }
+    _chatHistoryController.add(List.unmodifiable(_cachedChatHistory));
   }
 
   Future<void> updateChatMessageText(int id, String newText) async {
@@ -388,12 +392,14 @@ class RiriRepository {
         timestamp: old.timestamp,
         stickerName: old.stickerName,
       );
+      _chatHistoryController.add(List.unmodifiable(_cachedChatHistory));
     }
     await _db.updateChatMessageText(id, newText);
   }
 
   Future<void> clearChatHistory() async {
     _cachedChatHistory.clear();
+    _chatHistoryController.add(List.unmodifiable(_cachedChatHistory));
     await _db.deleteChatHistoryByThread(_activeThreadId);
   }
 

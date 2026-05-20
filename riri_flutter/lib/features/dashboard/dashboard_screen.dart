@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +24,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
   late final AnimationController _mascotController;
   late final Animation<Offset> _mascotAnimation;
   late final ConfettiController _confettiController;
+  Timer? _loadingTimeoutTimer;
+  bool _showSkeletonFallback = false;
 
   @override
   void initState() {
@@ -39,12 +42,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
       curve: Curves.easeInOut,
     ));
     _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+    
+    _loadingTimeoutTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted && !_showSkeletonFallback) {
+        setState(() => _showSkeletonFallback = true);
+      }
+    });
   }
 
   @override
   void dispose() {
     _mascotController.dispose();
     _confettiController.dispose();
+    _loadingTimeoutTimer?.cancel();
     super.dispose();
   }
 
@@ -86,101 +96,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
   }
 
   void _showConfettiCelebration(BuildContext context, PersonalityMode mode) {
-    // Drive all copy from PersonaConfig — no hardcoded switch-case text
     final persona = PersonaConfig.get(mode);
-
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: 'Confetti',
-      barrierColor: Colors.black.withValues(alpha: 0.7),
-      transitionDuration: const Duration(milliseconds: 350),
-      pageBuilder: (dialogContext, anim1, anim2) {
-        // Auto-dismiss after 2.5s so repeated completions don't force manual taps
-        Future.delayed(const Duration(milliseconds: 2500), () {
-          if (dialogContext.mounted && Navigator.of(dialogContext).canPop()) {
-            Navigator.of(dialogContext).pop();
+    final overlay = Overlay.of(context);
+    late OverlayEntry entry;
+    
+    entry = OverlayEntry(
+      builder: (context) => _CelebrationToast(
+        persona: persona,
+        onDone: () {
+          if (entry.mounted) {
+            entry.remove();
           }
-        });
-        return Center(
-          child: Material(
-            color: Colors.transparent,
-            child: ScaleTransition(
-              scale: CurvedAnimation(
-                parent: anim1,
-                curve: Curves.elasticOut,
-              ),
-              child: Container(
-                width: 300,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF252538),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: persona.accentColor.withValues(alpha: 0.5), width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: persona.accentColor.withValues(alpha: 0.25),
-                      blurRadius: 20,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      persona.copy.completionEmoji,
-                      style: const TextStyle(
-                        fontSize: 84,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      persona.copy.completionHeadline,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: persona.accentColor,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      persona.copy.completionBody,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 44,
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: persona.accentColor,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                        ),
-                        child: Text(
-                          persona.copy.completionButtonLabel,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+        },
+      ),
     );
+    overlay.insert(entry);
   }
 
   @override
@@ -193,6 +123,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
     final reminders = remindersAsync.value ?? repository.currentReminders;
     final username = ref.watch(usernameProvider);
     final isLoading = remindersAsync.isLoading && (remindersAsync.value == null || remindersAsync.value!.isEmpty);
+    
+    if (!isLoading && remindersAsync.hasValue) {
+      _loadingTimeoutTimer?.cancel();
+    }
 
     // Dynamic reactive state calculations from Riverpod providers
     final streak = ref.watch(streakProvider);
@@ -338,11 +272,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                         const SizedBox(height: 12),
                         Expanded(
                           child: isLoading
-                              ? ListView.separated(
-                                  itemCount: 3,
-                                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                                  itemBuilder: (context, index) => _buildSkeletonCard(),
-                                )
+                              ? (_showSkeletonFallback 
+                                  ? const Center(
+                                      child: Text(
+                                        'Loading took too long. Check your connection or restart the app.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(color: RiriTheme.dangerRed, fontSize: 14),
+                                      ),
+                                    )
+                                  : ListView.separated(
+                                      itemCount: 3,
+                                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                                      itemBuilder: (context, index) => _buildSkeletonCard(),
+                                    ))
                               : reminders.isEmpty
                                   ? const Center(
                                       child: Text(
@@ -611,25 +553,31 @@ class _ReminderCard extends StatelessWidget {
                     children: [
                       GestureDetector(
                         onTap: onToggle,
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: reminder.isCompleted ? RiriTheme.successGreen : RiriTheme.textMuted,
-                              width: 2.0,
+                        child: SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: Center(
+                            child: Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: reminder.isCompleted ? RiriTheme.successGreen : RiriTheme.textMuted,
+                                  width: 2.0,
+                                ),
+                                color: reminder.isCompleted
+                                    ? RiriTheme.successGreen.withValues(alpha: 0.2)
+                                    : Colors.transparent,
+                              ),
+                              child: reminder.isCompleted
+                                  ? const Icon(Icons.check, size: 14, color: RiriTheme.successGreen)
+                                  : null,
                             ),
-                            color: reminder.isCompleted
-                                ? RiriTheme.successGreen.withValues(alpha: 0.2)
-                                : Colors.transparent,
                           ),
-                          child: reminder.isCompleted
-                              ? const Icon(Icons.check, size: 14, color: RiriTheme.successGreen)
-                              : null,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 4),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -696,6 +644,110 @@ class _ReminderCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CelebrationToast extends StatefulWidget {
+  final PersonaConfig persona;
+  final VoidCallback onDone;
+
+  const _CelebrationToast({required this.persona, required this.onDone});
+
+  @override
+  State<_CelebrationToast> createState() => _CelebrationToastState();
+}
+
+class _CelebrationToastState extends State<_CelebrationToast> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnimation;
+  late final Animation<double> _opacityAnimation;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
+    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+
+    _controller.forward();
+
+    _timer = Timer(const Duration(milliseconds: 1500), () async {
+      if (mounted) {
+        await _controller.reverse();
+        widget.onDone();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 16,
+      left: 16,
+      right: 16,
+      child: SafeArea(
+        child: Material(
+          color: Colors.transparent,
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) => Transform.scale(
+              scale: _scaleAnimation.value,
+              child: Opacity(
+                opacity: _opacityAnimation.value,
+                child: child,
+              ),
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF252538),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: widget.persona.accentColor.withValues(alpha: 0.5), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Text(widget.persona.copy.completionEmoji, style: const TextStyle(fontSize: 24)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.persona.copy.completionHeadline,
+                          style: TextStyle(color: widget.persona.accentColor, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          widget.persona.copy.completionBody,
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

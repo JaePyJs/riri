@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/notifications/personas.dart';
 import '../../core/notifications/personality_copy.dart';
-import '../../core/persistence/riri_providers.dart';
 import '../../theme/riri_theme.dart';
 
 String getStickerForPersona(PersonalityMode mode) {

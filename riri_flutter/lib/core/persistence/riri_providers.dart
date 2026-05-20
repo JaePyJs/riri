@@ -28,6 +28,12 @@ final remindersStreamProvider = StreamProvider<List<RiriReminder>>((ref) {
   return repo.remindersStream;
 });
 
+/// Reactive stream provider broadcasting chat messages for active thread.
+final chatHistoryStreamProvider = StreamProvider<List<RiriChatMessage>>((ref) {
+  final repo = ref.watch(repositoryProvider);
+  return repo.chatHistoryStream;
+});
+
 /// Modern Riverpod 2.x Notifier for Tab Index management.
 class TabIndexNotifier extends Notifier<int> {
   @override
@@ -41,13 +47,47 @@ class TabIndexNotifier extends Notifier<int> {
 
 final tabIndexProvider = NotifierProvider<TabIndexNotifier, int>(() => TabIndexNotifier());
 
+/// Record to hold consolidated app settings
+class AppSettings {
+  final PersonalityMode personalityMode;
+  final String geminiApiKey;
+  final bool notificationsEnabled;
+
+  const AppSettings({
+    required this.personalityMode,
+    required this.geminiApiKey,
+    required this.notificationsEnabled,
+  });
+}
+
+/// Unified FutureProvider to load all app settings at once
+final appSettingsProvider = FutureProvider<AppSettings>((ref) async {
+  final prefs = SharedPreferencesAsync();
+  final repo = ref.watch(repositoryProvider);
+  
+  final modeStr = await prefs.getString('riri_personality_mode');
+  final key = await prefs.getString('riri_gemini_api_key');
+  final notifs = await repo.getNotificationsEnabled();
+  
+  return AppSettings(
+    personalityMode: PersonalityMode.fromDbValue(modeStr ?? 'bestie'),
+    geminiApiKey: key ?? '',
+    notificationsEnabled: notifs,
+  );
+});
+
+final onboardingCompletedFutureProvider = FutureProvider<bool>((ref) async {
+  final prefs = SharedPreferencesAsync();
+  return await prefs.getBool('riri_onboarding_completed') ?? false;
+});
+
 /// Modern Riverpod 2.x Notifier for Onboarding Completed state.
 class OnboardingCompletedNotifier extends Notifier<bool> {
-  final bool? initialValue;
-  OnboardingCompletedNotifier([this.initialValue]);
-
   @override
-  bool build() => initialValue ?? false;
+  bool build() {
+    final futureState = ref.watch(onboardingCompletedFutureProvider);
+    return futureState.asData?.value ?? false;
+  }
 
   void complete() {
     state = true;
@@ -86,14 +126,8 @@ final usernameProvider = NotifierProvider<UsernameNotifier, String>(() => Userna
 class PersonalityModeNotifier extends Notifier<PersonalityMode> {
   @override
   PersonalityMode build() {
-    loadPersonalityMode();
-    return PersonalityMode.bestie;
-  }
-
-  Future<void> loadPersonalityMode() async {
-    final repo = ref.read(repositoryProvider);
-    final mode = await repo.getPersonalityMode();
-    state = mode;
+    final settingsState = ref.watch(appSettingsProvider);
+    return settingsState.asData?.value.personalityMode ?? PersonalityMode.bestie;
   }
 
   Future<void> setPersonalityMode(PersonalityMode mode) async {
@@ -109,14 +143,8 @@ final personalityModeProvider = NotifierProvider<PersonalityModeNotifier, Person
 class NotificationsEnabledNotifier extends Notifier<bool> {
   @override
   bool build() {
-    loadNotificationsEnabled();
-    return true;
-  }
-
-  Future<void> loadNotificationsEnabled() async {
-    final repo = ref.read(repositoryProvider);
-    final enabled = await repo.getNotificationsEnabled();
-    state = enabled;
+    final settingsState = ref.watch(appSettingsProvider);
+    return settingsState.asData?.value.notificationsEnabled ?? true;
   }
 
   Future<void> setNotificationsEnabled(bool enabled) async {
@@ -132,16 +160,8 @@ final notificationsEnabledProvider = NotifierProvider<NotificationsEnabledNotifi
 class GeminiApiKeyNotifier extends Notifier<String> {
   @override
   String build() {
-    loadApiKey();
-    return '';
-  }
-
-  Future<void> loadApiKey() async {
-    final prefs = SharedPreferencesAsync();
-    final key = await prefs.getString('riri_gemini_api_key');
-    if (key != null) {
-      state = key;
-    }
+    final settingsState = ref.watch(appSettingsProvider);
+    return settingsState.asData?.value.geminiApiKey ?? '';
   }
 
   Future<void> setApiKey(String key) async {

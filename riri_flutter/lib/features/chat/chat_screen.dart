@@ -4,6 +4,7 @@ import 'dart:math';
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import '../../core/ai/ai_models.dart';
 import '../../core/ai/chat_response_engine.dart';
 import '../../core/ai/gemini_service.dart';
@@ -24,26 +25,39 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ChatResponseEngine _responseEngine = ChatResponseEngine();
-  final GeminiService _geminiService = GeminiService();
-  List<RiriChatMessage> _messages = [];
+  
+  late final http.Client _httpClient;
+  late final GeminiService _geminiService;
+  
   bool _isTyping = false;
+  bool _isSending = false;
   bool _showVoiceOverlay = false;
   int _lastAnimatedCount = 0; // Messages at or below this index skip entrance animation
+  String _localActiveThreadId = '';
 
   @override
   void initState() {
     super.initState();
+    _httpClient = http.Client();
+    _geminiService = GeminiService(client: _httpClient);
     _loadPersonalityAndHistory();
+  }
+
+  @override
+  void dispose() {
+    _httpClient.close();
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadPersonalityAndHistory() async {
     final repo = ref.read(repositoryProvider);
     setState(() {
-      _messages = repo.chatHistory;
-      _lastAnimatedCount = _messages.length; // History loads without animation
+      _lastAnimatedCount = repo.chatHistory.length;
     });
 
-    if (_messages.isEmpty) {
+    if (repo.chatHistory.isEmpty) {
       _sendRiriGreeting();
     }
   }
@@ -64,108 +78,110 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       isUser: false,
       stickerName: currentMode == PersonalityMode.malupit ? 'Angry' : 'Welcoming',
     );
-
-    setState(() {
-      _messages = repo.chatHistory;
-    });
   }
 
   void _sendMessage() {
+    if (_isSending) return;
+    
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
     _messageController.clear();
     final repo = ref.read(repositoryProvider);
 
+    setState(() {
+      _isSending = true;
+      _isTyping = true;
+    });
+
     repo.addChatMessage(
       text: text,
       isUser: true,
     );
 
-    setState(() {
-      _messages = repo.chatHistory;
-      _isTyping = true;
-    });
-
     _scrollToBottom();
 
     // Trigger async AI logic
     Future.microtask(() async {
-      final currentMode = ref.read(personalityModeProvider);
-      final username = ref.read(usernameProvider);
-      final apiKey = ref.read(geminiApiKeyProvider);
-      
-      // Learn user name dynamically from the conversation!
-      final newlyExtractedName = _responseEngine.tryExtractName(text);
-      if (newlyExtractedName != null && newlyExtractedName.isNotEmpty) {
-        await ref.read(usernameProvider.notifier).setUsername(newlyExtractedName);
-      }
+      try {
+        final currentMode = ref.read(personalityModeProvider);
+        final username = ref.read(usernameProvider);
+        final apiKey = ref.read(geminiApiKeyProvider);
+        
+        // Learn user name dynamically from the conversation!
+        final newlyExtractedName = _responseEngine.tryExtractName(text);
+        if (newlyExtractedName != null && newlyExtractedName.isNotEmpty) {
+          await ref.read(usernameProvider.notifier).setUsername(newlyExtractedName);
+        }
 
-      String responseText = '';
-      String stickerName = 'Welcoming';
+        String responseText = '';
+        String stickerName = 'Welcoming';
 
-      // 1. Attempt Gemini response first if API key is active
-      if (apiKey.trim().isNotEmpty) {
-        try {
-          // Convert RiriChatMessage list to a simple serializable format for history context
-          final historyList = _messages.map((m) => {
-            'text': m.text,
-            'isUser': m.isUser,
-          }).toList();
+        final messages = ref.read(chatHistoryStreamProvider).value ?? [];
 
-          final geminiResult = await _geminiService.generateResponse(
-            apiKey: apiKey,
-            userInput: text,
-            personalityMode: currentMode,
-            userName: newlyExtractedName ?? username,
-            history: historyList,
-          );
+        // 1. Attempt Gemini response first if API key is active
+        if (apiKey.trim().isNotEmpty) {
+          try {
+            // Convert RiriChatMessage list to a simple serializable format for history context
+            final historyList = messages.map((m) => {
+              'text': m.text,
+              'isUser': m.isUser,
+            }).toList();
 
-          if (geminiResult != null) {
-            final String? parsedText = geminiResult['text'];
-            final String? parsedSticker = geminiResult['sticker'];
-            final Map<String, dynamic>? parsedTask = geminiResult['taskCard'];
+            final geminiResult = await _geminiService.generateResponse(
+              apiKey: apiKey,
+              userInput: text,
+              personalityMode: currentMode,
+              userName: newlyExtractedName ?? username,
+              history: historyList,
+            );
 
-            if (parsedText != null && parsedText.isNotEmpty) {
-              responseText = parsedText;
-              stickerName = parsedSticker ?? 'Welcoming';
+            if (geminiResult != null) {
+              final String? parsedText = geminiResult['text'];
+              final String? parsedSticker = geminiResult['sticker'];
+              final Map<String, dynamic>? parsedTask = geminiResult['taskCard'];
 
-              // If a task card is detected, append the [TASK_CARD] structured prefix and raw JSON!
-              if (parsedTask != null && parsedTask.isNotEmpty) {
-                final taskJson = jsonEncode(parsedTask);
-                responseText = '$responseText\n\n[TASK_CARD]$taskJson';
+              if (parsedText != null && parsedText.isNotEmpty) {
+                responseText = parsedText;
+                stickerName = parsedSticker ?? 'Welcoming';
+
+                // If a task card is detected, append the [TASK_CARD] structured prefix and raw JSON!
+                if (parsedTask != null && parsedTask.isNotEmpty) {
+                  final taskJson = jsonEncode(parsedTask);
+                  responseText = '$responseText\n\n[TASK_CARD]$taskJson';
+                }
               }
             }
+          } catch (_) {
+            // Fall back gracefully below
           }
-        } catch (_) {
-          // Fall back gracefully below
         }
-      }
 
-      // 2. Fall back to local synchronous ChatResponseEngine heuristics if Gemini was skipped or failed
-      if (responseText.isEmpty) {
-        final response = _responseEngine.generateResponse(
-          userInput: text,
-          personalityMode: currentMode,
-          newlyLearnedName: newlyExtractedName,
+        // 2. Fall back to local synchronous ChatResponseEngine heuristics if Gemini was skipped or failed
+        if (responseText.isEmpty) {
+          final response = _responseEngine.generateResponse(
+            userInput: text,
+            personalityMode: currentMode,
+            newlyLearnedName: newlyExtractedName,
+          );
+          responseText = response.text;
+          stickerName = response.stickerName;
+        }
+
+        // 3. Save Riri chat response message cleanly in repository
+        await repo.addChatMessage(
+          text: responseText,
+          isUser: false,
+          stickerName: stickerName,
         );
-        responseText = response.text;
-        stickerName = response.stickerName;
-      }
-
-      // 3. Save Riri chat response message cleanly in repository
-      await repo.addChatMessage(
-        text: responseText,
-        isUser: false,
-        stickerName: stickerName,
-      );
-
-      if (mounted) {
-        setState(() {
-          _messages = repo.chatHistory;
-          _isTyping = false;
-        });
-        _scrollToBottom();
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isTyping = false;
+            _isSending = false;
+          });
+          _scrollToBottom();
+        }
       }
     });
   }
@@ -185,10 +201,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _clearChatHistory() async {
     final repo = ref.read(repositoryProvider);
     await repo.clearChatHistory();
-    setState(() {
-      _messages = [];
-    });
-    _sendRiriGreeting();
   }
 
   void _startVoiceSimulation() {
@@ -207,19 +219,44 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final repo = ref.watch(repositoryProvider);
+    final chatAsync = ref.watch(chatHistoryStreamProvider);
+    final messages = chatAsync.value ?? [];
     final theme = Theme.of(context);
     final personalityMode = ref.watch(personalityModeProvider);
-    final repo = ref.read(repositoryProvider);
+    
+    // Sync active thread ID and reset anim counts
+    final activeThreadId = repo.activeThreadId;
+    if (_localActiveThreadId != activeThreadId) {
+      _localActiveThreadId = activeThreadId;
+      _lastAnimatedCount = messages.length;
+    }
+
+    ref.listen<AsyncValue<List<RiriChatMessage>>>(chatHistoryStreamProvider, (previous, next) {
+      final list = next.value ?? [];
+      
+      // Update animation count on initial load
+      if (previous == null || !previous.hasValue) {
+        setState(() {
+          _lastAnimatedCount = list.length;
+        });
+      }
+      
+      // Greeting if thread is empty
+      if (next.hasValue && list.isEmpty) {
+        _sendRiriGreeting();
+      }
+    });
 
     return Scaffold(
       backgroundColor: RiriTheme.darkBg,
       drawer: _ChatHistoryDrawer(
         onThreadSelected: () {
+          final activeMsgs = repo.chatHistory;
           setState(() {
-            _messages = repo.chatHistory;
-            _lastAnimatedCount = _messages.length;
+            _lastAnimatedCount = activeMsgs.length;
           });
-          if (_messages.isEmpty) {
+          if (activeMsgs.isEmpty) {
             _sendRiriGreeting();
           }
         },
@@ -307,11 +344,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 child: ListView.separated(
                   controller: _scrollController,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  itemCount: _messages.length,
+                  itemCount: messages.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
-                    final msg = _messages[index];
-                    final repo = ref.read(repositoryProvider);
+                    final msg = messages[index];
                     // Only animate messages that arrived after initial history load
                     if (index >= _lastAnimatedCount) {
                       return TweenAnimationBuilder<double>(
@@ -327,21 +363,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                         child: _ChatBubble(
                           message: msg,
-                          onStateChanged: () {
-                            setState(() {
-                              _messages = repo.chatHistory;
-                            });
-                          },
+                          onStateChanged: () {},
                         ),
                       );
                     }
                     return _ChatBubble(
                       message: msg,
-                      onStateChanged: () {
-                        setState(() {
-                          _messages = repo.chatHistory;
-                        });
-                      },
+                      onStateChanged: () {},
                     );
                   },
                 ),
@@ -1692,7 +1720,7 @@ class SinusoidalWavePainter extends CustomPainter {
 
     final path2 = Path();
     final paint2 = Paint()
-      ..color = color.withOpacity(0.5)
+      ..color = color.withValues(alpha: 0.5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
@@ -1708,7 +1736,7 @@ class SinusoidalWavePainter extends CustomPainter {
 
     final path3 = Path();
     final paint3 = Paint()
-      ..color = color.withOpacity(0.2)
+      ..color = color.withValues(alpha: 0.2)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 

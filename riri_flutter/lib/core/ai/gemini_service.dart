@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../notifications/personality_copy.dart';
-import 'ai_models.dart';
 
 /// Elite, production-ready Gemini Service to fetch asynchronous responses
 /// tailored strictly to Riri's dynamic personas and Taglish requirements.
 class GeminiService {
+  final http.Client _client;
+
+  GeminiService({http.Client? client}) : _client = client ?? http.Client();
+
   /// Calls the official Google Gemini API to get a structured JSON response.
   Future<Map<String, dynamic>?> generateResponse({
     required String apiKey,
@@ -68,8 +71,8 @@ class GeminiService {
         '  "text": "Your natural persona chat message",\n'
         '  "sticker": "Chosen sticker name from the allowed list",\n'
         '  "taskCard": {\n'
-        '    "title": "A concise task title with a matching emoji (e.g., \"Buy groceries 🛒\")",\n'
-        '    "dueDate": "User-specified time description or ISO string (e.g. \"tomorrow at 9:00 AM\")",\n'
+        '    "title": "A concise task title with a matching emoji (e.g., "Buy groceries 🛒")",\n'
+        '    "dueDate": "User-specified time description or ISO string (e.g. "tomorrow at 9:00 AM")",\n'
         '    "category": "One of: school, work, health, social, errands, personal"\n'
         '  } // include taskCard ONLY if task-creation intent is detected, otherwise set to null or omit\n'
         '}';
@@ -103,7 +106,7 @@ class GeminiService {
     });
 
     try {
-      final response = await http.post(
+      final response = await _client.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: requestBody,
