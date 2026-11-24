@@ -1,62 +1,31 @@
-# Riri: Gen Z Taglish Reminder App
+# Riri
 
-Riri is a lifestyle and reminder companion designed with an offline-first, on-device architecture. It addresses the procrastination crisis by replacing dry, mechanical notifications with personality-driven, witty Taglish (Tagalog-English mix) nudges tailored for modern users.
+Riri is a Taglish reminder and chat app for Filipino Gen Z users. It pairs a task dashboard with a chat companion that can turn an everyday message into a reminder you can review and save.
 
----
+## Try Riri locally
 
-## Projects in this repo
+The active app is [riri_flutter](riri_flutter/). This checkout includes a web runner. Use [Flutter 3.47.4](https://docs.flutter.dev/install/archive) and Chrome. Flutter 3.50.1 hits a dependency resolution conflict with this checkout.
 
-* **[riri_flutter/](file:///c:/Users/jmbar/AndroidStudioProjects/riri/riri_flutter/)** – The primary production app built in **Flutter (Dart 3)**. It is highly optimized, cross-platform, and fully persistent via local SQLite.
-* **[legacy_android/](file:///c:/Users/jmbar/AndroidStudioProjects/riri/legacy_android/)** – Archived native Android application (Kotlin + Jetpack Compose). Kept strictly as a historic codebase reference (no longer maintained).
-
----
-
-## The Core Solution
-
-Standard productivity apps fail because generic notifications like *"Task due in 15 mins"* are easily ignored. Riri acts as an offline, reactive buddy that naggingly but lovingly keeps you on track:
-* **Taglish Keyword Parser**: Schedules reminders through natural language sentences (e.g., *"Remind me to buy coffee in 2 hours"*).
-* **Personality-Driven Copy**: Select between **Bestie**, **Malupit**, **Chill**, and **Tita** modes. Your choice dynamically updates Riri's expressions, dialogue templates, and notifications. Details on profiles reside in [docs/personas.md](file:///c:/Users/jmbar/AndroidStudioProjects/riri/docs/personas.md).
-* **Status-Adaptive Dashboard**: Dynamic character expressions (wink, angry, confident, streak-hype) update reactively based on your daily task progress.
-
----
-
-## Technical Stack & Architecture
-
-Riri's production environment utilizes a Clean Architecture format divided into core infrastructures and isolated presentation features:
-1. **Framework**: Flutter (Dart 3) for multi-platform (Windows, Web, Android, iOS) compiling.
-2. **State Management**: Riverpod for reactive views and data flows.
-3. **Database (Offline-First)**: Drift (SQLite ORM) for persistent query streams.
-4. **Local AI**: Fast Taglish keyword classifier and intent parser.
-
-Detailed layout specifications reside in:
-* 🗺️ [Architecture Guide](file:///c:/Users/jmbar/AndroidStudioProjects/riri/docs/architecture.md) – Clean architecture mapping.
-* 🔒 [Offline-First Principles](file:///c:/Users/jmbar/AndroidStudioProjects/riri/docs/offline-first.md) – local sovereignty and thread caching rules.
-* 📦 [Source Folder Layout](file:///c:/Users/jmbar/AndroidStudioProjects/riri/riri_flutter/lib/README.md) – Directory guidelines and codegen commands.
-
----
-
-## Getting Started
-
-To launch Riri on your machine for local development and testing:
-
-### Prerequisites
-* [Flutter SDK](https://docs.flutter.dev/get-started/install) (latest stable)
-* Dart 3.x
-
-### Commands
-```bash
-# 1. Navigate to active source
+```sh
 cd riri_flutter
-
-# 2. Get dependencies
 flutter pub get
-
-# 3. Generate SQLite files
-flutter pub run build_runner build --delete-conflicting-outputs
-
-# 4. Run tests
-flutter test
-
-# 5. Launch (Desktop or Chrome Web)
-flutter run
+flutter run -d chrome
 ```
+
+1. Finish onboarding and open **Riri Chat**. For the local chat flow, leave the Gemini API key blank in **Settings**.
+2. Send `Remind me to buy coffee in 2 hours` or `Paalala mo thesis draft pagkalipas ng 30 minuto`.
+3. Review the proposed title and due time on the reminder card. Use its save button, then find the reminder in **Dashboard**.
+
+Choose Bestie (Barkada), Malupit, Chill, or Tita in **Settings** to change Riri’s tone. The dashboard changes its sticker and nudge as your task status changes. [Persona guide](docs/personas.md)
+
+## How it works
+
+- Flutter renders the interface and Riverpod connects screens to app state.
+- Drift and SQLite store reminders and chat messages locally. On the web, Drift uses the bundled SQLite WebAssembly and worker files.
+- Local rules propose reminder titles and due times without an API key. Use `in` or `pagkalipas ng` followed by a positive whole number and a unit such as `minutes`, `hours`, `minuto`, or `oras`. Optional Gemini chat sends the current message and recent chat context to Google when configured. [Offline-first guide](docs/offline-first.md)
+
+## Development
+
+Run `flutter test` from `riri_flutter/`. Drift’s generated Dart files are checked in. Regenerate them when editing the schema. [Source layout and code generation](riri_flutter/lib/README.md) · [Architecture](docs/architecture.md)
+
+Riri began as a Kotlin and Jetpack Compose Android app. The [Flutter migration](https://github.com/JaePyJs/riri/commit/807556a7426f07ab637315b49c534838ca541663) and [removal of the archived Android source](https://github.com/JaePyJs/riri/commit/f54057143d852abb1217905756290ff34ca12362) are recorded in Git history.

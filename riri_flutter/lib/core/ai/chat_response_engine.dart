@@ -21,6 +21,12 @@ class ChatResponse {
 }
 
 class ChatResponseEngine {
+  static final RegExp _relativeTimeSuffix = RegExp(
+    r'\s+(?:in|pagkalipas\s+ng)\s+([1-9][0-9]{0,5})\s+'
+    r'(minutes?|hours?|minuto|oras)\s*[.!?]*\s*$',
+    caseSensitive: false,
+  );
+
   final TaglishKeywordClassifier _classifier = TaglishKeywordClassifier();
 
   /// Generates a conversational response and extracts potential tasks dynamically.
@@ -69,7 +75,8 @@ class ChatResponseEngine {
         lower.contains('reminder') ||
         lower.contains('gawin') ||
         lower.contains('ilista')) {
-      String extractedTitle = _cleanExtractedTitle(userInput);
+      final relativeTime = _relativeTimeSuffix.firstMatch(userInput);
+      final extractedTitle = _cleanExtractedTitle(userInput, relativeTime);
 
       // Parse reminder category dynamically using the TaglishKeywordClassifier
       final parsedResult = _classifier.parse(extractedTitle);
@@ -79,7 +86,7 @@ class ChatResponseEngine {
           : parsedResult.category;
 
       // Extract due date dynamically from natural language expressions
-      final dueDateTime = _parseDueDateTime(userInput);
+      final dueDateTime = _parseDueDateTime(userInput, relativeTime);
 
       final jsonPayload = json.encode({
         'title': extractedTitle,
@@ -587,10 +594,18 @@ class ChatResponseEngine {
   }
 
   /// Parses simple time triggers inside natural language expressions dynamically.
-  DateTime _parseDueDateTime(String input) {
-    final lower = input.toLowerCase();
+  DateTime _parseDueDateTime(String input, RegExpMatch? relativeTime) {
     final now = DateTime.now();
+    if (relativeTime != null) {
+      final amount = int.parse(relativeTime.group(1)!);
+      final unit = relativeTime.group(2)!.toLowerCase();
+      final delay = unit.startsWith('hour') || unit == 'oras'
+          ? Duration(hours: amount)
+          : Duration(minutes: amount);
+      return now.add(delay);
+    }
 
+    final lower = input.toLowerCase();
     if (lower.contains('tomorrow') || lower.contains('bukas')) {
       final tomorrow = now.add(const Duration(days: 1));
       if (lower.contains('morning') || lower.contains('umaga')) {
@@ -626,8 +641,10 @@ class ChatResponseEngine {
 
 
   /// Cleans the user input to extract a clean task title.
-  String _cleanExtractedTitle(String input) {
-    String title = input;
+  String _cleanExtractedTitle(String input, RegExpMatch? relativeTime) {
+    String title = relativeTime == null
+        ? input
+        : input.substring(0, relativeTime.start);
 
     // 1. Remove intent/prefix patterns
     final prefixes = [
@@ -663,9 +680,12 @@ class ChatResponseEngine {
       r'ng hapon',
       r'ng gabi',
     ];
-    for (final phrase in timePhrases) {
-      title =
-          title.replaceAll(RegExp('\\b$phrase\\b', caseSensitive: false), '');
+    // Calendar words can be part of the task when it has an explicit delay.
+    if (relativeTime == null) {
+      for (final phrase in timePhrases) {
+        title =
+            title.replaceAll(RegExp('\\b$phrase\\b', caseSensitive: false), '');
+      }
     }
 
     // 3. Remove filler words
