@@ -1,6 +1,6 @@
 # Riri Offline-First Principles
 
-Riri is designed as an **offline-first application**. It ensures that no personal user data (chat logs, reminders, configuration schedules) ever leaves the local device, ensuring maximum privacy, zero network latency, and continuous survivability.
+Riri stores reminders and chat history locally and can propose reminders using on-device rules. If you add a Gemini API key in Settings, Riri sends your current chat message, nickname, and recent chat context to Google to generate a reply. If the request fails or no key is configured, Riri uses its local rules.
 
 ---
 
